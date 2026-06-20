@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -58,6 +58,7 @@ import { AgentPicker } from "@/components/agent-picker";
 import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
+import { ErrorSummary } from "@/components/error-summary";
 import { NumberStepper } from "@/components/number-stepper";
 import { TimePicker } from "@/components/time-picker";
 import { BatchWizard } from "@/components/batch-wizard";
@@ -435,6 +436,11 @@ export function RealtimeWizard({
     return true;
   }, [step, stepErrors]);
 
+  // Auto-clear errors as the user fixes them
+  useEffect(() => {
+    if (showErrors && canContinue) setShowErrors(false);
+  }, [showErrors, canContinue]);
+
   const toggleOverride = (k: OverrideKey) =>
     setOverrides((p) => {
       const n = new Set(p);
@@ -532,7 +538,10 @@ export function RealtimeWizard({
             return (
               <div key={s.id} className="flex items-center gap-1">
                 <button
-                  onClick={() => setStep(s.id)}
+                  onClick={() => {
+                    setShowErrors(false);
+                    setStep(s.id);
+                  }}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
                     active && "bg-surface-2 text-text",
@@ -567,6 +576,11 @@ export function RealtimeWizard({
           <div className="px-8 py-6 max-w-3xl w-full mx-auto">
             {step === 1 && (
               <div className="space-y-5">
+                {showErrors && Object.keys(step1Errors).length > 0 && (
+                  <ErrorSummary
+                    errors={Object.values(step1Errors).filter(Boolean) as string[]}
+                  />
+                )}
                 <FieldGroup label="Campaign name">
                   <input
                     value={name}
@@ -579,9 +593,6 @@ export function RealtimeWizard({
                         : "border-border-strong",
                     )}
                   />
-                  {showErrors && step1Errors.name && (
-                    <FieldError msg={step1Errors.name} />
-                  )}
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
                 <div className="flex items-start gap-3 rounded-md border border-border-strong bg-surface-2 px-3 py-3">
@@ -724,13 +735,7 @@ export function RealtimeWizard({
                         )}
                       </span>
                     </div>
-                    {showErrors && step1Errors.agent && (
-                      <FieldError msg={step1Errors.agent} />
-                    )}
                   </div>
-                  )}
-                  {!abOn && showErrors && step1Errors.agent && (
-                    <FieldError msg={step1Errors.agent} />
                   )}
                 </div>
 
@@ -748,9 +753,6 @@ export function RealtimeWizard({
                     onToggle={togglePool}
                     onClear={() => setPool([])}
                   />
-                  {showErrors && step1Errors.pool && (
-                    <FieldError msg={step1Errors.pool} />
-                  )}
                 </FieldGroup>
               </div>
             )}

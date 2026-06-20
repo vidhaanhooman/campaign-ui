@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check,
   ChevronLeft,
@@ -34,6 +34,7 @@ import { AgentPicker } from "@/components/agent-picker";
 import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
+import { ErrorSummary } from "@/components/error-summary";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { NumberStepper } from "@/components/number-stepper";
 import { TimePicker } from "@/components/time-picker";
@@ -168,16 +169,46 @@ export function BatchWizard({
 
   const current = STEPS.find((s) => s.id === step)!;
 
+  const [showErrors, setShowErrors] = useState(false);
+
+  const step1Errors = useMemo(() => {
+    const e: { name?: string; agent?: string; pool?: string } = {};
+    if (!name.trim()) e.name = "Give the campaign a name.";
+    if (abOn) {
+      if (!abValid) {
+        if (abTotal !== 100) e.agent = "Arm splits must total 100%.";
+        else e.agent = "Every arm needs an agent.";
+      }
+    } else if (!agentId) {
+      e.agent = "Pick an agent.";
+    }
+    if (pool.length === 0) e.pool = "Select at least one number.";
+    return e;
+  }, [name, abOn, abValid, abTotal, agentId, pool.length]);
+
+  const step2Errors = useMemo(() => {
+    const e: { csv?: string } = {};
+    if (!uploaded) e.csv = "Upload a CSV to continue.";
+    return e;
+  }, [uploaded]);
+
+  const stepErrors = useMemo(() => {
+    const s: Record<number, boolean> = {};
+    s[1] = Object.keys(step1Errors).length > 0;
+    s[2] = Object.keys(step2Errors).length > 0;
+    return s;
+  }, [step1Errors, step2Errors]);
+
   const canContinue = useMemo(() => {
-    if (step === 1)
-      return (
-        Boolean(name) &&
-        (abOn ? abValid : Boolean(agentId)) &&
-        pool.length > 0
-      );
-    if (step === 2) return uploaded;
+    if (step === 1) return !stepErrors[1];
+    if (step === 2) return !stepErrors[2];
     return true;
-  }, [step, name, agentId, pool.length, uploaded, abOn, abValid]);
+  }, [step, stepErrors]);
+
+  // Auto-clear errors as the user fixes them
+  useEffect(() => {
+    if (showErrors && canContinue) setShowErrors(false);
+  }, [showErrors, canContinue]);
 
   return (
     <div className="flex flex-col h-full">
@@ -198,10 +229,14 @@ export function BatchWizard({
           {STEPS.map((s, i) => {
             const active = s.id === step;
             const done = s.id < step;
+            const hasError = showErrors && stepErrors[s.id];
             return (
               <div key={s.id} className="flex items-center gap-1">
                 <button
-                  onClick={() => setStep(s.id)}
+                  onClick={() => {
+                    setShowErrors(false);
+                    setStep(s.id);
+                  }}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
                     active && "bg-surface-2 text-text",
@@ -212,12 +247,13 @@ export function BatchWizard({
                   <span
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
-                      active && "bg-white text-black font-semibold",
-                      done && !active && "bg-surface text-text-muted",
-                      !active && !done && "bg-surface-2 text-text-muted",
+                      hasError && "bg-red-400 text-black font-semibold",
+                      !hasError && active && "bg-white text-black font-semibold",
+                      !hasError && done && !active && "bg-surface text-text-muted",
+                      !hasError && !active && !done && "bg-surface-2 text-text-muted",
                     )}
                   >
-                    {done ? <Check size={10} strokeWidth={3} /> : s.id}
+                    {hasError ? "!" : done ? <Check size={10} strokeWidth={3} /> : s.id}
                   </span>
                   <span className="font-medium">{s.title}</span>
                 </button>
@@ -238,6 +274,11 @@ export function BatchWizard({
             {/* === STEP 1 — Identity === */}
             {step === 1 && (
               <div className="space-y-6">
+                {showErrors && Object.keys(step1Errors).length > 0 && (
+                  <ErrorSummary
+                    errors={Object.values(step1Errors).filter(Boolean) as string[]}
+                  />
+                )}
                 <p className="text-sm text-text-muted leading-relaxed">
                   Name the campaign and pick the agent. Every task from the CSV
                   goes to the same agent.
@@ -247,7 +288,12 @@ export function BatchWizard({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Q3 win-back outbound"
-                    className="h-9 w-full rounded-md border border-border-strong bg-surface-2 px-3 text-sm text-text outline-none placeholder:text-text-muted focus:border-white"
+                    className={cn(
+                      "h-9 w-full rounded-md border bg-surface-2 px-3 text-sm text-text outline-none placeholder:text-text-muted focus:border-white",
+                      showErrors && step1Errors.name
+                        ? "border-red-400"
+                        : "border-border-strong",
+                    )}
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
@@ -409,6 +455,11 @@ export function BatchWizard({
             {/* === STEP 2 — Audience === */}
             {step === 2 && (
               <div className="space-y-6">
+                {showErrors && Object.keys(step2Errors).length > 0 && (
+                  <ErrorSummary
+                    errors={Object.values(step2Errors).filter(Boolean) as string[]}
+                  />
+                )}
                 <p className="text-sm text-text-muted leading-relaxed">
                   Upload a CSV. The <span className="font-mono">phone</span>{" "}
                   column is required. Every other column becomes a{" "}
@@ -565,7 +616,12 @@ export function BatchWizard({
                         setCsvName("win-back-q3.csv");
                         toast.success("CSV parsed · 4,812 rows");
                       }}
-                      className="w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong bg-surface-2 px-6 py-12 text-center transition-colors hover:bg-surface"
+                      className={cn(
+                        "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-surface-2 px-6 py-12 text-center transition-colors hover:bg-surface",
+                        showErrors && step2Errors.csv
+                          ? "border-red-400"
+                          : "border-border-strong",
+                      )}
                     >
                       <div className="flex items-center gap-2">
                         <ExcelLogo />
@@ -1207,8 +1263,12 @@ export function BatchWizard({
               Cancel
             </button>
             <button
-              disabled={!canContinue}
               onClick={() => {
+                if (!canContinue) {
+                  setShowErrors(true);
+                  return;
+                }
+                setShowErrors(false);
                 if (step < STEPS.length) setStep(step + 1);
                 else {
                   toast.success("Batch campaign started");
@@ -1216,10 +1276,7 @@ export function BatchWizard({
                 }
               }}
               className={cn(
-                "rounded-md bg-white px-4 py-1.5 text-xs font-medium text-black transition-colors",
-                !canContinue
-                  ? "cursor-not-allowed opacity-50"
-                  : "hover:bg-white/90",
+                "rounded-md bg-white px-4 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/90",
               )}
             >
               {step === STEPS.length ? "Start campaign" : "Continue"}
@@ -1247,6 +1304,15 @@ function FieldGroup({
       {hint && (
         <div className="text-xs text-text-muted leading-relaxed">{hint}</div>
       )}
+    </div>
+  );
+}
+
+function FieldError({ msg }: { msg: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-[11.5px] text-red-400 mt-1">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+      {msg}
     </div>
   );
 }
