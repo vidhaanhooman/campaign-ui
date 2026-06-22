@@ -836,7 +836,7 @@ export function RealtimeWizard({
                       value={startAfterUnit}
                       onValueChange={(v) => v && setStartAfterUnit(v as Unit)}
                     >
-                      <SelectTrigger className="w-32 h-9">
+                      <SelectTrigger className="w-28 h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -859,7 +859,7 @@ export function RealtimeWizard({
                       value={endAfterUnit}
                       onValueChange={(v) => v && setEndAfterUnit(v as Unit)}
                     >
-                      <SelectTrigger className="w-32 h-9">
+                      <SelectTrigger className="w-28 h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -952,7 +952,7 @@ export function RealtimeWizard({
                           value={intSameVal}
                           onChange={setIntSameVal}
                           min={0}
-                          className="w-20"
+                          className="w-24"
                         />
                         <Select
                           value={intSameUnit}
@@ -978,7 +978,7 @@ export function RealtimeWizard({
                                 value={cur.val}
                                 onChange={(v) => setAttemptGap(i, { val: v })}
                                 min={0}
-                                className="w-20"
+                                className="w-24"
                               />
                               <Select
                                 value={cur.unit}
@@ -1064,7 +1064,7 @@ export function RealtimeWizard({
                       }
                       min={0}
                       max={WORKSPACE_TOTAL}
-                      className="w-32"
+                      className="w-24"
                     />
                     <div className="text-xs text-text-muted leading-relaxed">
                       Workspace has{" "}
