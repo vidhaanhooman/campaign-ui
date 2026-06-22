@@ -47,19 +47,22 @@ import {
   OUTCOMES,
   OVERRIDABLE,
   TIMEZONES,
+  WORKSPACE_FREE,
+  WORKSPACE_TOTAL,
+  priorityLabel,
   addClockMinutes,
   toMs,
   type OverrideKey,
   type Unit,
 } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
-import { AgentVersionPicker } from "@/components/agent-version-picker";
 import { AgentPicker } from "@/components/agent-picker";
 import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
 import { ErrorSummary } from "@/components/error-summary";
 import { NumberStepper } from "@/components/number-stepper";
+import { PriorityField } from "@/components/priority-field";
 import { TimePicker } from "@/components/time-picker";
 import { BatchWizard } from "@/components/batch-wizard";
 
@@ -126,9 +129,9 @@ const PICKER_OPTIONS = [
     type: "batch" as const,
     icon: FileSpreadsheet,
     title: "Batch",
-    tagline: "Upload a CSV. We call every row.",
+    tagline: "Upload a CSV. Every row gets a call.",
     body: "You define the audience upfront. Same agent, same settings, applied to every contact. Best for one-off outreach.",
-    goodFor: ["Outbound drips", "Win-back lists", "Survey blasts"],
+    goodFor: ["Outbound drips", "Win-back lists", "Surveys"],
     needs: "A CSV with phone numbers",
   },
   {
@@ -136,7 +139,7 @@ const PICKER_OPTIONS = [
     icon: Zap,
     title: "Realtime",
     tagline: "Your system sends tasks via API.",
-    body: "This campaign is a settings plane. Tasks arrive one at a time carrying phone + context; the campaign supplies every other field.",
+    body: "The campaign holds the settings. Each task arrives with a phone number and context, and the campaign fills in every other field.",
     goodFor: ["Order placed", "Cart abandoned", "Lead reached out"],
     needs: "API integration",
   },
@@ -175,8 +178,8 @@ function TypePicker({
               What kind of campaign?
             </h1>
             <p className="mt-1.5 text-sm text-text-muted max-w-xl">
-              This picks the mental model for everything else. You can&rsquo;t
-              change it later, but each option is built around a clear use case.
+              This cannot be changed later. Choose the option that matches how
+              your calls are triggered.
             </p>
           </div>
 
@@ -240,8 +243,8 @@ function TypePicker({
           <div className="mt-6 text-center text-xs text-text-muted">
             Not sure?{" "}
             <span className="text-text">
-              If a human uploads a list, pick Batch. If software triggers
-              calls, pick Realtime.
+              Choose Batch if you upload a list manually, or Realtime if your
+              software triggers calls.
             </span>
           </div>
         </div>
@@ -250,42 +253,6 @@ function TypePicker({
   );
 }
 
-/* ─────────────────────────── BATCH STUB ─────────────────────────── */
-
-function BatchStub({
-  onBack,
-  onClose,
-}: {
-  onBack: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="flex flex-col h-full">
-      <div className="absolute top-3.5 right-3.5 z-10">
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text"
-        >
-          <X size={14} />
-        </button>
-      </div>
-      <div className="flex-1 flex items-center justify-center px-8">
-        <div className="max-w-md text-center space-y-4">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-md bg-surface-2">
-            <FileSpreadsheet size={15} className="text-text" />
-          </div>
-          <h2 className="text-lg font-semibold text-text">Batch flow — next slice</h2>
-          <p className="text-sm text-text-muted leading-relaxed">
-            We&rsquo;re building Realtime first to lock the visual language.
-            Batch reuses the same 4-step shell with CSV upload + audience
-            preview in place of the API contract step.
-          </p>
-          <button onClick={onBack} className="rounded-md bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-white/90">Back to picker</button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────── REALTIME WIZARD ─────────────────────────── */
 
@@ -337,8 +304,8 @@ export function RealtimeWizard({
   const [abArms, setAbArms] = useState<
     { agentId: string; versionName: string; pct: number }[]
   >([
-    { agentId: "", versionName: "Latest", pct: 50 },
-    { agentId: "", versionName: "Latest", pct: 50 },
+    { agentId: "", versionName: "Live", pct: 50 },
+    { agentId: "", versionName: "Live", pct: 50 },
   ]);
   const abTotal = abArms.reduce((s, a) => s + (Number(a.pct) || 0), 0);
   const abValid =
@@ -388,6 +355,7 @@ export function RealtimeWizard({
   const [pool, setPool] = useState<string[]>([NUMBERS[0]]);
   const [poolQuery, setPoolQuery] = useState("");
   const [priority, setPriority] = useState(5);
+  const [slots, setSlots] = useState(12);
   const [prioMode, setPrioMode] = useState<"all" | "perAttempt">("all");
   const [perAttemptPrio, setPerAttemptPrio] = useState<number[]>([]);
   const getAttemptPrio = (i: number) => perAttemptPrio[i] ?? priority;
@@ -415,8 +383,8 @@ export function RealtimeWizard({
     if (!name.trim()) e.name = "Give the campaign a name.";
     if (abOn) {
       if (!abValid) {
-        if (abTotal !== 100) e.agent = "Arm splits must total 100%.";
-        else e.agent = "Every arm needs an agent.";
+        if (abTotal !== 100) e.agent = "Variant splits must total 100%.";
+        else e.agent = "Every variant needs an agent.";
       }
     } else if (!agentId) {
       e.agent = "Pick an agent.";
@@ -441,13 +409,27 @@ export function RealtimeWizard({
     if (showErrors && canContinue) setShowErrors(false);
   }, [showErrors, canContinue]);
 
-  const toggleOverride = (k: OverrideKey) =>
+  const toggleOverride = (k: OverrideKey) => {
+    if (k === "version" && abOn) return; // locked under A/B
     setOverrides((p) => {
       const n = new Set(p);
       if (n.has(k)) n.delete(k);
       else n.add(k);
       return n;
     });
+  };
+
+  // Agent / version can't be supplied per-call when traffic is split across
+  // A/B arms — force the override off whenever A/B is enabled.
+  useEffect(() => {
+    if (!abOn) return;
+    setOverrides((p) => {
+      if (!p.has("version")) return p;
+      const n = new Set(p);
+      n.delete("version");
+      return n;
+    });
+  }, [abOn]);
 
   const optionalLines = useMemo(() => {
     const L: [string, string][] = [];
@@ -521,7 +503,7 @@ export function RealtimeWizard({
       <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-semibold tracking-tight text-text">
-            Create Realtime Campaign
+            Create realtime campaign
           </h1>
           <button
             onClick={onClose}
@@ -620,10 +602,20 @@ export function RealtimeWizard({
                       A/B test
                     </div>
                     <div className="text-xs text-text-muted leading-relaxed mt-1">
-                      Split traffic across arms — different agents, or the same
-                      agent on different versions. Assignment is sticky per
-                      contact across all retries.
+                      Split traffic across variants: different agents, or the
+                      same agent on different versions. Each contact stays on one
+                      variant across all retries.
                     </div>
+                    {abOn && (
+                      <div className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-text-dim">
+                        <Info size={12} className="mt-0.5 shrink-0" />
+                        <span>
+                          With A/B on, agent &amp; version are fixed per variant
+                          and can&rsquo;t be overridden per call from the API
+                          payload.
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -659,7 +651,7 @@ export function RealtimeWizard({
                     </>
                   ) : (
                     <div className="space-y-2.5">
-                    <div className="text-sm font-medium text-text">Arms</div>
+                    <div className="text-sm font-medium text-text">Variants</div>
                     {abArms.map((arm, i) => (
                       <div
                         key={i}
@@ -669,15 +661,27 @@ export function RealtimeWizard({
                           {String.fromCharCode(65 + i)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <AgentVersionPicker
+                          <AgentPicker
                             agentId={arm.agentId}
-                            versionName={arm.versionName}
-                            onApply={({ agentId: id, versionName }) =>
+                            onChange={(id) =>
                               setAbArms((p) =>
                                 p.map((x, j) =>
                                   j === i
-                                    ? { ...x, agentId: id, versionName }
+                                    ? { ...x, agentId: id, versionName: "Live" }
                                     : x,
+                                ),
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="w-[150px] shrink-0">
+                          <VersionPicker
+                            agentId={arm.agentId}
+                            versionName={arm.versionName}
+                            onChange={(v) =>
+                              setAbArms((p) =>
+                                p.map((x, j) =>
+                                  j === i ? { ...x, versionName: v } : x,
                                 ),
                               )
                             }
@@ -699,10 +703,15 @@ export function RealtimeWizard({
                         />
                         <button
                           disabled={abArms.length <= 2}
+                          title={
+                            abArms.length <= 2
+                              ? "An A/B test needs at least two variants."
+                              : "Remove variant"
+                          }
                           onClick={() =>
                             setAbArms((p) => p.filter((_, j) => j !== i))
                           }
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:text-text-muted/50 disabled:hover:bg-transparent"
                         >
                           <X size={13} />
                         </button>
@@ -713,12 +722,12 @@ export function RealtimeWizard({
                         onClick={() =>
                           setAbArms((p) => [
                             ...p,
-                            { agentId: "", versionName: "Latest", pct: 0 },
+                            { agentId: "", versionName: "Live", pct: 0 },
                           ])
                         }
                         className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-text-dim hover:text-text"
                       >
-                        <Plus size={13} /> Add arm
+                        <Plus size={13} /> Add variant
                       </button>
                       <span
                         className={cn(
@@ -726,7 +735,7 @@ export function RealtimeWizard({
                           abTotal === 100 ? "text-text-muted" : "text-text",
                         )}
                       >
-                        {abTotal}% allotted
+                        {abTotal}% assigned
                         {abTotal !== 100 && (
                           <span className="text-text-muted">
                             {" "}
@@ -741,11 +750,11 @@ export function RealtimeWizard({
 
                 {/* Calling Number — popover-style multi-select */}
                 <FieldGroup
-                  label="Calling Number"
+                  label="Calling numbers"
                   hint={
                     pool.length > 1
                       ? `${pool.length} numbers · rotated across the ${retries} attempts.`
-                      : "Add more numbers to rotate across retries and improve pickup rates."
+                      : "Add more numbers to rotate across attempts and improve pickup rates."
                   }
                 >
                   <NumberPoolPicker
@@ -768,23 +777,32 @@ export function RealtimeWizard({
                 <div className="grid grid-cols-2 gap-2">
                   {OVERRIDABLE.map((f) => {
                     const on = overrides.has(f.key);
+                    const disabled = f.key === "version" && abOn;
                     return (
                       <button
                         key={f.key}
                         onClick={() => toggleOverride(f.key)}
+                        disabled={disabled}
                         className={cn(
                           "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
-                          on
-                            ? "border-border-strong bg-surface-2 text-text"
-                            : "border-border-strong/60 bg-surface-2/40 hover:bg-surface-2 text-text-dim",
+                          disabled
+                            ? "cursor-not-allowed border-border-strong/40 bg-surface-2/20 text-text-muted"
+                            : on
+                              ? "border-border-strong bg-surface-2 text-text"
+                              : "border-border-strong/60 bg-surface-2/40 hover:bg-surface-2 text-text-dim",
                         )}
                       >
-                        <span className="flex items-center gap-2 text-sm font-medium">
-                          {on ? <Zap size={13} /> : <Lock size={13} />}
-                          {f.label}
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                          {on && !disabled ? (
+                            <Zap size={13} />
+                          ) : (
+                            <Lock size={13} />
+                          )}
+                          <span className="truncate">{f.label}</span>
                         </span>
                         <Switch
-                          checked={on}
+                          checked={on && !disabled}
+                          disabled={disabled}
                           className="pointer-events-none"
                         />
                       </button>
@@ -801,14 +819,10 @@ export function RealtimeWizard({
 
             {step === 2 && (
               <div className="space-y-6">
-                <p className="text-[13px] text-muted-foreground leading-relaxed">
-                  Defaults work for most outbound. Tune calling hours, expiry,
-                  and the retry policy below.
-                </p>
 
                 <FieldGroup
                   label="Calling hours"
-                  hint="Hard window. No call is placed outside this range."
+                  hint="Calls are only placed within this range."
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <TimePicker
@@ -1004,23 +1018,20 @@ export function RealtimeWizard({
 
                 <FieldGroup
                   label="Retry outcomes"
-                  hint="Defaults always trigger a retry. Add more end states via the dropdown."
+                  hint="Default outcomes always trigger a retry. Add more outcomes below."
                 >
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
                         Default
                       </span>
-                      {DEFAULT_OUTCOMES.map((o) => (
-                        <span
-                          key={o}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
-                          title="Always on — recommended baseline"
-                        >
-                          <Lock size={10} className="text-text-muted" />
-                          {o}
-                        </span>
-                      ))}
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
+                        title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
+                      >
+                        <Lock size={10} className="text-text-muted" />
+                        not_connected
+                      </span>
                     </div>
                     <OutcomePicker
                       outcomes={outcomes}
@@ -1040,72 +1051,46 @@ export function RealtimeWizard({
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                     Advanced
                   </div>
+                  <PriorityField
+                    priority={priority}
+                    setPriority={setPriority}
+                    retries={retries}
+                    prioMode={prioMode}
+                    setPrioMode={setPrioMode}
+                    getAttemptPrio={getAttemptPrio}
+                    setAttemptPrio={setAttemptPrio}
+                  />
+
+                  {/* Slots limit */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-medium text-text">
-                        Priority
+                        Slots limit
                       </div>
-                      {overrides.has("priority") && (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[10px] text-text-dim">
-                          <Zap size={11} /> API can override
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[10px] text-text-muted">
+                        Campaign only
+                      </span>
                     </div>
-
-                    {retries > 1 && (
-                      <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
-                        {(
-                          [
-                            { v: "all", label: "Same for all" },
-                            { v: "perAttempt", label: "Per attempt" },
-                          ] as const
-                        ).map((o) => (
-                          <button
-                            key={o.v}
-                            type="button"
-                            onClick={() => setPrioMode(o.v)}
-                            className={cn(
-                              "h-7 rounded-md px-3 text-xs transition-colors",
-                              prioMode === o.v
-                                ? "bg-white text-black shadow-sm"
-                                : "text-text-dim hover:text-text",
-                            )}
-                          >
-                            {o.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {prioMode === "all" || retries <= 1 ? (
-                      <NumberStepper
-                        value={priority}
-                        onChange={setPriority}
-                        className="w-28"
-                      />
-                    ) : (
-                      <div className="space-y-2">
-                        {Array.from({ length: retries }).map((_, i) => (
-                          <div key={i} className="flex items-center gap-3">
-                            <span className="text-sm text-text-muted w-32 shrink-0">
-                              attempt {i + 1}
-                            </span>
-                            <NumberStepper
-                              value={getAttemptPrio(i)}
-                              onChange={(v) => setAttemptPrio(i, v)}
-                              className="w-24"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
+                    <NumberStepper
+                      value={slots}
+                      onChange={(v) =>
+                        setSlots(Math.min(WORKSPACE_FREE, Math.max(0, v)))
+                      }
+                      min={0}
+                      max={WORKSPACE_FREE}
+                      className="w-32"
+                    />
                     <div className="text-xs text-text-muted leading-relaxed">
-                      Orders this task against every other task across all
-                      campaigns. Higher = sooner.
-                      {retries > 1 && prioMode === "perAttempt"
-                        ? " A later retry can be bumped ahead of fresh tasks."
-                        : ""}
+                      Caps how many calls this campaign places at once.
+                      Workspace has{" "}
+                      <span className="text-text font-medium tabular-nums">
+                        {WORKSPACE_FREE}
+                      </span>{" "}
+                      of <span className="tabular-nums">{WORKSPACE_TOTAL}</span>{" "}
+                      slots free.
+                      {slots > WORKSPACE_FREE && (
+                        <span className="text-amber-400"> Exceeds available slots.</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1114,12 +1099,6 @@ export function RealtimeWizard({
 
             {step === 4 && (
               <div className="space-y-7">
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Every value below was set in the previous steps. Create the
-                  campaign, then send your first task with the snippet at the
-                  end.
-                </p>
-
                 <RtReviewSection
                   title="Identity"
                   rows={[
@@ -1133,42 +1112,69 @@ export function RealtimeWizard({
                         </span>
                       ),
                     ],
-                    [
-                      "Agent",
-                      agentName || (
-                        <span className="italic text-text-muted">
-                          Not picked
-                        </span>
-                      ),
-                    ],
-                    [
-                      "Version",
-                      <span
-                        key="v"
-                        className="inline-flex items-center gap-1.5"
-                      >
-                        {agentVersion === "Live" && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        )}
-                        <span className="font-mono">{agentVersion}</span>
-                      </span>,
-                    ],
-                    abOn
-                      ? [
-                          "A/B test",
-                          <div key="ab" className="flex flex-wrap gap-1.5">
-                            {abArms.map((a, i) => (
-                              <span
-                                key={i}
-                                className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px]"
-                              >
-                                {String.fromCharCode(65 + i)}{" "}
-                                <span className="font-mono">{a.pct}%</span>
+                    ...(abOn
+                      ? ([
+                          [
+                            "Variants",
+                            <div key="ab" className="flex flex-col gap-1.5">
+                              {abArms.map((a, i) => {
+                                const ag = AGENT_DETAILS.find(
+                                  (d) => d.id === a.agentId,
+                                );
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-surface-2 font-mono text-[10px] text-text-muted">
+                                      {String.fromCharCode(65 + i)}
+                                    </span>
+                                    {ag ? (
+                                      <span className="text-text">
+                                        {ag.name}
+                                      </span>
+                                    ) : (
+                                      <span className="italic text-text-muted">
+                                        Not picked
+                                      </span>
+                                    )}
+                                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-text-dim">
+                                      {a.versionName === "Live" && (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                      )}
+                                      {a.versionName}
+                                    </span>
+                                    <span className="ml-auto font-mono text-[11px] tabular-nums text-text-muted">
+                                      {a.pct}%
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>,
+                          ],
+                        ] as RtReviewRow[])
+                      : ([
+                          [
+                            "Agent",
+                            agentName || (
+                              <span className="italic text-text-muted">
+                                Not picked
                               </span>
-                            ))}
-                          </div>,
-                        ]
-                      : null,
+                            ),
+                          ],
+                          [
+                            "Version",
+                            <span
+                              key="v"
+                              className="inline-flex items-center gap-1.5"
+                            >
+                              {agentVersion === "Live" && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                              )}
+                              <span className="font-mono">{agentVersion}</span>
+                            </span>,
+                          ],
+                        ] as RtReviewRow[])),
                   ]}
                 />
 
@@ -1259,7 +1265,7 @@ export function RealtimeWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded bg-surface px-1.5 py-0.5 font-mono text-[10.5px] text-text-dim"
+                              className="rounded bg-surface px-1.5 py-0.5 font-mono text-[10px] text-text-dim"
                             >
                               {o}
                             </span>
@@ -1295,8 +1301,12 @@ export function RealtimeWizard({
                     ],
                     [
                       "Priority",
-                      <span key="p" className="font-mono tabular-nums">
-                        {priority}
+                      <span key="p">{priorityLabel(priority)}</span>,
+                    ],
+                    [
+                      "Slots limit",
+                      <span key="s" className="font-mono tabular-nums">
+                        {slots}
                       </span>,
                     ],
                   ]}
@@ -1428,7 +1438,7 @@ function CampaignSummary({
       <div className="p-4 space-y-3">
         <SummaryRow label="Agent">
           {filledAgents.length === 0 ? (
-            <span className="text-text-muted italic">Not picked yet</span>
+            <span className="text-text-muted italic">Not picked</span>
           ) : (
             filledAgents.map((a, i) => (
               <div key={i} className="truncate">
@@ -1583,7 +1593,7 @@ function VersionSelect({
 
 function FieldError({ msg }: { msg: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-[11.5px] text-red-400 mt-1">
+    <div className="flex items-center gap-1.5 text-xs text-red-400 mt-1">
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
       {msg}
     </div>
@@ -1891,7 +1901,8 @@ function PayloadCard({
       <div>
         <div className="text-xs font-semibold text-text mb-1">Task API payload</div>
         <p className="text-xs text-text-muted leading-relaxed">
-          What a task POST looks like with the current overrides.
+          Required fields are always sent. Unlocked fields can be supplied per
+          call.
         </p>
       </div>
       <pre className="rounded-md border border-border-strong p-3 font-mono text-xs leading-[1.8] whitespace-pre-wrap text-text" style={{ backgroundColor: "var(--bg)" }}>

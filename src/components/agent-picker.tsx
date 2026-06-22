@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bot, ChevronDown, Search } from "lucide-react";
+import { Bot, Check, ChevronDown, Search } from "lucide-react";
 
 import {
   Popover,
@@ -20,9 +20,7 @@ function Checkbox({ checked }: { checked: boolean }) {
       )}
     >
       {checked && (
-        <svg viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor">
-          <path d="M7.629 13.314 4.314 10l-1.057 1.057 4.372 4.371 9.114-9.114-1.057-1.057z" />
-        </svg>
+        <Check size={11} strokeWidth={3} />
       )}
     </span>
   );
@@ -89,7 +87,7 @@ export function AgentPicker({
         <div className="flex flex-col">
           <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <Bot size={13} className="text-text-muted" />
-            <span className="text-[13px] font-semibold text-text">Agent</span>
+            <span className="text-sm font-medium text-text">Agent</span>
             <span className="ml-auto font-mono text-[11px] text-text-muted">
               {filtered.length}
             </span>

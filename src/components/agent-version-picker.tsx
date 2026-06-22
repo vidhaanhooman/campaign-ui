@@ -36,7 +36,7 @@ export function AgentVersionPicker({
   useEffect(() => {
     if (!draftAgentDetail) return;
     const has = draftAgentDetail.versions.some((v) => v.name === draftVersion);
-    if (!has) setDraftVersion(draftAgentDetail.versions[0]?.name ?? "Latest");
+    if (!has) setDraftVersion(draftAgentDetail.versions[0]?.name ?? "Live");
   }, [draftAgent, draftAgentDetail, draftVersion]);
 
   const filteredAgents = useMemo(() => {
@@ -50,7 +50,7 @@ export function AgentVersionPicker({
 
   const reset = () => {
     setDraftAgent("");
-    setDraftVersion("Latest");
+    setDraftVersion("Live");
     setQuery("");
   };
 
@@ -256,7 +256,7 @@ export function AgentVersionPicker({
             className="flex items-center border-t border-border px-4 text-[11px] text-text-muted"
             style={{ height: 52 }}
           >
-            Pick Latest to track newest.
+            Pick Live to always use the version in production.
           </div>
         </div>
       </PopoverContent>

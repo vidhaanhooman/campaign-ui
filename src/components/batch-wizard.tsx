@@ -11,9 +11,11 @@ import {
   Megaphone,
   Phone,
   Plus,
+  RotateCcw,
   Search,
   Settings2,
   Timer,
+  Trash2,
   Upload,
   X,
   Zap,
@@ -29,7 +31,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
-import { AgentVersionPicker } from "@/components/agent-version-picker";
 import { AgentPicker } from "@/components/agent-picker";
 import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
@@ -37,6 +38,7 @@ import { OutcomePicker } from "@/components/outcome-picker";
 import { ErrorSummary } from "@/components/error-summary";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { NumberStepper } from "@/components/number-stepper";
+import { PriorityField } from "@/components/priority-field";
 import { TimePicker } from "@/components/time-picker";
 
 import {
@@ -45,6 +47,7 @@ import {
   NUMBERS,
   OUTCOMES,
   TIMEZONES,
+  priorityLabel,
   type Unit,
 } from "@/lib/campaign-data";
 import { Lock } from "lucide-react";
@@ -92,8 +95,8 @@ export function BatchWizard({
   const [abArms, setAbArms] = useState<
     { agentId: string; versionName: string; pct: number }[]
   >([
-    { agentId: "", versionName: "Latest", pct: 50 },
-    { agentId: "", versionName: "Latest", pct: 50 },
+    { agentId: "", versionName: "Live", pct: 50 },
+    { agentId: "", versionName: "Live", pct: 50 },
   ]);
   const abTotal = abArms.reduce((s, a) => s + (Number(a.pct) || 0), 0);
   const abValid =
@@ -176,8 +179,8 @@ export function BatchWizard({
     if (!name.trim()) e.name = "Give the campaign a name.";
     if (abOn) {
       if (!abValid) {
-        if (abTotal !== 100) e.agent = "Arm splits must total 100%.";
-        else e.agent = "Every arm needs an agent.";
+        if (abTotal !== 100) e.agent = "Variant splits must total 100%.";
+        else e.agent = "Every variant needs an agent.";
       }
     } else if (!agentId) {
       e.agent = "Pick an agent.";
@@ -216,7 +219,7 @@ export function BatchWizard({
       <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-semibold tracking-tight text-text">
-            Create Batch Campaign
+            Create batch campaign
           </h1>
           <button
             onClick={onClose}
@@ -279,10 +282,6 @@ export function BatchWizard({
                     errors={Object.values(step1Errors).filter(Boolean) as string[]}
                   />
                 )}
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Name the campaign and pick the agent. Every task from the CSV
-                  goes to the same agent.
-                </p>
                 <FieldGroup label="Campaign name">
                   <input
                     value={name}
@@ -322,7 +321,7 @@ export function BatchWizard({
                       A/B test
                     </div>
                     <div className="text-xs text-text-muted leading-relaxed mt-1">
-                      Split traffic across arms — different agents, or the
+                      Split traffic across variants: different agents, or the
                       same agent on different versions. Assignment is sticky
                       per contact across all retries.
                     </div>
@@ -358,22 +357,34 @@ export function BatchWizard({
                   </div>
                 ) : (
                   <div className="space-y-2.5">
-                    <div className="text-sm font-medium text-text">Arms</div>
+                    <div className="text-sm font-medium text-text">Variants</div>
                     {abArms.map((arm, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <div className="flex size-9 items-center justify-center rounded-md bg-surface-2 text-xs font-mono text-text-muted shrink-0">
                           {String.fromCharCode(65 + i)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <AgentVersionPicker
+                          <AgentPicker
                             agentId={arm.agentId}
-                            versionName={arm.versionName}
-                            onApply={({ agentId: id, versionName }) =>
+                            onChange={(id) =>
                               setAbArms((p) =>
                                 p.map((x, j) =>
                                   j === i
-                                    ? { ...x, agentId: id, versionName }
+                                    ? { ...x, agentId: id, versionName: "Live" }
                                     : x,
+                                ),
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="w-[150px] shrink-0">
+                          <VersionPicker
+                            agentId={arm.agentId}
+                            versionName={arm.versionName}
+                            onChange={(v) =>
+                              setAbArms((p) =>
+                                p.map((x, j) =>
+                                  j === i ? { ...x, versionName: v } : x,
                                 ),
                               )
                             }
@@ -395,10 +406,15 @@ export function BatchWizard({
                         />
                         <button
                           disabled={abArms.length <= 2}
+                          title={
+                            abArms.length <= 2
+                              ? "An A/B test needs at least two variants."
+                              : "Remove variant"
+                          }
                           onClick={() =>
                             setAbArms((p) => p.filter((_, j) => j !== i))
                           }
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:text-text-muted/50 disabled:hover:bg-transparent"
                         >
                           <X size={13} />
                         </button>
@@ -409,12 +425,12 @@ export function BatchWizard({
                         onClick={() =>
                           setAbArms((p) => [
                             ...p,
-                            { agentId: "", versionName: "Latest", pct: 0 },
+                            { agentId: "", versionName: "Live", pct: 0 },
                           ])
                         }
                         className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-text-dim hover:text-text"
                       >
-                        <Plus size={13} /> Add arm
+                        <Plus size={13} /> Add variant
                       </button>
                       <span
                         className={cn(
@@ -422,7 +438,7 @@ export function BatchWizard({
                           abTotal === 100 ? "text-text-muted" : "text-text",
                         )}
                       >
-                        {abTotal}% allotted
+                        {abTotal}% assigned
                         {abTotal !== 100 && (
                           <span className="text-text-muted">
                             {" "}
@@ -436,11 +452,11 @@ export function BatchWizard({
 
                 {/* Calling Number — popover-style multi-select */}
                 <FieldGroup
-                  label="Calling Number"
+                  label="Calling numbers"
                   hint={
                     pool.length > 1
                       ? `${pool.length} numbers · rotated across the ${retries} attempts.`
-                      : "Add more numbers to rotate across retries and improve pickup rates."
+                      : "Add more numbers to rotate across attempts and improve pickup rates."
                   }
                 >
                   <NumberPoolPicker
@@ -469,6 +485,34 @@ export function BatchWizard({
 
                 {!uploaded ? (
                   <div className="space-y-5">
+                    {/* Dropzone — above the example so the primary action is first */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploaded(true);
+                        setCsvName("win-back-q3.csv");
+                        toast.success("CSV parsed · 4,812 rows");
+                      }}
+                      className={cn(
+                        "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-surface-2 px-6 py-12 text-center transition-colors hover:bg-surface",
+                        showErrors && step2Errors.csv
+                          ? "border-red-400"
+                          : "border-border-strong",
+                      )}
+                    >
+                      <CsvLogo />
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-text">
+                          <Upload size={13} className="text-text-muted" />
+                          Drop CSV or click to upload
+                        </div>
+                        <div className="text-xs text-text-muted">
+                          <span className="font-mono">.csv</span> files only. Up
+                          to 5,000 rows.
+                        </div>
+                      </div>
+                    </button>
+
                     {/* Sample CSV preview — Sheets-style chrome, dark theme */}
                     <div
                       className="rounded-md border border-border-strong overflow-hidden"
@@ -476,12 +520,12 @@ export function BatchWizard({
                     >
                       {/* App chrome */}
                       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-                        <SheetIcon />
-                        <span className="text-[13px] text-text font-medium">
+                        <FileSpreadsheet size={13} className="text-text-muted" />
+                        <span className="text-sm text-text font-medium">
                           sample-audience.csv
                         </span>
                         <span className="ml-2 text-[10px] uppercase tracking-wider text-text-muted font-semibold">
-                          · what we expect
+                          · expected format
                         </span>
                         <button
                           type="button"
@@ -525,7 +569,7 @@ export function BatchWizard({
                         <div className="flex h-6 w-12 items-center justify-center rounded border border-border-strong bg-surface-2 text-[11px] font-mono text-text">
                           A1
                         </div>
-                        <span className="italic text-text-muted text-[12px] font-serif">
+                        <span className="italic text-text-muted text-[12px] font-mono">
                           fx
                         </span>
                         <div className="flex-1 h-6 rounded border border-border-strong bg-surface-2 px-2 flex items-center text-[11px] font-mono text-text">
@@ -607,39 +651,6 @@ export function BatchWizard({
                         agent can use mid-call.
                       </span>
                     </div>
-
-                    {/* Dropzone — now below the sample so users see the format first */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUploaded(true);
-                        setCsvName("win-back-q3.csv");
-                        toast.success("CSV parsed · 4,812 rows");
-                      }}
-                      className={cn(
-                        "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-surface-2 px-6 py-12 text-center transition-colors hover:bg-surface",
-                        showErrors && step2Errors.csv
-                          ? "border-red-400"
-                          : "border-border-strong",
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ExcelLogo />
-                        <SheetsLogo />
-                        <CsvLogo />
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-text">
-                          <Upload size={13} className="text-text-muted" />
-                          Drop CSV or click to upload
-                        </div>
-                        <div className="text-xs text-text-muted">
-                          Excel, Google Sheets export, or any{" "}
-                          <span className="font-mono">.csv</span>. Up to 5,000
-                          rows.
-                        </div>
-                      </div>
-                    </button>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -648,22 +659,39 @@ export function BatchWizard({
                         <FileSpreadsheet size={13} className="text-text" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-text truncate">
-                          {csvName}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-text truncate">
+                            {csvName}
+                          </span>
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border-strong bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted">
+                            <Check size={10} strokeWidth={3} /> Uploaded
+                          </span>
                         </div>
                         <div className="text-xs text-text-muted">
                           4,812 rows · phone + 2 context columns
                         </div>
                       </div>
-                      <button
-                        onClick={() => {
-                          setUploaded(false);
-                          setCsvName("");
-                        }}
-                        className="text-xs text-text-dim hover:text-text"
-                      >
-                        Replace
-                      </button>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setUploaded(false);
+                            setCsvName("");
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-xs text-text-dim transition-colors hover:border-text-muted/40 hover:text-text"
+                        >
+                          <RotateCcw size={12} /> Replace file
+                        </button>
+                        <button
+                          onClick={() => {
+                            setUploaded(false);
+                            setCsvName("");
+                          }}
+                          aria-label="Remove file"
+                          className="inline-flex size-8 items-center justify-center rounded-md border border-border-strong bg-surface text-text-muted transition-colors hover:border-red-400/40 hover:text-red-400"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* preview */}
@@ -677,7 +705,7 @@ export function BatchWizard({
                         <div
                           key={i}
                           className={cn(
-                            "grid grid-cols-[1.4fr_1fr_1fr] px-3 py-2 text-xs font-mono text-text",
+                            "grid grid-cols-[1.4fr_1fr_1fr] px-3 py-2 text-xs font-mono text-text uppercase",
                             i < SAMPLE_ROWS.length - 1 &&
                               "border-b border-border",
                           )}
@@ -699,10 +727,6 @@ export function BatchWizard({
             {/* === STEP 3 — Schedule & retries === */}
             {step === 3 && (
               <div className="space-y-6">
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Defaults work for most outbound. Tune calling hours, expiry,
-                  and the retry policy below.
-                </p>
 
                 <FieldGroup label="Start time">
                   <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
@@ -740,7 +764,7 @@ export function BatchWizard({
 
                 <FieldGroup
                   label="Calling hours"
-                  hint="Hard window. No call is placed outside this range."
+                  hint="Calls are only placed within this range."
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <TimePicker
@@ -772,7 +796,7 @@ export function BatchWizard({
 
                 <FieldGroup
                   label="Stop calling after"
-                  hint="No new calls go out after this moment."
+                  hint="No new calls are placed after this time."
                 >
                   <DateTimePicker
                     value={stopAt}
@@ -885,23 +909,20 @@ export function BatchWizard({
 
                 <FieldGroup
                   label="Retry outcomes"
-                  hint="Defaults always trigger a retry. Add more end states via the dropdown."
+                  hint="Default outcomes always trigger a retry. Add more outcomes below."
                 >
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
                         Default
                       </span>
-                      {DEFAULT_OUTCOMES.map((o) => (
-                        <span
-                          key={o}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
-                          title="Always on — recommended baseline"
-                        >
-                          <Lock size={10} className="text-text-muted" />
-                          {o}
-                        </span>
-                      ))}
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
+                        title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
+                      >
+                        <Lock size={10} className="text-text-muted" />
+                        not_connected
+                      </span>
                     </div>
                     <OutcomePicker
                       outcomes={outcomes}
@@ -921,63 +942,16 @@ export function BatchWizard({
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                     Advanced
                   </div>
-                  {/* Priority — Same for all / Per attempt */}
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-text">Priority</div>
-                    {retries > 1 && (
-                      <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
-                        {(
-                          [
-                            { v: "all", label: "Same for all" },
-                            { v: "perAttempt", label: "Per attempt" },
-                          ] as const
-                        ).map((o) => (
-                          <button
-                            key={o.v}
-                            type="button"
-                            onClick={() => setPrioMode(o.v)}
-                            className={cn(
-                              "h-7 rounded-md px-3 text-xs transition-colors",
-                              prioMode === o.v
-                                ? "bg-white text-black shadow-sm"
-                                : "text-text-dim hover:text-text",
-                            )}
-                          >
-                            {o.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {prioMode === "all" || retries <= 1 ? (
-                      <NumberStepper
-                        value={priority}
-                        onChange={setPriority}
-                        className="w-28"
-                      />
-                    ) : (
-                      <div className="space-y-2">
-                        {Array.from({ length: retries }).map((_, i) => (
-                          <div key={i} className="flex items-center gap-3">
-                            <span className="text-sm text-text-muted w-32 shrink-0">
-                              attempt {i + 1}
-                            </span>
-                            <NumberStepper
-                              value={getAttemptPrio(i)}
-                              onChange={(v) => setAttemptPrio(i, v)}
-                              className="w-24"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="text-xs text-text-muted leading-relaxed">
-                      Orders this task against every other task across all
-                      campaigns. Higher = sooner.
-                      {retries > 1 && prioMode === "perAttempt"
-                        ? " A later retry can be bumped ahead of fresh tasks."
-                        : ""}
-                    </div>
-                  </div>
+                  {/* Priority — presets, with numbers under Advanced */}
+                  <PriorityField
+                    priority={priority}
+                    setPriority={setPriority}
+                    retries={retries}
+                    prioMode={prioMode}
+                    setPrioMode={setPrioMode}
+                    getAttemptPrio={getAttemptPrio}
+                    setAttemptPrio={setAttemptPrio}
+                  />
 
                   {/* Slots limit */}
                   <div className="space-y-2">
@@ -999,14 +973,15 @@ export function BatchWizard({
                       className="w-32"
                     />
                     <div className="text-xs text-text-muted leading-relaxed">
-                      Workspace has{" "}
+                      Caps how many calls this campaign places at once. Workspace
+                      has{" "}
                       <span className="text-text font-medium tabular-nums">
                         {WORKSPACE_FREE}
                       </span>{" "}
                       of <span className="tabular-nums">{WORKSPACE_TOTAL}</span>{" "}
                       slots free.
                       {slots > WORKSPACE_FREE && (
-                        <span className="text-amber-400"> Exceeds available.</span>
+                        <span className="text-amber-400"> Exceeds available slots.</span>
                       )}
                     </div>
                   </div>
@@ -1024,10 +999,9 @@ export function BatchWizard({
                         Use idle workspace slots
                       </div>
                       <div className="text-xs text-text-muted leading-relaxed mt-1">
-                        Borrow unused slots from other campaigns when the
-                        workspace is quiet, so this batch finishes faster.
-                        Active campaigns always get their slots back the
-                        moment they need them.
+                        Borrow unused slots from other campaigns to finish this
+                        batch faster. Slots are returned immediately when another
+                        campaign needs them.
                       </div>
                     </div>
                   </div>
@@ -1038,11 +1012,6 @@ export function BatchWizard({
             {/* === STEP 4 — Review === */}
             {step === 4 && (
               <div className="space-y-7">
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Every value below was set in the previous steps. Review,
-                  then start the campaign.
-                </p>
-
                 <ReviewSection
                   title="Identity"
                   rows={[
@@ -1056,39 +1025,69 @@ export function BatchWizard({
                         </span>
                       ),
                     ],
-                    [
-                      "Agent",
-                      agentName || (
-                        <span className="italic text-text-muted">
-                          Not picked
-                        </span>
-                      ),
-                    ],
-                    [
-                      "Version",
-                      <span key="v" className="inline-flex items-center gap-1.5">
-                        {agentVersion === "Live" && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        )}
-                        <span className="font-mono">{agentVersion}</span>
-                      </span>,
-                    ],
-                    abOn
-                      ? [
-                          "A/B test",
-                          <div key="ab" className="flex flex-wrap gap-1.5">
-                            {abArms.map((a, i) => (
-                              <span
-                                key={i}
-                                className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px]"
-                              >
-                                {String.fromCharCode(65 + i)}{" "}
-                                <span className="font-mono">{a.pct}%</span>
+                    ...(abOn
+                      ? ([
+                          [
+                            "Variants",
+                            <div key="ab" className="flex flex-col gap-1.5">
+                              {abArms.map((a, i) => {
+                                const ag = AGENT_DETAILS.find(
+                                  (d) => d.id === a.agentId,
+                                );
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-surface-2 font-mono text-[10px] text-text-muted">
+                                      {String.fromCharCode(65 + i)}
+                                    </span>
+                                    {ag ? (
+                                      <span className="text-text">
+                                        {ag.name}
+                                      </span>
+                                    ) : (
+                                      <span className="italic text-text-muted">
+                                        Not picked
+                                      </span>
+                                    )}
+                                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-text-dim">
+                                      {a.versionName === "Live" && (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                      )}
+                                      {a.versionName}
+                                    </span>
+                                    <span className="ml-auto font-mono text-[11px] tabular-nums text-text-muted">
+                                      {a.pct}%
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>,
+                          ],
+                        ] as ReviewRow[])
+                      : ([
+                          [
+                            "Agent",
+                            agentName || (
+                              <span className="italic text-text-muted">
+                                Not picked
                               </span>
-                            ))}
-                          </div>,
-                        ]
-                      : null,
+                            ),
+                          ],
+                          [
+                            "Version",
+                            <span
+                              key="v"
+                              className="inline-flex items-center gap-1.5"
+                            >
+                              {agentVersion === "Live" && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                              )}
+                              <span className="font-mono">{agentVersion}</span>
+                            </span>,
+                          ],
+                        ] as ReviewRow[])),
                   ]}
                 />
 
@@ -1100,7 +1099,7 @@ export function BatchWizard({
                       uploaded ? (
                         <span className="font-mono">{csvName}</span>
                       ) : (
-                        <span className="italic text-text-muted">No CSV</span>
+                        <span className="italic text-text-muted">No CSV uploaded</span>
                       ),
                     ],
                     [
@@ -1152,7 +1151,7 @@ export function BatchWizard({
                     [
                       "Start time",
                       startMode === "now" ? (
-                        "Immediately on Start"
+                        "Immediately"
                       ) : (
                         <span className="font-mono tabular-nums">
                           {scheduledAt.replace("T", " ")}
@@ -1200,7 +1199,7 @@ export function BatchWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded bg-surface px-1.5 py-0.5 font-mono text-[10.5px] text-text-dim"
+                              className="rounded bg-surface px-1.5 py-0.5 font-mono text-[10px] text-text-dim"
                             >
                               {o}
                             </span>
@@ -1216,9 +1215,7 @@ export function BatchWizard({
                   rows={[
                     [
                       "Priority",
-                      <span key="p" className="font-mono tabular-nums">
-                        {priority}
-                      </span>,
+                      <span key="p">{priorityLabel(priority)}</span>,
                     ],
                     [
                       "Slots limit",
@@ -1310,7 +1307,7 @@ function FieldGroup({
 
 function FieldError({ msg }: { msg: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-[11.5px] text-red-400 mt-1">
+    <div className="flex items-center gap-1.5 text-xs text-red-400 mt-1">
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
       {msg}
     </div>
@@ -1416,7 +1413,7 @@ function BatchSummary({
       <div className="p-4 space-y-3">
         <Row label="Agent">
           {filledAgents.length === 0 ? (
-            <span className="text-text-muted italic">Not picked yet</span>
+            <span className="text-text-muted italic">Not picked</span>
           ) : (
             filledAgents.map((a, i) => (
               <div key={i} className="truncate">
@@ -1451,7 +1448,7 @@ function BatchSummary({
 
         <Row label="Start">
           {startMode === "now" ? (
-            "Immediately on Start"
+            "Immediately"
           ) : (
             <span className="font-mono tabular-nums">
               {scheduledAt.replace("T", " ")}
@@ -1584,98 +1581,6 @@ function VersionSelect({
 
 /* Brand-style mini logos so users recognize what kind of file we expect */
 
-function ExcelLogo() {
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-1"
-      title="Microsoft Excel"
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0"
-      >
-        <rect width="32" height="32" rx="5" fill="#1F6E43" />
-        <rect x="3" y="6" width="10" height="20" rx="1" fill="#0B3D26" />
-        <path
-          d="M16.5 9.5h11M16.5 14.5h11M16.5 19.5h11M16.5 24.5h11M19.5 6.5v21M24 6.5v21"
-          stroke="#7CC59C"
-          strokeWidth="0.9"
-          opacity="0.7"
-        />
-        <text
-          x="8"
-          y="20"
-          fontFamily="Arial Black, sans-serif"
-          fontSize="11"
-          fill="white"
-          textAnchor="middle"
-          fontWeight="900"
-        >
-          X
-        </text>
-      </svg>
-      <span className="text-[10.5px] font-medium text-text-dim">Excel</span>
-    </span>
-  );
-}
-
-function SheetsLogo() {
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-1"
-      title="Google Sheets"
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 32 32"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0"
-      >
-        <path
-          d="M20 2H7a2 2 0 00-2 2v24a2 2 0 002 2h18a2 2 0 002-2V9l-7-7z"
-          fill="#0F9D58"
-        />
-        <path d="M20 2v7h7l-7-7z" fill="#0B7E47" />
-        <rect x="9" y="13" width="14" height="13" rx="1" fill="white" />
-        <path
-          d="M9 17h14M9 21h14M13.5 13v13M18.5 13v13"
-          stroke="#0F9D58"
-          strokeWidth="1"
-        />
-      </svg>
-      <span className="text-[10.5px] font-medium text-text-dim">Sheets</span>
-    </span>
-  );
-}
-
-function SheetIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 32 32"
-      xmlns="http://www.w3.org/2000/svg"
-      className="shrink-0"
-    >
-      <path
-        d="M20 2H7a2 2 0 00-2 2v24a2 2 0 002 2h18a2 2 0 002-2V9l-7-7z"
-        fill="#0F9D58"
-      />
-      <path d="M20 2v7h7l-7-7z" fill="#0B7E47" />
-      <rect x="9" y="13" width="14" height="13" rx="1" fill="white" />
-      <path
-        d="M9 17h14M9 21h14M13.5 13v13M18.5 13v13"
-        stroke="#0F9D58"
-        strokeWidth="1"
-      />
-    </svg>
-  );
-}
-
 function CsvLogo() {
   return (
     <span
@@ -1707,7 +1612,7 @@ function CsvLogo() {
           CSV
         </text>
       </svg>
-      <span className="text-[10.5px] font-medium text-text-dim">CSV</span>
+      <span className="text-[10px] font-medium text-text-dim">CSV</span>
     </span>
   );
 }

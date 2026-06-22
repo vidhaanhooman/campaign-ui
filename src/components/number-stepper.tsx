@@ -99,7 +99,7 @@ export function NumberStepper({
           className={cn(
             "flex h-1/2 w-full items-center justify-center transition-colors",
             atMax
-              ? "text-text-muted/30 cursor-not-allowed"
+              ? "text-text-muted/50 cursor-not-allowed"
               : "text-text-muted hover:text-text hover:bg-surface",
           )}
         >
@@ -119,7 +119,7 @@ export function NumberStepper({
           className={cn(
             "flex h-1/2 w-full items-center justify-center border-t border-border-strong/70 transition-colors",
             atMin
-              ? "text-text-muted/30 cursor-not-allowed"
+              ? "text-text-muted/50 cursor-not-allowed"
               : "text-text-muted hover:text-text hover:bg-surface",
           )}
         >

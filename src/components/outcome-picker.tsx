@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, PhoneOff, PhoneCall, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check, ChevronDown, Flag, PhoneCall, PhoneOff, Search, X } from "lucide-react";
 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { OUTCOME_GROUPS } from "@/lib/campaign-data";
+import { OUTCOME_COLORS, OUTCOME_GROUPS } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
 
 const SURFACE_BG = { backgroundColor: "var(--surface)" } as const;
 const CARD = "rounded-lg border border-border-strong shadow-xl shadow-black/40";
+
+const TOTAL = OUTCOME_GROUPS.reduce((s, g) => s + g.outcomes.length, 0);
 
 export function OutcomePicker({
   outcomes,
@@ -26,7 +28,15 @@ export function OutcomePicker({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const total = OUTCOME_GROUPS.reduce((s, g) => s + g.outcomes.length, 0);
+  const [query, setQuery] = useState("");
+
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return OUTCOME_GROUPS.map((g) => ({
+      ...g,
+      rows: q ? g.outcomes.filter((o) => o.toLowerCase().includes(q)) : g.outcomes,
+    })).filter((g) => g.rows.length > 0);
+  }, [query]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -42,14 +52,9 @@ export function OutcomePicker({
         }
       >
         {outcomes.length === 0 ? (
-          <span className="flex-1 text-text-muted">
-            Add more outcomes…
-          </span>
+          <span className="flex-1 text-text-muted">Add outcomes</span>
         ) : (
           <span className="flex-1 flex flex-wrap items-center gap-1.5 min-w-0">
-            <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
-              +{outcomes.length}
-            </span>
             {outcomes.slice(0, 3).map((o) => (
               <span
                 key={o}
@@ -101,66 +106,98 @@ export function OutcomePicker({
       >
         <div className="flex flex-col">
           <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
-            <span className="text-[13px] font-semibold text-text">
-              Additional outcomes
-            </span>
+            <Flag size={13} className="text-text-muted" />
+            <span className="text-sm font-medium text-text">Retry outcomes</span>
             <span className="ml-auto font-mono text-[11px] text-text-muted">
-              {outcomes.length}/{total}
+              {outcomes.length}/{TOTAL}
             </span>
           </div>
 
-          <div className="scroll-thin max-h-[300px] overflow-y-auto">
-            {OUTCOME_GROUPS.map((group, gi) => (
-              <div key={group.label}>
-                <div
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2",
-                    gi > 0 && "border-t border-border",
-                  )}
+          <div className="p-2 border-b border-border">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-border-strong bg-surface-2 px-2.5">
+              <Search size={13} className="shrink-0 text-text-muted" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search outcomes…"
+                className="w-full bg-transparent text-sm text-text outline-none placeholder:text-text-muted"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="text-text-muted hover:text-text"
                 >
-                  {group.label === "Connected" ? (
-                    <PhoneCall size={12} className="text-text-muted" />
-                  ) : (
-                    <PhoneOff size={12} className="text-text-muted" />
-                  )}
-                  <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
-                    {group.label}
-                  </span>
-                  <span className="text-[11px] text-text-muted ml-1">
-                    · {group.description}
-                  </span>
-                </div>
-                <div className="px-2 pb-2">
-                  {group.outcomes.map((o) => {
-                    const checked = outcomes.includes(o);
-                    return (
-                      <button
-                        key={o}
-                        type="button"
-                        onClick={() => onToggle(o)}
-                        className={cn(
-                          "w-full flex items-center gap-3 rounded-md px-3 py-1.5 text-left transition-colors",
-                          checked
-                            ? "bg-surface-2 text-text"
-                            : "text-text-dim hover:bg-surface-2/60 hover:text-text",
-                        )}
-                      >
-                        <Checkbox checked={checked} />
-                        <span className="flex-1 font-mono text-sm text-text">
-                          {o}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="scroll-thin max-h-[300px] overflow-y-auto">
+            {groups.length === 0 ? (
+              <div className="px-3 py-8 text-center text-xs text-text-muted">
+                No outcomes match &ldquo;{query}&rdquo;
               </div>
-            ))}
+            ) : (
+              groups.map((group, gi) => (
+                <div key={group.label}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2",
+                      gi > 0 && "border-t border-border",
+                    )}
+                  >
+                    {group.label === "Connected" ? (
+                      <PhoneCall size={12} className="text-text-muted" />
+                    ) : (
+                      <PhoneOff size={12} className="text-text-muted" />
+                    )}
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
+                      {group.label}
+                    </span>
+                    <span className="ml-1 text-[11px] text-text-muted">
+                      · {group.description}
+                    </span>
+                  </div>
+                  <div className="px-2 pb-2">
+                    {group.rows.map((o) => {
+                      const checked = outcomes.includes(o);
+                      return (
+                        <button
+                          key={o}
+                          type="button"
+                          onClick={() => onToggle(o)}
+                          className={cn(
+                            "w-full flex items-center gap-3 rounded-md px-3 py-1.5 text-left transition-colors",
+                            checked
+                              ? "bg-surface-2 text-text"
+                              : "text-text-dim hover:bg-surface-2/60 hover:text-text",
+                          )}
+                        >
+                          <Checkbox checked={checked} />
+                          <span
+                            className={cn(
+                              "h-1.5 w-1.5 shrink-0 rounded-full",
+                              OUTCOME_COLORS[o] ?? "bg-text-muted",
+                            )}
+                          />
+                          <span className="flex-1 font-mono text-sm text-text">
+                            {o}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {outcomes.length > 0 && (
             <div className="flex items-center justify-between border-t border-border px-3 py-2">
               <span className="text-[11px] text-text-muted">
-                {outcomes.length} outcome{outcomes.length === 1 ? "" : "s"}{" "}
+                {outcomes.length} extra outcome{outcomes.length === 1 ? "" : "s"}{" "}
                 will trigger a retry
               </span>
               <button
@@ -186,11 +223,7 @@ function Checkbox({ checked }: { checked: boolean }) {
         checked ? "border-white bg-white text-black" : "border-border-strong",
       )}
     >
-      {checked && (
-        <svg viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor">
-          <path d="M7.629 13.314 4.314 10l-1.057 1.057 4.372 4.371 9.114-9.114-1.057-1.057z" />
-        </svg>
-      )}
+      {checked && <Check size={11} strokeWidth={3} />}
     </span>
   );
 }

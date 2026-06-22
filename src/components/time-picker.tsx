@@ -37,14 +37,6 @@ export function TimePicker({
   const hour12 = h24 % 12 || 12;
   const display = `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 
-  const update = (h: number, mins: number, mer: Meridiem) => {
-    let next = h % 12;
-    if (mer === "PM") next += 12;
-    onChange(
-      `${String(next).padStart(2, "0")}:${String(mins).padStart(2, "0")}`,
-    );
-  };
-
   return (
     <Popover>
       <PopoverTrigger
@@ -79,54 +71,81 @@ export function TimePicker({
         style={SURFACE_BG}
         className={cn(CARD, "w-[228px] overflow-hidden p-0")}
       >
-        <div className="relative" style={{ height: COL_H }}>
-          {/* center selection band — sits BEHIND items so values show through */}
-          <div
-            className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-surface-2 border border-border-strong"
-            style={{ height: ITEM_H }}
-          />
-
-          <div className="relative z-10 grid h-full grid-cols-3">
-            <Column
-              items={Array.from({ length: 12 }, (_, i) => i + 1)}
-              value={hour12}
-              onSelect={(v) => update(v, m, meridiem)}
-              renderLabel={(v) => String(v).padStart(2, "0")}
-            />
-            <Column
-              items={Array.from({ length: 60 }, (_, i) => i)}
-              value={m}
-              onSelect={(v) => update(hour12, v, meridiem)}
-              renderLabel={(v) => String(v).padStart(2, "0")}
-            />
-            <Column<Meridiem>
-              items={["AM", "PM"]}
-              value={meridiem}
-              onSelect={(v) => update(hour12, m, v)}
-              renderLabel={(v) => v}
-            />
-          </div>
-
-          {/* top fade — covers off-center items at the edges */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 z-20"
-            style={{
-              height: PAD,
-              background:
-                "linear-gradient(to bottom, var(--surface) 30%, transparent)",
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20"
-            style={{
-              height: PAD,
-              background:
-                "linear-gradient(to top, var(--surface) 30%, transparent)",
-            }}
-          />
-        </div>
+        <TimeWheel value={value} onChange={onChange} />
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** The scroll-wheel time selector, usable inline (e.g. inside another popover). */
+export function TimeWheel({
+  value,
+  onChange,
+}: {
+  value: string; // "HH:mm" 24h
+  onChange: (v: string) => void;
+}) {
+  const [h24Str = "0", mStr = "0"] = value.split(":");
+  const h24 = Number(h24Str);
+  const m = Number(mStr);
+  const meridiem: Meridiem = h24 >= 12 ? "PM" : "AM";
+  const hour12 = h24 % 12 || 12;
+
+  const update = (h: number, mins: number, mer: Meridiem) => {
+    let next = h % 12;
+    if (mer === "PM") next += 12;
+    onChange(
+      `${String(next).padStart(2, "0")}:${String(mins).padStart(2, "0")}`,
+    );
+  };
+
+  return (
+    <div className="relative" style={{ height: COL_H }}>
+      {/* center selection band — sits BEHIND items so values show through */}
+      <div
+        className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-surface-2 border border-border-strong"
+        style={{ height: ITEM_H }}
+      />
+
+      <div className="relative z-10 grid h-full grid-cols-3">
+        <Column
+          items={Array.from({ length: 12 }, (_, i) => i + 1)}
+          value={hour12}
+          onSelect={(v) => update(v, m, meridiem)}
+          renderLabel={(v) => String(v).padStart(2, "0")}
+        />
+        <Column
+          items={Array.from({ length: 60 }, (_, i) => i)}
+          value={m}
+          onSelect={(v) => update(hour12, v, meridiem)}
+          renderLabel={(v) => String(v).padStart(2, "0")}
+        />
+        <Column<Meridiem>
+          items={["AM", "PM"]}
+          value={meridiem}
+          onSelect={(v) => update(hour12, m, v)}
+          renderLabel={(v) => v}
+        />
+      </div>
+
+      {/* top fade — covers off-center items at the edges */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-20"
+        style={{
+          height: PAD,
+          background:
+            "linear-gradient(to bottom, var(--surface) 30%, transparent)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20"
+        style={{
+          height: PAD,
+          background:
+            "linear-gradient(to top, var(--surface) 30%, transparent)",
+        }}
+      />
+    </div>
   );
 }
 

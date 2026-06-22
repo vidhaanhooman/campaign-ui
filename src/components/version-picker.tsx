@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, GitBranch, Search } from "lucide-react";
+import { Check, ChevronDown, GitBranch, Search } from "lucide-react";
 
 import {
   Popover,
@@ -49,8 +49,9 @@ export function VersionPicker({
           <button
             type="button"
             disabled={!enabled}
+            title={enabled ? undefined : "Pick an agent first."}
             className={cn(
-              "w-full h-9 flex items-center gap-2 rounded-md border border-border-strong bg-surface-2 px-3 text-left text-sm transition-colors outline-none focus:border-white disabled:cursor-not-allowed disabled:opacity-60",
+              "w-full h-9 flex items-center gap-2 rounded-md border border-border-strong bg-surface-2 px-3 text-left text-sm transition-colors outline-none focus:border-white disabled:cursor-not-allowed disabled:text-text-muted/50",
               enabled && "hover:border-text-muted/40",
               className,
             )}
@@ -82,7 +83,7 @@ export function VersionPicker({
         <div className="flex flex-col">
           <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <GitBranch size={13} className="text-text-muted" />
-            <span className="text-[13px] font-semibold text-text">Version</span>
+            <span className="text-sm font-medium text-text">Version</span>
             <span className="ml-auto font-mono text-[11px] text-text-muted">
               {filtered.length}
             </span>
@@ -164,9 +165,7 @@ function Checkbox({ checked }: { checked: boolean }) {
       )}
     >
       {checked && (
-        <svg viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor">
-          <path d="M7.629 13.314 4.314 10l-1.057 1.057 4.372 4.371 9.114-9.114-1.057-1.057z" />
-        </svg>
+        <Check size={11} strokeWidth={3} />
       )}
     </span>
   );

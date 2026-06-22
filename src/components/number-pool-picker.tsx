@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Phone, Search, X } from "lucide-react";
+import { Check, ChevronDown, Phone, Search, X } from "lucide-react";
 
 import {
   Popover,
@@ -146,7 +146,7 @@ export function NumberPoolPicker({
           <div className="flex flex-col">
             <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
               <Phone size={13} className="text-text-muted" />
-              <span className="text-[13px] font-semibold text-text">
+              <span className="text-sm font-medium text-text">
                 Calling numbers
               </span>
               <span className="ml-auto font-mono text-[11px] text-text-muted">
@@ -198,7 +198,7 @@ export function NumberPoolPicker({
                         {n}
                       </span>
                       {checked && (
-                        <span className="text-[10px] uppercase tracking-wider text-text-muted">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
                           In pool
                         </span>
                       )}
@@ -211,8 +211,8 @@ export function NumberPoolPicker({
               <div className="flex items-center justify-between border-t border-border px-3 py-2">
                 <span className="text-[11px] text-text-muted">
                   {pool.length === 1
-                    ? "Single number — add more to rotate across retries."
-                    : `Rotated across the ${pool.length} numbers per retry.`}
+                    ? "Single number — add more to rotate across attempts."
+                    : `Rotated across all ${pool.length} numbers, one per attempt.`}
                 </span>
                 <button
                   type="button"
@@ -239,9 +239,7 @@ function Checkbox({ checked }: { checked: boolean }) {
       )}
     >
       {checked && (
-        <svg viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor">
-          <path d="M7.629 13.314 4.314 10l-1.057 1.057 4.372 4.371 9.114-9.114-1.057-1.057z" />
-        </svg>
+        <Check size={11} strokeWidth={3} />
       )}
     </span>
   );

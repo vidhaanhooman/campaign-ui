@@ -192,7 +192,15 @@ export const OUTCOMES = [
   "busy_callback",
 ];
 
-export const DEFAULT_OUTCOMES = ["no-answer", "busy", "failed"];
+// Every "not connected" outcome (the call never reached the contact) is a
+// locked default — we always retry these. Shown as chips above the dropdown.
+export const DEFAULT_OUTCOMES = [
+  "no-answer",
+  "busy",
+  "failed",
+  "no_response",
+  "busy_callback",
+];
 
 export type OutcomeGroup = {
   label: string;
@@ -200,20 +208,42 @@ export type OutcomeGroup = {
   outcomes: string[];
 };
 
-// Dropdown shows OPTIONAL outcomes only (defaults are always on and shown
-// above the dropdown trigger as locked chips).
+// Dropdown holds only the opt-in "connected" outcomes. Every "not connected"
+// outcome is a default (always retried) and lives as a chip above the dropdown.
 export const OUTCOME_GROUPS: OutcomeGroup[] = [
-  {
-    label: "Not connected",
-    description: "Call never reached the contact",
-    outcomes: ["no_response", "busy_callback"],
-  },
   {
     label: "Connected",
     description: "Call was answered but ended without you",
     outcomes: ["voicemail", "agent_transfer"],
   },
 ];
+
+// Priority is an integer rank; higher = dialed sooner. Surfaced to users as
+// semantic levels rather than raw numbers.
+export const PRIORITY_MIN = 1;
+export const PRIORITY_MAX = 10;
+
+export const PRIORITY_LEVELS = [
+  { label: "Low", value: 1 },
+  { label: "Normal", value: 5 },
+  { label: "High", value: 8 },
+  { label: "Urgent", value: 10 },
+] as const;
+
+export function priorityLabel(value: number) {
+  return PRIORITY_LEVELS.find((l) => l.value === value)?.label ?? `P${value}`;
+}
+
+// Status-dot color per outcome (styleguide §1 status colors).
+export const OUTCOME_COLORS: Record<string, string> = {
+  "no-answer": "bg-amber-400",
+  busy: "bg-amber-400",
+  busy_callback: "bg-amber-400",
+  no_response: "bg-amber-400",
+  failed: "bg-red-400",
+  voicemail: "bg-blue-400",
+  agent_transfer: "bg-emerald-400",
+};
 
 export const OVERRIDABLE = [
   { key: "from", label: "Calling number" },

@@ -175,7 +175,7 @@ export default function CampaignsPage() {
                         <Icon size={15} className="shrink-0 text-text-muted" />
                         <span className="flex-1 truncate text-left">{it.label}</span>
                         {"badge" in it && it.badge && (
-                          <span className="rounded bg-blue-400/15 px-1.5 py-0 text-[9.5px] text-blue-400">
+                          <span className="rounded bg-blue-400/15 px-1.5 py-0 text-[10px] text-blue-400">
                             {it.badge}
                           </span>
                         )}
@@ -199,13 +199,13 @@ export default function CampaignsPage() {
               <RefreshCw size={14} /> Refresh
             </button>
             <button className="flex h-9 items-center gap-1.5 rounded-md border border-border-strong px-3 text-xs text-text-dim hover:text-text">
-              <PauseCircle size={14} /> Pause All
+              <PauseCircle size={14} /> Pause all
             </button>
             <button
               onClick={() => setOpen(true)}
               className="flex h-9 items-center gap-1.5 rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-white/90"
             >
-              <Plus size={14} /> Create Campaign
+              <Plus size={14} /> Create campaign
             </button>
           </div>
         </header>
@@ -260,7 +260,7 @@ export default function CampaignsPage() {
               <div className="flex h-9 w-80 items-center gap-2 rounded-md border border-border-strong bg-surface-2 px-2.5">
                 <Search size={13} className="shrink-0 text-text-muted" />
                 <input
-                  placeholder="Search by campaignId…"
+                  placeholder="Search by campaign ID…"
                   className="w-full bg-transparent text-sm text-text outline-none placeholder:text-text-muted"
                 />
               </div>
@@ -304,8 +304,8 @@ export default function CampaignsPage() {
                     <Copy size={11} /> {r.agentId}
                   </button>
                 </div>
-                <div className="text-text-muted text-xs tabular-nums">{r.createdAt}</div>
-                <div className="text-text tabular-nums">{r.tasks}</div>
+                <div className="text-text-muted text-xs font-mono tabular-nums">{r.createdAt}</div>
+                <div className="text-text text-sm font-mono tabular-nums">{r.tasks}</div>
                 <div className="font-mono text-xs text-text tabular-nums">
                   {r.slotsUsed} / {r.slotsTotal}
                 </div>

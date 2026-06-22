@@ -43,7 +43,7 @@ export default function DevPage() {
           <ArrowLeft size={14} />
         </Link>
         <span className="text-sm font-semibold text-text">Dev playground</span>
-        <span className="text-[11px] uppercase tracking-wider text-text-muted">
+        <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
           bypass — every screen
         </span>
 

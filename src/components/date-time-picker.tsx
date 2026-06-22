@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { TimeWheel } from "@/components/time-picker";
 import { cn } from "@/lib/utils";
 
 const SURFACE_BG = { backgroundColor: "var(--surface)" } as const;
@@ -222,16 +223,20 @@ export function DateTimePicker({
               />
             </div>
 
-            {/* Time input */}
+            {/* Time wheel */}
             <div className="px-3 pb-3 border-t border-border pt-3">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-1.5">
                 Time
               </div>
-              <TimeInput
-                hour24={parsed.hour}
-                minute={parsed.minute}
-                onChange={setTime}
-              />
+              <div className="overflow-hidden rounded-md border border-border-strong">
+                <TimeWheel
+                  value={`${String(parsed.hour).padStart(2, "0")}:${String(parsed.minute).padStart(2, "0")}`}
+                  onChange={(v) => {
+                    const [h, mi] = v.split(":").map(Number);
+                    setTime(h, mi);
+                  }}
+                />
+              </div>
             </div>
 
             {/* Footer */}
@@ -355,70 +360,6 @@ function CalendarGrid({
           </button>
         );
       })}
-    </div>
-  );
-}
-
-function TimeInput({
-  hour24,
-  minute,
-  onChange,
-}: {
-  hour24: number;
-  minute: number;
-  onChange: (h: number, m: number) => void;
-}) {
-  const meridiem = hour24 >= 12 ? "PM" : "AM";
-  const hour12 = hour24 % 12 || 12;
-  const update = (h12: number, mi: number, mer: "AM" | "PM") => {
-    let h = h12 % 12;
-    if (mer === "PM") h += 12;
-    onChange(h, mi);
-  };
-
-  return (
-    <div className="flex h-10 items-center rounded-md border border-border-strong bg-surface-2 overflow-hidden">
-      <Clock size={13} className="ml-3 mr-2 shrink-0 text-text-muted" />
-      <input
-        type="number"
-        min={1}
-        max={12}
-        value={hour12}
-        onChange={(e) => {
-          const v = Math.min(12, Math.max(1, Number(e.target.value) || 1));
-          update(v, minute, meridiem);
-        }}
-        className="w-10 bg-transparent text-center font-mono text-sm text-text outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-      />
-      <span className="text-text-muted">:</span>
-      <input
-        type="number"
-        min={0}
-        max={59}
-        value={String(minute).padStart(2, "0")}
-        onChange={(e) => {
-          const v = Math.min(59, Math.max(0, Number(e.target.value) || 0));
-          update(hour12, v, meridiem);
-        }}
-        className="w-10 bg-transparent text-center font-mono text-sm text-text outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-      />
-      <div className="ml-auto flex h-full border-l border-border">
-        {(["AM", "PM"] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => update(hour12, minute, m)}
-            className={cn(
-              "h-full w-12 text-xs font-mono transition-colors",
-              meridiem === m
-                ? "bg-white text-black font-semibold"
-                : "text-text-muted hover:text-text hover:bg-surface",
-            )}
-          >
-            {m}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

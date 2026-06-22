@@ -13,8 +13,7 @@ export function ErrorSummary({
   return (
     <div
       role="alert"
-      className="flex items-start gap-3 rounded-md border border-red-400/40 px-4 py-3"
-      style={{ backgroundColor: "rgba(248, 113, 113, 0.08)" }}
+      className="flex items-start gap-3 rounded-md border border-red-400/40 bg-red-400/[0.08] px-4 py-3"
     >
       <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md text-red-400">
         <AlertTriangle size={14} strokeWidth={2.5} />
