@@ -7,7 +7,6 @@ import {
   ClipboardList,
   FileSpreadsheet,
   FlaskConical,
-  Info,
   Megaphone,
   Phone,
   Plus,
@@ -15,7 +14,6 @@ import {
   Search,
   Settings2,
   Timer,
-  Trash2,
   Upload,
   X,
   Zap,
@@ -36,7 +34,7 @@ import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
 import { ErrorSummary } from "@/components/error-summary";
-import { DateTimePicker } from "@/components/date-time-picker";
+import { DateRangePicker } from "@/components/date-range-picker";
 import { NumberStepper } from "@/components/number-stepper";
 import { PriorityField } from "@/components/priority-field";
 import { TimePicker } from "@/components/time-picker";
@@ -167,7 +165,6 @@ export function BatchWizard({
     });
   const [slots, setSlots] = useState(12);
   const [bursting, setBursting] = useState(false);
-  const WORKSPACE_FREE = 50;
   const WORKSPACE_TOTAL = 200;
 
   const current = STEPS.find((s) => s.id === step)!;
@@ -321,9 +318,7 @@ export function BatchWizard({
                       A/B test
                     </div>
                     <div className="text-xs text-text-muted leading-relaxed mt-1">
-                      Split traffic across variants: different agents, or the
-                      same agent on different versions. Assignment is sticky
-                      per contact across all retries.
+                      Tests different agents or versions side by side to find what performs best.
                     </div>
                   </div>
                 </div>
@@ -349,10 +344,8 @@ export function BatchWizard({
                       </FieldGroup>
                     </div>
                     <div className="text-xs text-text-muted leading-relaxed">
-                      Pin a version, or leave on{" "}
-                      <span className="font-medium text-text">Live</span> to
-                      always use whichever version is currently in production.
-                      Only one Live version is possible per agent.
+                      <span className="font-medium text-text">Live</span> always
+                      uses whichever version is currently in production.
                     </div>
                   </div>
                 ) : (
@@ -456,7 +449,7 @@ export function BatchWizard({
                   hint={
                     pool.length > 1
                       ? `${pool.length} numbers · rotated across the ${retries} attempts.`
-                      : "Add more numbers to rotate across attempts and improve pickup rates."
+                      : "More numbers rotate across attempts and improve pickup rates."
                   }
                 >
                   <NumberPoolPicker
@@ -477,10 +470,9 @@ export function BatchWizard({
                   />
                 )}
                 <p className="text-sm text-text-muted leading-relaxed">
-                  Upload a CSV. The <span className="font-mono">phone</span>{" "}
-                  column is required. Every other column becomes a{" "}
-                  <span className="font-mono">{`\${variable}`}</span> available
-                  to the agent.
+                  phone must include the country code (+91…). Any other column
+                  becomes a ${"{name}"} or ${"{order}"} the agent can use
+                  mid-call.
                 </p>
 
                 {!uploaded ? (
@@ -636,21 +628,6 @@ export function BatchWizard({
                         ))}
                       </div>
                     </div>
-
-                    <div className="flex items-start gap-1.5 text-[11px] text-text-muted leading-relaxed">
-                      <Info size={12} className="mt-0.5 shrink-0" />
-                      <span>
-                        <span className="text-emerald-400 font-mono">
-                          phone
-                        </span>{" "}
-                        must include the country code (
-                        <span className="font-mono">+91…</span>). Any other
-                        column becomes a{" "}
-                        <span className="font-mono">{`\${name}`}</span> or{" "}
-                        <span className="font-mono">{`\${order}`}</span> the
-                        agent can use mid-call.
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -681,16 +658,6 @@ export function BatchWizard({
                         >
                           <RotateCcw size={12} /> Replace file
                         </button>
-                        <button
-                          onClick={() => {
-                            setUploaded(false);
-                            setCsvName("");
-                          }}
-                          aria-label="Remove file"
-                          className="inline-flex size-8 items-center justify-center rounded-md border border-border-strong bg-surface text-text-muted transition-colors hover:border-red-400/40 hover:text-red-400"
-                        >
-                          <Trash2 size={13} />
-                        </button>
                       </div>
                     </div>
 
@@ -705,7 +672,7 @@ export function BatchWizard({
                         <div
                           key={i}
                           className={cn(
-                            "grid grid-cols-[1.4fr_1fr_1fr] px-3 py-2 text-xs font-mono text-text uppercase",
+                            "grid grid-cols-[1.4fr_1fr_1fr] px-3 py-2 text-xs font-mono text-text",
                             i < SAMPLE_ROWS.length - 1 &&
                               "border-b border-border",
                           )}
@@ -728,38 +695,44 @@ export function BatchWizard({
             {step === 3 && (
               <div className="space-y-6">
 
-                <FieldGroup label="Start time">
-                  <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
-                    {(
-                      [
-                        { v: "now", label: "Start now" },
-                        { v: "schedule", label: "Schedule" },
-                      ] as const
-                    ).map((o) => (
-                      <button
-                        key={o.v}
-                        type="button"
-                        onClick={() => setStartMode(o.v)}
-                        className={cn(
-                          "h-7 rounded-md px-3 text-xs transition-colors",
-                          startMode === o.v
-                            ? "bg-white text-black shadow-sm"
-                            : "text-text-dim hover:text-text",
-                        )}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                  {startMode === "schedule" && (
-                    <div className="mt-3">
-                      <DateTimePicker
-                        value={scheduledAt}
-                        onChange={setScheduledAt}
-                        className="w-72"
-                      />
+                <FieldGroup
+                  label="Campaign window"
+                  hint="When the campaign starts and when it stops placing new calls."
+                >
+                  <div className="flex flex-col items-start gap-2">
+                    <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
+                      {(
+                        [
+                          { v: "now", label: "Start now" },
+                          { v: "schedule", label: "Schedule" },
+                        ] as const
+                      ).map((o) => (
+                        <button
+                          key={o.v}
+                          type="button"
+                          onClick={() => setStartMode(o.v)}
+                          className={cn(
+                            "h-7 rounded-md px-3 text-xs transition-colors",
+                            startMode === o.v
+                              ? "bg-white text-black shadow-sm"
+                              : "text-text-dim hover:text-text",
+                          )}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
                     </div>
-                  )}
+                    <DateRangePicker
+                      startValue={scheduledAt}
+                      endValue={stopAt}
+                      startDisabled={startMode === "now"}
+                      onApply={(s, e) => {
+                        setScheduledAt(s);
+                        setStopAt(e);
+                      }}
+                      className="w-96"
+                    />
+                  </div>
                 </FieldGroup>
 
                 <FieldGroup
@@ -795,17 +768,6 @@ export function BatchWizard({
                 </FieldGroup>
 
                 <FieldGroup
-                  label="Stop calling after"
-                  hint="No new calls are placed after this time."
-                >
-                  <DateTimePicker
-                    value={stopAt}
-                    onChange={setStopAt}
-                    className="w-72"
-                  />
-                </FieldGroup>
-
-                <FieldGroup
                   label="Total attempts"
                   hint="Including the first call."
                 >
@@ -822,14 +784,14 @@ export function BatchWizard({
                     label="Retry interval"
                     hint={
                       retryMode === "all"
-                        ? `One gap of ${intSameVal}${intSameUnit} between each attempt.`
-                        : `${intervalGaps} gap${intervalGaps !== 1 ? "s" : ""} between ${retries} attempts.`
+                        ? `Waits ${intSameVal} ${intSameUnit === "min" ? "minutes" : "hours"} before every retry.`
+                        : `How long to wait before each retry attempt.`
                     }
                   >
                     <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5 mb-3">
                       {(
                         [
-                          { v: "all", label: "Same for all" },
+                          { v: "all", label: "All attempts" },
                           { v: "perAttempt", label: "Per attempt" },
                         ] as const
                       ).map((o) => (
@@ -876,9 +838,7 @@ export function BatchWizard({
                           const cur = getAttemptGap(i);
                           return (
                             <div key={i} className="flex items-center gap-3">
-                              <span className="text-sm text-text-muted w-32 shrink-0">
-                                after attempt {i + 1}
-                              </span>
+                              <span className="w-16 shrink-0 text-sm text-text-muted">Retry {i + 1}</span>
                               <NumberStepper
                                 value={cur.val}
                                 onChange={(v) => setAttemptGap(i, { val: v })}
@@ -907,36 +867,41 @@ export function BatchWizard({
                   </FieldGroup>
                 )}
 
-                <FieldGroup
-                  label="Retry outcomes"
-                  hint="Default outcomes always trigger a retry. Add more outcomes below."
-                >
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
-                        Default
-                      </span>
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
-                        title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
-                      >
-                        <Lock size={10} className="text-text-muted" />
-                        not_connected
-                      </span>
+                {retries > 1 && (
+                  <FieldGroup
+                    label="Retry outcomes"
+                    hint="Default outcomes always trigger a retry. Others can be added below."
+                  >
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+                          Default
+                        </span>
+                        {["not_connected", "busy_callback"].map((d) => (
+                          <span
+                            key={d}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
+                            title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
+                          >
+                            <Lock size={10} className="text-text-muted" />
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                      <OutcomePicker
+                        outcomes={outcomes}
+                        onToggle={(o) =>
+                          setOutcomes((p) =>
+                            p.includes(o)
+                              ? p.filter((x) => x !== o)
+                              : [...p, o],
+                          )
+                        }
+                        onClear={() => setOutcomes([])}
+                      />
                     </div>
-                    <OutcomePicker
-                      outcomes={outcomes}
-                      onToggle={(o) =>
-                        setOutcomes((p) =>
-                          p.includes(o)
-                            ? p.filter((x) => x !== o)
-                            : [...p, o],
-                        )
-                      }
-                      onClear={() => setOutcomes([])}
-                    />
-                  </div>
-                </FieldGroup>
+                  </FieldGroup>
+                )}
 
                 <div className="border-t border-border pt-5 space-y-5">
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
@@ -955,34 +920,24 @@ export function BatchWizard({
 
                   {/* Slots limit */}
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium text-text">
-                        Slots limit
-                      </div>
-                      <span className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[10px] text-text-muted">
-                        Campaign only
-                      </span>
+                    <div className="text-sm font-medium text-text">
+                      Slots limit
                     </div>
                     <NumberStepper
                       value={slots}
                       onChange={(v) =>
-                        setSlots(Math.min(WORKSPACE_FREE, Math.max(0, v)))
+                        setSlots(Math.min(WORKSPACE_TOTAL, Math.max(0, v)))
                       }
                       min={0}
-                      max={WORKSPACE_FREE}
+                      max={WORKSPACE_TOTAL}
                       className="w-32"
                     />
                     <div className="text-xs text-text-muted leading-relaxed">
-                      Caps how many calls this campaign places at once. Workspace
-                      has{" "}
+                      Workspace has{" "}
                       <span className="text-text font-medium tabular-nums">
-                        {WORKSPACE_FREE}
+                        {WORKSPACE_TOTAL}
                       </span>{" "}
-                      of <span className="tabular-nums">{WORKSPACE_TOTAL}</span>{" "}
-                      slots free.
-                      {slots > WORKSPACE_FREE && (
-                        <span className="text-amber-400"> Exceeds available slots.</span>
-                      )}
+                      slots.
                     </div>
                   </div>
 
@@ -999,9 +954,7 @@ export function BatchWizard({
                         Use idle workspace slots
                       </div>
                       <div className="text-xs text-text-muted leading-relaxed mt-1">
-                        Borrow unused slots from other campaigns to finish this
-                        batch faster. Slots are returned immediately when another
-                        campaign needs them.
+                        Unused slots from other campaigns are borrowed to finish this batch faster, and returned immediately when another campaign needs them.
                       </div>
                     </div>
                   </div>
@@ -1149,7 +1102,7 @@ export function BatchWizard({
                   title="Schedule"
                   rows={[
                     [
-                      "Start time",
+                      "Campaign start",
                       startMode === "now" ? (
                         "Immediately"
                       ) : (
@@ -1159,16 +1112,16 @@ export function BatchWizard({
                       ),
                     ],
                     [
+                      "Campaign expiry",
+                      <span key="s" className="font-mono tabular-nums">
+                        {stopAt.replace("T", " ")}
+                      </span>,
+                    ],
+                    [
                       "Calling hours",
                       <span key="h" className="font-mono tabular-nums">
                         {chStart}–{chEnd}{" "}
                         <span className="text-text-muted">{tz}</span>
-                      </span>,
-                    ],
-                    [
-                      "Stops calling",
-                      <span key="s" className="font-mono tabular-nums">
-                        {stopAt.replace("T", " ")}
                       </span>,
                     ],
                   ]}
@@ -1326,7 +1279,7 @@ function ReviewSection({
   const visible = rows.filter(Boolean) as Exclude<ReviewRow, null>[];
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider font-semibold text-text-muted mb-2">
+      <div className="text-[11px] font-semibold text-text-muted mb-2">
         {title}
       </div>
       <div className="rounded-md border border-border overflow-hidden divide-y divide-border">

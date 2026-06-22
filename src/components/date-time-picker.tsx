@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { TimeWheel } from "@/components/time-picker";
+import { TimePicker } from "@/components/time-picker";
 import { cn } from "@/lib/utils";
 
 const SURFACE_BG = { backgroundColor: "var(--surface)" } as const;
@@ -223,20 +223,17 @@ export function DateTimePicker({
               />
             </div>
 
-            {/* Time wheel */}
+            {/* Time field — opens the wheel in a popover */}
             <div className="px-3 pb-3 border-t border-border pt-3">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-1.5">
-                Time
-              </div>
-              <div className="overflow-hidden rounded-md border border-border-strong">
-                <TimeWheel
-                  value={`${String(parsed.hour).padStart(2, "0")}:${String(parsed.minute).padStart(2, "0")}`}
-                  onChange={(v) => {
-                    const [h, mi] = v.split(":").map(Number);
-                    setTime(h, mi);
-                  }}
-                />
-              </div>
+              <TimePicker
+                label="Time"
+                value={`${String(parsed.hour).padStart(2, "0")}:${String(parsed.minute).padStart(2, "0")}`}
+                onChange={(v) => {
+                  const [h, mi] = v.split(":").map(Number);
+                  setTime(h, mi);
+                }}
+                className="w-44"
+              />
             </div>
 
             {/* Footer */}

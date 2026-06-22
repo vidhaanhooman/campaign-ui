@@ -73,7 +73,7 @@ export function NumberPoolPicker({
           ) : (
             <>
               <span className="flex-1 flex flex-wrap items-center gap-1.5 min-w-0">
-                <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+                <span className="text-[11px] text-text-muted font-medium">
                   {pool.length} selected
                 </span>
                 {pool.slice(0, 3).map((n) => (

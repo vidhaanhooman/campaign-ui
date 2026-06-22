@@ -153,11 +153,8 @@ export function OutcomePicker({
                     ) : (
                       <PhoneOff size={12} className="text-text-muted" />
                     )}
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
+                    <span className="text-[11px] font-medium text-text-muted">
                       {group.label}
-                    </span>
-                    <span className="ml-1 text-[11px] text-text-muted">
-                      · {group.description}
                     </span>
                   </div>
                   <div className="px-2 pb-2">

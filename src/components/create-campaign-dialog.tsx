@@ -47,10 +47,8 @@ import {
   OUTCOMES,
   OVERRIDABLE,
   TIMEZONES,
-  WORKSPACE_FREE,
   WORKSPACE_TOTAL,
   priorityLabel,
-  addClockMinutes,
   toMs,
   type OverrideKey,
   type Unit,
@@ -130,7 +128,7 @@ const PICKER_OPTIONS = [
     icon: FileSpreadsheet,
     title: "Batch",
     tagline: "Upload a CSV. Every row gets a call.",
-    body: "You define the audience upfront. Same agent, same settings, applied to every contact. Best for one-off outreach.",
+    body: "The audience is defined upfront. The same agent and settings apply to every contact. Best for one-off outreach.",
     goodFor: ["Outbound drips", "Win-back lists", "Surveys"],
     needs: "A CSV with phone numbers",
   },
@@ -138,7 +136,7 @@ const PICKER_OPTIONS = [
     type: "realtime" as const,
     icon: Zap,
     title: "Realtime",
-    tagline: "Your system sends tasks via API.",
+    tagline: "Tasks are sent in via API.",
     body: "The campaign holds the settings. Each task arrives with a phone number and context, and the campaign fills in every other field.",
     goodFor: ["Order placed", "Cart abandoned", "Lead reached out"],
     needs: "API integration",
@@ -178,8 +176,8 @@ function TypePicker({
               What kind of campaign?
             </h1>
             <p className="mt-1.5 text-sm text-text-muted max-w-xl">
-              This cannot be changed later. Choose the option that matches how
-              your calls are triggered.
+              This cannot be changed later. The right option depends on how
+              calls are triggered.
             </p>
           </div>
 
@@ -243,8 +241,8 @@ function TypePicker({
           <div className="mt-6 text-center text-xs text-text-muted">
             Not sure?{" "}
             <span className="text-text">
-              Choose Batch if you upload a list manually, or Realtime if your
-              software triggers calls.
+              Batch fits a manually uploaded list; Realtime fits
+              software-triggered calls.
             </span>
           </div>
         </div>
@@ -356,6 +354,7 @@ export function RealtimeWizard({
   const [poolQuery, setPoolQuery] = useState("");
   const [priority, setPriority] = useState(5);
   const [slots, setSlots] = useState(12);
+  const [bursting, setBursting] = useState(false);
   const [prioMode, setPrioMode] = useState<"all" | "perAttempt">("all");
   const [perAttemptPrio, setPerAttemptPrio] = useState<number[]>([]);
   const getAttemptPrio = (i: number) => perAttemptPrio[i] ?? priority;
@@ -476,10 +475,7 @@ export function RealtimeWizard({
 
   const expirySentence = useMemo(() => {
     const u = endAfterUnit === "min" ? "minutes" : "hours";
-    return `A task created at 2:40 PM is dropped if it hasn't been dialed by ${addClockMinutes(
-      "14:40",
-      endAfterUnit === "min" ? endAfterVal : endAfterVal * 60,
-    )} — ${endAfterVal} ${u} after it arrives.`;
+    return `Tasks not dialed within ${endAfterVal} ${u} of arriving are dropped.`;
   }, [endAfterVal, endAfterUnit]);
 
   const curl = useMemo(() => {
@@ -488,12 +484,18 @@ export function RealtimeWizard({
       phone: "+919848295833",
       context: { name: "Tom" },
     };
-    if (overrides.has("from")) obj.from = from;
+    for (const [k, v] of optionalLines) {
+      try {
+        obj[k] = JSON.parse(v);
+      } catch {
+        obj[k] = v;
+      }
+    }
     return `curl -X POST https://api.hoomanlabs.com/v1/tasks \\
   -H "Authorization: Bearer $HOOMAN_KEY" \\
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(obj)}'`;
-  }, [overrides, from]);
+  }, [optionalLines]);
 
   const current = STEPS.find((s) => s.id === step)!;
 
@@ -602,9 +604,7 @@ export function RealtimeWizard({
                       A/B test
                     </div>
                     <div className="text-xs text-text-muted leading-relaxed mt-1">
-                      Split traffic across variants: different agents, or the
-                      same agent on different versions. Each contact stays on one
-                      variant across all retries.
+                      Tests different agents or versions side by side to find what performs best.
                     </div>
                     {abOn && (
                       <div className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-text-dim">
@@ -642,11 +642,9 @@ export function RealtimeWizard({
                         </FieldGroup>
                       </div>
                       <div className="text-xs text-text-muted leading-relaxed">
-                        Pin a version, or leave on{" "}
-                        <span className="font-medium text-text">Live</span> to
-                        always use whichever version is currently in
-                        production. Only one Live version is possible per
-                        agent.
+                        <span className="font-medium text-text">Live</span>{" "}
+                        always uses whichever version is currently in
+                        production.
                       </div>
                     </>
                   ) : (
@@ -754,7 +752,7 @@ export function RealtimeWizard({
                   hint={
                     pool.length > 1
                       ? `${pool.length} numbers · rotated across the ${retries} attempts.`
-                      : "Add more numbers to rotate across attempts and improve pickup rates."
+                      : "More numbers rotate across attempts and improve pickup rates."
                   }
                 >
                   <NumberPoolPicker
@@ -769,9 +767,8 @@ export function RealtimeWizard({
             {step === 3 && (
               <div className="space-y-6">
                 <p className="text-sm text-text-muted leading-relaxed">
-                  Unlock a field to let the API payload supply it per-call.
-                  Locked fields always use the campaign&rsquo;s value. The
-                  payload preview below updates as you toggle.
+                  Unlocked fields can be set per call through the API payload.
+                  Locked fields always use the campaign&rsquo;s value.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -821,6 +818,59 @@ export function RealtimeWizard({
               <div className="space-y-6">
 
                 <FieldGroup
+                  label="Task start"
+                  hint={
+                    startAfterVal === 0
+                      ? "Dial as soon as a slot frees up after the API trigger."
+                      : `Wait ${startAfterVal}${startAfterUnit} after the API trigger before placing the call.`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <NumberStepper
+                      value={startAfterVal}
+                      onChange={setStartAfterVal}
+                      min={0}
+                      className="w-24"
+                    />
+                    <Select
+                      value={startAfterUnit}
+                      onValueChange={(v) => v && setStartAfterUnit(v as Unit)}
+                    >
+                      <SelectTrigger className="w-32 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="min">minutes</SelectItem>
+                        <SelectItem value="hr">hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </FieldGroup>
+
+                <FieldGroup label="Task expiry" hint={expirySentence}>
+                  <div className="flex items-center gap-2">
+                    <NumberStepper
+                      value={endAfterVal}
+                      onChange={setEndAfterVal}
+                      min={0}
+                      className="w-24"
+                    />
+                    <Select
+                      value={endAfterUnit}
+                      onValueChange={(v) => v && setEndAfterUnit(v as Unit)}
+                    >
+                      <SelectTrigger className="w-32 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="min">minutes</SelectItem>
+                        <SelectItem value="hr">hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </FieldGroup>
+
+                <FieldGroup
                   label="Calling hours"
                   hint="Calls are only placed within this range."
                 >
@@ -853,68 +903,6 @@ export function RealtimeWizard({
                 </FieldGroup>
 
                 <FieldGroup
-                  label="Task start"
-                  hint={
-                    startAfterVal === 0
-                      ? "Dial as soon as a slot frees up after the API trigger."
-                      : `Wait ${startAfterVal}${startAfterUnit} after the API trigger before placing the call.`
-                  }
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-text-muted w-52 shrink-0">
-                      Delay each call by
-                    </span>
-                    <NumberStepper
-                      value={startAfterVal}
-                      onChange={setStartAfterVal}
-                      min={0}
-                      className="w-24"
-                    />
-                    <Select
-                      value={startAfterUnit}
-                      onValueChange={(v) => v && setStartAfterUnit(v as Unit)}
-                    >
-                      <SelectTrigger className="w-32 h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="min">minutes</SelectItem>
-                        <SelectItem value="hr">hours</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span className="text-sm text-text-muted">
-                      after API trigger
-                    </span>
-                  </div>
-                </FieldGroup>
-
-                <FieldGroup label="Task expiry" hint={expirySentence}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-text-muted w-52 shrink-0">
-                      Drop if not dialed within
-                    </span>
-                    <NumberStepper
-                      value={endAfterVal}
-                      onChange={setEndAfterVal}
-                      min={0}
-                      className="w-24"
-                    />
-                    <Select
-                      value={endAfterUnit}
-                      onValueChange={(v) => v && setEndAfterUnit(v as Unit)}
-                    >
-                      <SelectTrigger className="w-32 h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="min">minutes</SelectItem>
-                        <SelectItem value="hr">hours</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </FieldGroup>
-
-                <FieldGroup
                   label="Total attempts"
                   hint="Including the first call."
                 >
@@ -931,14 +919,14 @@ export function RealtimeWizard({
                     label="Retry interval"
                     hint={
                       retryMode === "all"
-                        ? `One gap of ${intSameVal}${intSameUnit} between each attempt.`
-                        : `${intervalGaps} gap${intervalGaps !== 1 ? "s" : ""} between ${retries} attempts.`
+                        ? `Waits ${intSameVal} ${intSameUnit === "min" ? "minutes" : "hours"} before every retry.`
+                        : `How long to wait before each retry attempt.`
                     }
                   >
                     <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5 mb-3">
                       {(
                         [
-                          { v: "all", label: "Same for all" },
+                          { v: "all", label: "All attempts" },
                           { v: "perAttempt", label: "Per attempt" },
                         ] as const
                       ).map((o) => (
@@ -985,9 +973,7 @@ export function RealtimeWizard({
                           const cur = getAttemptGap(i);
                           return (
                             <div key={i} className="flex items-center gap-3">
-                              <span className="text-sm text-text-muted w-32 shrink-0">
-                                after attempt {i + 1}
-                              </span>
+                              <span className="w-16 shrink-0 text-sm text-text-muted">Retry {i + 1}</span>
                               <NumberStepper
                                 value={cur.val}
                                 onChange={(v) => setAttemptGap(i, { val: v })}
@@ -1016,36 +1002,41 @@ export function RealtimeWizard({
                   </FieldGroup>
                 )}
 
-                <FieldGroup
-                  label="Retry outcomes"
-                  hint="Default outcomes always trigger a retry. Add more outcomes below."
-                >
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
-                        Default
-                      </span>
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
-                        title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
-                      >
-                        <Lock size={10} className="text-text-muted" />
-                        not_connected
-                      </span>
+                {retries > 1 && (
+                  <FieldGroup
+                    label="Retry outcomes"
+                    hint="Default outcomes always trigger a retry. Others can be added below."
+                  >
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+                          Default
+                        </span>
+                        {["not_connected", "busy_callback"].map((d) => (
+                          <span
+                            key={d}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text"
+                            title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
+                          >
+                            <Lock size={10} className="text-text-muted" />
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                      <OutcomePicker
+                        outcomes={outcomes}
+                        onToggle={(o) =>
+                          setOutcomes((p) =>
+                            p.includes(o)
+                              ? p.filter((x) => x !== o)
+                              : [...p, o],
+                          )
+                        }
+                        onClear={() => setOutcomes([])}
+                      />
                     </div>
-                    <OutcomePicker
-                      outcomes={outcomes}
-                      onToggle={(o) =>
-                        setOutcomes((p) =>
-                          p.includes(o)
-                            ? p.filter((x) => x !== o)
-                            : [...p, o],
-                        )
-                      }
-                      onClear={() => setOutcomes([])}
-                    />
-                  </div>
-                </FieldGroup>
+                  </FieldGroup>
+                )}
 
                 <div className="border-t border-border pt-5 space-y-5">
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
@@ -1063,34 +1054,42 @@ export function RealtimeWizard({
 
                   {/* Slots limit */}
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium text-text">
-                        Slots limit
-                      </div>
-                      <span className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[10px] text-text-muted">
-                        Campaign only
-                      </span>
+                    <div className="text-sm font-medium text-text">
+                      Slots limit
                     </div>
                     <NumberStepper
                       value={slots}
                       onChange={(v) =>
-                        setSlots(Math.min(WORKSPACE_FREE, Math.max(0, v)))
+                        setSlots(Math.min(WORKSPACE_TOTAL, Math.max(0, v)))
                       }
                       min={0}
-                      max={WORKSPACE_FREE}
+                      max={WORKSPACE_TOTAL}
                       className="w-32"
                     />
                     <div className="text-xs text-text-muted leading-relaxed">
-                      Caps how many calls this campaign places at once.
                       Workspace has{" "}
                       <span className="text-text font-medium tabular-nums">
-                        {WORKSPACE_FREE}
+                        {WORKSPACE_TOTAL}
                       </span>{" "}
-                      of <span className="tabular-nums">{WORKSPACE_TOTAL}</span>{" "}
-                      slots free.
-                      {slots > WORKSPACE_FREE && (
-                        <span className="text-amber-400"> Exceeds available slots.</span>
-                      )}
+                      slots.
+                    </div>
+                  </div>
+
+                  {/* Use idle workspace slots */}
+                  <div className="flex items-start gap-3 rounded-md border border-border-strong bg-surface-2 px-3 py-3">
+                    <Switch
+                      checked={bursting}
+                      onCheckedChange={(v) => setBursting(Boolean(v))}
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-sm font-medium text-text">
+                        <Zap size={13} className="text-text-muted" />
+                        Use idle workspace slots
+                      </div>
+                      <div className="text-xs text-text-muted leading-relaxed mt-1">
+                        Unused slots from other campaigns are borrowed to dial faster, and returned immediately when another campaign needs them.
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1314,8 +1313,8 @@ export function RealtimeWizard({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
-                      Send your first task
+                    <div className="text-[11px] font-semibold text-text-muted">
+                      Send the first task
                     </div>
                     <button
                       onClick={() => {
@@ -1654,7 +1653,7 @@ function RtReviewSection({
   const visible = rows.filter(Boolean) as Exclude<RtReviewRow, null>[];
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider font-semibold text-text-muted mb-2">
+      <div className="text-[11px] font-semibold text-text-muted mb-2">
         {title}
       </div>
       <div className="rounded-md border border-border overflow-hidden divide-y divide-border">
@@ -1892,7 +1891,7 @@ function PayloadCard({
   const required: [string, string][] = [
     [`"campaign"`, `"camp_8fa2"`],
     [`"phone"`, `"+919848295833"`],
-    [`"context"`, `{ name: "Tom" }`],
+    [`"context"`, `{ "name": "Tom" }`],
   ];
   const locked = OVERRIDABLE.filter((f) => !overrides.has(f.key));
 

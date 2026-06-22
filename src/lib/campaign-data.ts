@@ -249,7 +249,7 @@ export const OVERRIDABLE = [
   { key: "from", label: "Calling number" },
   { key: "callingHours", label: "Calling hours" },
   { key: "timezone", label: "Timezone" },
-  { key: "startAfter", label: "Start after" },
+  { key: "startAfter", label: "Task start" },
   { key: "endAfter", label: "Task expiry" },
   { key: "retries", label: "Retry policy" },
   { key: "priority", label: "Priority" },
