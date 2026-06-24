@@ -34,7 +34,7 @@ import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
 import { ErrorSummary } from "@/components/error-summary";
-import { DateRangePicker } from "@/components/date-range-picker";
+import { DatePicker } from "@/components/date-time-picker";
 import { NumberStepper } from "@/components/number-stepper";
 import { PriorityField } from "@/components/priority-field";
 import { TimePicker } from "@/components/time-picker";
@@ -696,10 +696,10 @@ export function BatchWizard({
               <div className="space-y-6">
 
                 <FieldGroup
-                  label="Campaign window"
-                  hint="When the campaign starts and when it stops placing new calls."
+                  label="Campaign start"
+                  hint="When the campaign begins placing calls."
                 >
-                  <div className="flex flex-col items-start gap-2">
+                  <div className="flex flex-col items-start gap-3">
                     <div className="inline-flex items-center rounded-md border border-border-strong bg-surface-2 p-0.5">
                       {(
                         [
@@ -722,15 +722,45 @@ export function BatchWizard({
                         </button>
                       ))}
                     </div>
-                    <DateRangePicker
-                      startValue={scheduledAt}
-                      endValue={stopAt}
-                      startDisabled={startMode === "now"}
-                      onApply={(s, e) => {
-                        setScheduledAt(s);
-                        setStopAt(e);
-                      }}
-                      className="w-96"
+                    {startMode === "schedule" && (
+                      <div className="flex items-stretch gap-2">
+                        <DatePicker
+                          value={scheduledAt}
+                          onChange={setScheduledAt}
+                          className="w-44"
+                        />
+                        <TimePicker
+                          label="Time"
+                          value={scheduledAt.split("T")[1] || "00:00"}
+                          onChange={(t) =>
+                            setScheduledAt(
+                              `${scheduledAt.split("T")[0]}T${t}`,
+                            )
+                          }
+                          className="w-40"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </FieldGroup>
+
+                <FieldGroup
+                  label="Campaign expiry"
+                  hint="No new calls are placed after this time."
+                >
+                  <div className="flex items-stretch gap-2">
+                    <DatePicker
+                      value={stopAt}
+                      onChange={setStopAt}
+                      className="w-44"
+                    />
+                    <TimePicker
+                      label="Time"
+                      value={stopAt.split("T")[1] || "00:00"}
+                      onChange={(t) =>
+                        setStopAt(`${stopAt.split("T")[0]}T${t}`)
+                      }
+                      className="w-40"
                     />
                   </div>
                 </FieldGroup>
