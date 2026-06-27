@@ -73,7 +73,7 @@ export function NumberPoolPicker({
           ) : (
             <>
               <span className="flex-1 flex flex-wrap items-center gap-1.5 min-w-0">
-                <span className="text-[11px] text-text-muted font-medium">
+                <span className="text-xs text-text-muted font-medium">
                   {pool.length} selected
                 </span>
                 {pool.slice(0, 3).map((n) => (
@@ -122,7 +122,7 @@ export function NumberPoolPicker({
                     onClear();
                   }
                 }}
-                className="text-[11px] text-text-dim hover:text-text px-1.5 shrink-0 cursor-pointer"
+                className="text-xs text-text-dim hover:text-text px-1.5 shrink-0 cursor-pointer"
               >
                 Clear
               </span>
@@ -149,7 +149,7 @@ export function NumberPoolPicker({
               <span className="text-sm font-medium text-text">
                 Calling numbers
               </span>
-              <span className="ml-auto font-mono text-[11px] text-text-muted">
+              <span className="ml-auto font-mono text-xs text-text-muted">
                 {pool.length}/{NUMBERS.length}
               </span>
             </div>
@@ -198,7 +198,7 @@ export function NumberPoolPicker({
                         {n}
                       </span>
                       {checked && (
-                        <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
+                        <span className="text-[10px] uppercase tracking-wider font-medium text-text-muted">
                           In pool
                         </span>
                       )}
@@ -209,7 +209,7 @@ export function NumberPoolPicker({
             </div>
             {pool.length > 0 && (
               <div className="flex items-center justify-between border-t border-border px-3 py-2">
-                <span className="text-[11px] text-text-muted">
+                <span className="text-xs text-text-muted">
                   {pool.length === 1
                     ? "Single number — add more to rotate across attempts."
                     : `Rotated across all ${pool.length} numbers, one per attempt.`}
@@ -217,7 +217,7 @@ export function NumberPoolPicker({
                 <button
                   type="button"
                   onClick={onClear}
-                  className="text-[11px] text-text-dim hover:text-text"
+                  className="text-xs text-text-dim hover:text-text"
                 >
                   Clear all
                 </button>

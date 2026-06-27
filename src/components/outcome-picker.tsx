@@ -108,7 +108,7 @@ export function OutcomePicker({
           <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <Flag size={13} className="text-text-muted" />
             <span className="text-sm font-medium text-text">Retry outcomes</span>
-            <span className="ml-auto font-mono text-[11px] text-text-muted">
+            <span className="ml-auto font-mono text-xs text-text-muted">
               {outcomes.length}/{TOTAL}
             </span>
           </div>
@@ -153,7 +153,7 @@ export function OutcomePicker({
                     ) : (
                       <PhoneOff size={12} className="text-text-muted" />
                     )}
-                    <span className="text-[11px] font-medium text-text-muted">
+                    <span className="text-xs font-medium text-text-muted">
                       {group.label}
                     </span>
                   </div>
@@ -193,14 +193,14 @@ export function OutcomePicker({
 
           {outcomes.length > 0 && (
             <div className="flex items-center justify-between border-t border-border px-3 py-2">
-              <span className="text-[11px] text-text-muted">
+              <span className="text-xs text-text-muted">
                 {outcomes.length} extra outcome{outcomes.length === 1 ? "" : "s"}{" "}
                 will trigger a retry
               </span>
               <button
                 type="button"
                 onClick={onClear}
-                className="text-[11px] text-text-dim hover:text-text"
+                className="text-xs text-text-dim hover:text-text"
               >
                 Clear all
               </button>

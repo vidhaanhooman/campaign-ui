@@ -42,8 +42,8 @@ export default function DevPage() {
         >
           <ArrowLeft size={14} />
         </Link>
-        <span className="text-sm font-semibold text-text">Dev playground</span>
-        <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted">
+        <span className="text-sm font-medium text-text">Dev playground</span>
+        <span className="text-[10px] uppercase tracking-wider font-medium text-text-muted">
           bypass — every screen
         </span>
 
@@ -74,7 +74,7 @@ export default function DevPage() {
       {/* step jumper */}
       {view !== "components" && (
         <div className="flex items-center gap-2 border-b border-border px-6 py-2.5" style={{ backgroundColor: "var(--surface)" }}>
-          <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+          <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">
             Jump to step
           </span>
           {(view === "realtime" ? RT_STEPS : BATCH_STEPS).map((s) => {
@@ -193,7 +193,7 @@ function ComponentGallery() {
       </Section>
 
       <Section title="Colors">
-        <div className="grid grid-cols-4 gap-2 text-[11px]">
+        <div className="grid grid-cols-4 gap-2 text-xs">
           <Swatch token="bg" value="#0a0a0a" />
           <Swatch token="surface" value="#141414" />
           <Swatch token="surface-2" value="#1c1c1c" />
@@ -246,7 +246,7 @@ function Section({
 }) {
   return (
     <section>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-3">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted mb-3">
         {title}
       </div>
       <div className="rounded-lg border border-border-strong bg-surface p-5">
@@ -286,7 +286,7 @@ function Swatch({
 
 function Pill({ color, label }: { color: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[11px] text-text-dim">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
       <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", color)} />
       {label}
     </span>

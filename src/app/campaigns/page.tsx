@@ -143,7 +143,7 @@ export default function CampaignsPage() {
       {/* sidebar */}
       <aside className="w-[228px] shrink-0 border-r border-border flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-          <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-[#f5b8c5] text-xs font-bold">
+          <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-[#f5b8c5] text-xs font-medium">
             HO
           </div>
           <span className="text-sm font-medium flex-1 text-text">HoomanLabs</span>
@@ -155,7 +155,7 @@ export default function CampaignsPage() {
         <nav className="scroll-thin flex-1 overflow-y-auto py-3 px-2 space-y-4">
           {SIDEBAR.map((sec) => (
             <div key={sec.group}>
-              <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+              <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 {sec.group}
               </div>
               <ul className="space-y-0.5">
@@ -193,7 +193,7 @@ export default function CampaignsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* header */}
         <header className="flex items-center justify-between px-8 py-4 border-b border-border">
-          <h1 className="text-lg font-semibold tracking-tight text-text">Campaigns</h1>
+          <h1 className="text-lg font-medium tracking-tight text-text">Campaigns</h1>
           <div className="flex items-center gap-2">
             <button className="flex h-9 items-center gap-1.5 rounded-md border border-border-strong px-3 text-xs text-text-dim hover:text-text">
               <RefreshCw size={14} /> Refresh
@@ -275,7 +275,7 @@ export default function CampaignsPage() {
 
           {/* table */}
           <div className="rounded-lg border border-border-strong bg-surface overflow-hidden shadow-xl shadow-black/40">
-            <div className="grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] px-6 py-3 text-[10px] font-semibold uppercase tracking-wider text-text-muted border-b border-border">
+            <div className="grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] px-6 py-3 text-[10px] font-medium uppercase tracking-wider text-text-muted border-b border-border">
               <div>Campaign</div>
               <div>Agent</div>
               <div>Created At</div>
@@ -294,13 +294,13 @@ export default function CampaignsPage() {
               >
                 <div>
                   <div className="font-medium text-text">{r.name}</div>
-                  <button className="mt-1 flex items-center gap-1.5 text-[11px] font-mono text-text-muted hover:text-text">
+                  <button className="mt-1 flex items-center gap-1.5 text-xs font-mono text-text-muted hover:text-text">
                     <Copy size={11} /> {r.id}
                   </button>
                 </div>
                 <div>
                   <div className="font-medium text-text">{r.agent}</div>
-                  <button className="mt-1 flex items-center gap-1.5 text-[11px] font-mono text-text-muted hover:text-text">
+                  <button className="mt-1 flex items-center gap-1.5 text-xs font-mono text-text-muted hover:text-text">
                     <Copy size={11} /> {r.agentId}
                   </button>
                 </div>
@@ -310,7 +310,7 @@ export default function CampaignsPage() {
                   {r.slotsUsed} / {r.slotsTotal}
                 </div>
                 <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-[11px] text-text-dim">
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
                     {r.status}
                   </span>
@@ -349,7 +349,7 @@ function StatPair({ cols }: { cols: { sub: string; value: string }[] }) {
       {cols.map((c) => (
         <div key={c.sub}>
           <div className="text-xs text-text-muted mb-1">{c.sub}</div>
-          <div className="text-[28px] font-semibold leading-none text-text tabular-nums">
+          <div className="text-lg font-medium leading-none text-text tabular-nums">
             {c.value}
           </div>
         </div>

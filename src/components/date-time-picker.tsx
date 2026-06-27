@@ -57,7 +57,7 @@ export function DatePicker({
         }
       >
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+          <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
             Date
           </div>
           <div className="mt-0.5 font-mono text-sm leading-tight tabular-nums text-text">
@@ -110,7 +110,7 @@ export function DatePicker({
               {DOW.map((d) => (
                 <div
                   key={d}
-                  className="py-1 text-center text-[10px] font-semibold uppercase tracking-wider text-text-muted"
+                  className="py-1 text-center text-[10px] font-medium uppercase tracking-wider text-text-muted"
                 >
                   {d}
                 </div>

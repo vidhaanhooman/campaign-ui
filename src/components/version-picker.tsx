@@ -84,7 +84,7 @@ export function VersionPicker({
           <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <GitBranch size={13} className="text-text-muted" />
             <span className="text-sm font-medium text-text">Version</span>
-            <span className="ml-auto font-mono text-[11px] text-text-muted">
+            <span className="ml-auto font-mono text-xs text-text-muted">
               {filtered.length}
             </span>
           </div>
@@ -140,7 +140,7 @@ export function VersionPicker({
                         </span>
                       </span>
                       {v.tag && (
-                        <span className="mt-0.5 block truncate text-[11px] leading-tight text-text-muted">
+                        <span className="mt-0.5 block truncate text-xs leading-tight text-text-muted">
                           {v.tag}
                         </span>
                       )}

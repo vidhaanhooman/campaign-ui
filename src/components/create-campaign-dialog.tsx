@@ -168,11 +168,11 @@ function TypePicker({
               <span className="flex size-7 items-center justify-center rounded-md bg-surface-2">
                 <Megaphone size={13} className="text-text-muted" />
               </span>
-              <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+              <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">
                 New campaign
               </span>
             </div>
-            <h1 className="text-[22px] font-semibold tracking-tight text-text">
+            <h1 className="text-lg font-medium tracking-tight text-text">
               What kind of campaign?
             </h1>
             <p className="mt-1.5 text-sm text-text-muted max-w-xl">
@@ -195,7 +195,7 @@ function TypePicker({
                       <span className="flex size-9 items-center justify-center rounded-md bg-surface-2">
                         <Icon size={15} className="text-text" />
                       </span>
-                      <span className="text-[15px] font-semibold text-text">
+                      <span className="text-sm font-medium text-text">
                         {opt.title}
                       </span>
                     </div>
@@ -212,21 +212,21 @@ function TypePicker({
 
                   <div className="mt-auto space-y-3 pt-3 border-t border-border">
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mb-1.5">
+                      <div className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1.5">
                         Good for
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {opt.goodFor.map((g) => (
                           <span
                             key={g}
-                            className="rounded-md bg-surface-2 px-2 py-0.5 text-[11px] text-text-dim"
+                            className="rounded-md bg-surface-2 px-2 py-0.5 text-xs text-text-dim"
                           >
                             {g}
                           </span>
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-text-muted">
                         You&rsquo;ll need
                       </span>
@@ -504,7 +504,7 @@ export function RealtimeWizard({
       {/* TOP BAR — title row, then a centered step row below */}
       <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
-          <h1 className="text-lg font-semibold tracking-tight text-text">
+          <h1 className="text-lg font-medium tracking-tight text-text">
             Create realtime campaign
           </h1>
           <button
@@ -536,7 +536,7 @@ export function RealtimeWizard({
                   <span
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
-                      active && "bg-white text-black font-semibold",
+                      active && "bg-white text-black font-medium",
                       done && !active && "bg-surface text-text-muted",
                       !active && !done && "bg-surface-2 text-text-muted",
                     )}
@@ -1009,7 +1009,7 @@ export function RealtimeWizard({
                   >
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium mr-1">
                           Default
                         </span>
                         {["not_connected", "busy_callback"].map((d) => (
@@ -1039,7 +1039,7 @@ export function RealtimeWizard({
                 )}
 
                 <div className="border-t border-border pt-5 space-y-5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
                     Advanced
                   </div>
                   <PriorityField
@@ -1137,13 +1137,13 @@ export function RealtimeWizard({
                                         Not picked
                                       </span>
                                     )}
-                                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-text-dim">
+                                    <span className="inline-flex items-center gap-1 font-mono text-xs text-text-dim">
                                       {a.versionName === "Live" && (
                                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                                       )}
                                       {a.versionName}
                                     </span>
-                                    <span className="ml-auto font-mono text-[11px] tabular-nums text-text-muted">
+                                    <span className="ml-auto font-mono text-xs tabular-nums text-text-muted">
                                       {a.pct}%
                                     </span>
                                   </div>
@@ -1197,7 +1197,7 @@ export function RealtimeWizard({
                           pool.map((n) => (
                             <span
                               key={n}
-                              className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px] font-mono"
+                              className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono"
                             >
                               {n}
                             </span>
@@ -1289,7 +1289,7 @@ export function RealtimeWizard({
                           [...overrides].map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px] text-text-dim"
+                              className="inline-flex items-center gap-1 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs text-text-dim"
                             >
                               <Zap size={11} />
                               {OVERRIDABLE.find((o) => o.key === k)?.label}
@@ -1313,7 +1313,7 @@ export function RealtimeWizard({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-[11px] font-semibold text-text-muted">
+                    <div className="text-xs font-medium text-text-muted">
                       Send the first task
                     </div>
                     <button
@@ -1426,10 +1426,10 @@ function CampaignSummary({
   return (
     <div className="rounded-lg border border-border-strong bg-surface-2 overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mb-0.5">
+        <div className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-0.5">
           Live summary
         </div>
-        <div className="text-sm font-semibold text-text truncate">
+        <div className="text-sm font-medium text-text truncate">
           {name || "Untitled campaign"}
         </div>
       </div>
@@ -1519,7 +1519,7 @@ function SummaryRow({
 }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mb-1">
+      <div className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">
         {label}
       </div>
       <div className="text-xs text-text leading-snug">{children}</div>
@@ -1653,7 +1653,7 @@ function RtReviewSection({
   const visible = rows.filter(Boolean) as Exclude<RtReviewRow, null>[];
   return (
     <div>
-      <div className="text-[11px] font-semibold text-text-muted mb-2">
+      <div className="text-xs font-medium text-text-muted mb-2">
         {title}
       </div>
       <div className="rounded-md border border-border overflow-hidden divide-y divide-border">
@@ -1704,7 +1704,7 @@ function renderCurlLine(line: string): React.ReactNode {
       );
     } else if (/^(POST|GET|PUT|DELETE|PATCH)$/.test(t)) {
       tokens.push(
-        <span key={key++} className="text-emerald-400 font-semibold">
+        <span key={key++} className="text-emerald-400 font-medium">
           {t}
         </span>,
       );
@@ -1898,7 +1898,7 @@ function PayloadCard({
   return (
     <div className="rounded-lg border border-border-strong bg-surface-2 p-4 space-y-4">
       <div>
-        <div className="text-xs font-semibold text-text mb-1">Task API payload</div>
+        <div className="text-xs font-medium text-text mb-1">Task API payload</div>
         <p className="text-xs text-text-muted leading-relaxed">
           Required fields are always sent. Unlocked fields can be supplied per
           call.
@@ -1930,14 +1930,14 @@ function PayloadCard({
       </pre>
       {locked.length > 0 && (
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 font-semibold">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 font-medium">
             Locked · ignored if sent
           </div>
           <div className="flex flex-wrap gap-1.5">
             {locked.map((f) => (
               <span
                 key={f.key}
-                className="flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px] font-mono text-text-muted"
+                className="flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono text-text-muted"
               >
                 <Lock size={11} /> {f.label}
               </span>

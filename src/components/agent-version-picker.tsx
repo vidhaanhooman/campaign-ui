@@ -112,10 +112,10 @@ export function AgentVersionPicker({
             Agent
           </div>
           <div className="flex h-12 items-center border-b border-border px-4">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Versions
             </span>
-            <span className="ml-auto font-mono text-[11px] text-text-muted tabular-nums">
+            <span className="ml-auto font-mono text-xs text-text-muted tabular-nums">
               {versionCount}
             </span>
           </div>
@@ -164,7 +164,7 @@ export function AgentVersionPicker({
                         >
                           {a.name}
                         </span>
-                        <span className="mt-0.5 block truncate font-mono text-[11px] leading-tight text-text-muted">
+                        <span className="mt-0.5 block truncate font-mono text-xs leading-tight text-text-muted">
                           {a.id}
                         </span>
                       </span>
@@ -253,7 +253,7 @@ export function AgentVersionPicker({
             </button>
           </div>
           <div
-            className="flex items-center border-t border-border px-4 text-[11px] text-text-muted"
+            className="flex items-center border-t border-border px-4 text-xs text-text-muted"
             style={{ height: 52 }}
           >
             Pick Live to always use the version in production.

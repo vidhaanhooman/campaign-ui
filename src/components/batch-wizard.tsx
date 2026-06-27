@@ -215,7 +215,7 @@ export function BatchWizard({
       {/* TOP BAR — title row, then a centered step row below */}
       <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
-          <h1 className="text-lg font-semibold tracking-tight text-text">
+          <h1 className="text-lg font-medium tracking-tight text-text">
             Create batch campaign
           </h1>
           <button
@@ -247,8 +247,8 @@ export function BatchWizard({
                   <span
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
-                      hasError && "bg-red-400 text-black font-semibold",
-                      !hasError && active && "bg-white text-black font-semibold",
+                      hasError && "bg-red-400 text-black font-medium",
+                      !hasError && active && "bg-white text-black font-medium",
                       !hasError && done && !active && "bg-surface text-text-muted",
                       !hasError && !active && !done && "bg-surface-2 text-text-muted",
                     )}
@@ -516,7 +516,7 @@ export function BatchWizard({
                         <span className="text-sm text-text font-medium">
                           sample-audience.csv
                         </span>
-                        <span className="ml-2 text-[10px] uppercase tracking-wider text-text-muted font-semibold">
+                        <span className="ml-2 text-[10px] uppercase tracking-wider text-text-muted font-medium">
                           · expected format
                         </span>
                         <button
@@ -537,14 +537,14 @@ export function BatchWizard({
                             URL.revokeObjectURL(url);
                             toast.success("sample-audience.csv downloaded");
                           }}
-                          className="ml-auto text-[11px] text-text-dim hover:text-text"
+                          className="ml-auto text-xs text-text-dim hover:text-text"
                         >
                           Download sample
                         </button>
                       </div>
 
                       {/* Fake menu bar */}
-                      <div className="flex items-center gap-4 border-b border-border px-3 py-1 text-[11px] text-text-dim">
+                      <div className="flex items-center gap-4 border-b border-border px-3 py-1 text-xs text-text-dim">
                         <span>File</span>
                         <span>Edit</span>
                         <span>View</span>
@@ -558,22 +558,22 @@ export function BatchWizard({
                         className="flex items-center gap-3 border-b border-border px-2 py-1.5"
                         style={{ backgroundColor: "var(--bg)" }}
                       >
-                        <div className="flex h-6 w-12 items-center justify-center rounded border border-border-strong bg-surface-2 text-[11px] font-mono text-text">
+                        <div className="flex h-6 w-12 items-center justify-center rounded border border-border-strong bg-surface-2 text-xs font-mono text-text">
                           A1
                         </div>
-                        <span className="italic text-text-muted text-[12px] font-mono">
+                        <span className="italic text-text-muted text-xs font-mono">
                           fx
                         </span>
-                        <div className="flex-1 h-6 rounded border border-border-strong bg-surface-2 px-2 flex items-center text-[11px] font-mono text-text">
+                        <div className="flex-1 h-6 rounded border border-border-strong bg-surface-2 px-2 flex items-center text-xs font-mono text-text">
                           phone
                         </div>
                       </div>
 
                       {/* Spreadsheet grid */}
-                      <div className="font-mono text-[12px] text-text">
+                      <div className="font-mono text-xs text-text">
                         {/* Column letters */}
                         <div
-                          className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border-strong text-[11px] text-text-muted"
+                          className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border-strong text-xs text-text-muted"
                           style={{ backgroundColor: "var(--bg)" }}
                         >
                           <div className="border-r border-border-strong px-2 py-1 text-center">
@@ -590,18 +590,18 @@ export function BatchWizard({
                         {/* Schema header row 1 */}
                         <div className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border">
                           <div
-                            className="border-r border-border-strong px-2 py-1.5 text-center text-[11px] text-text-muted"
+                            className="border-r border-border-strong px-2 py-1.5 text-center text-xs text-text-muted"
                             style={{ backgroundColor: "var(--bg)" }}
                           >
                             1
                           </div>
-                          <div className="border-r border-border px-3 py-1.5 font-semibold text-emerald-400">
+                          <div className="border-r border-border px-3 py-1.5 font-medium text-emerald-400">
                             phone
                           </div>
-                          <div className="border-r border-border px-3 py-1.5 font-semibold text-blue-400">
+                          <div className="border-r border-border px-3 py-1.5 font-medium text-blue-400">
                             name
                           </div>
-                          <div className="px-3 py-1.5 font-semibold text-blue-400">
+                          <div className="px-3 py-1.5 font-medium text-blue-400">
                             order
                           </div>
                         </div>
@@ -612,7 +612,7 @@ export function BatchWizard({
                             className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border last:border-b-0"
                           >
                             <div
-                              className="border-r border-border-strong px-2 py-1.5 text-center text-[11px] text-text-muted"
+                              className="border-r border-border-strong px-2 py-1.5 text-center text-xs text-text-muted"
                               style={{ backgroundColor: "var(--bg)" }}
                             >
                               {i + 2}
@@ -663,7 +663,7 @@ export function BatchWizard({
 
                     {/* preview */}
                     <div className="rounded-md border border-border-strong bg-surface-2 overflow-hidden">
-                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-border bg-surface px-3 py-2 text-[11px] font-semibold text-text-muted">
+                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-border bg-surface px-3 py-2 text-xs font-medium text-text-muted">
                         <div className="font-mono">phone</div>
                         <div className="font-mono">name</div>
                         <div className="font-mono">order</div>
@@ -682,7 +682,7 @@ export function BatchWizard({
                           <div>{r.order}</div>
                         </div>
                       ))}
-                      <div className="bg-surface/70 px-3 py-1.5 text-[11px] text-text-muted">
+                      <div className="bg-surface/70 px-3 py-1.5 text-xs text-text-muted">
                         Showing 5 of 4,812 rows
                       </div>
                     </div>
@@ -904,7 +904,7 @@ export function BatchWizard({
                   >
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+                        <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium mr-1">
                           Default
                         </span>
                         {["not_connected", "busy_callback"].map((d) => (
@@ -934,7 +934,7 @@ export function BatchWizard({
                 )}
 
                 <div className="border-t border-border pt-5 space-y-5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
                     Advanced
                   </div>
                   {/* Priority — presets, with numbers under Advanced */}
@@ -1034,13 +1034,13 @@ export function BatchWizard({
                                         Not picked
                                       </span>
                                     )}
-                                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-text-dim">
+                                    <span className="inline-flex items-center gap-1 font-mono text-xs text-text-dim">
                                       {a.versionName === "Live" && (
                                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                                       )}
                                       {a.versionName}
                                     </span>
-                                    <span className="ml-auto font-mono text-[11px] tabular-nums text-text-muted">
+                                    <span className="ml-auto font-mono text-xs tabular-nums text-text-muted">
                                       {a.pct}%
                                     </span>
                                   </div>
@@ -1117,7 +1117,7 @@ export function BatchWizard({
                           pool.map((n) => (
                             <span
                               key={n}
-                              className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-[11px] font-mono"
+                              className="rounded-md border border-border-strong bg-surface px-2 py-0.5 text-xs font-mono"
                             >
                               {n}
                             </span>
@@ -1309,7 +1309,7 @@ function ReviewSection({
   const visible = rows.filter(Boolean) as Exclude<ReviewRow, null>[];
   return (
     <div>
-      <div className="text-[11px] font-semibold text-text-muted mb-2">
+      <div className="text-xs font-medium text-text-muted mb-2">
         {title}
       </div>
       <div className="rounded-md border border-border overflow-hidden divide-y divide-border">
@@ -1385,10 +1385,10 @@ function BatchSummary({
   return (
     <div className="rounded-lg border border-border-strong bg-surface-2 overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mb-0.5">
+        <div className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-0.5">
           Live summary
         </div>
-        <div className="text-sm font-semibold text-text truncate">
+        <div className="text-sm font-medium text-text truncate">
           {name || "Untitled campaign"}
         </div>
       </div>
@@ -1422,7 +1422,7 @@ function BatchSummary({
           ) : (
             <>
               <div className="font-mono truncate">{csvName}</div>
-              <div className="text-text-muted text-[11px]">
+              <div className="text-text-muted text-xs">
                 4,812 rows · phone + 2 context columns
               </div>
             </>
@@ -1491,7 +1491,7 @@ function Row({
 }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted font-semibold mb-1">
+      <div className="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">
         {label}
       </div>
       <div className="text-xs text-text leading-snug">{children}</div>

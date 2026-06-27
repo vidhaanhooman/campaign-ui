@@ -52,7 +52,7 @@ export function TimePicker({
       >
         <div className="min-w-0 flex-1">
           {label && (
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               {label}
             </div>
           )}
@@ -219,8 +219,8 @@ function Column<T extends string | number>({
             className={cn(
               "flex w-full items-center justify-center font-mono tabular-nums transition-all",
               selected
-                ? "text-[15px] font-bold text-text"
-                : "text-[13px] text-text-muted/40 hover:text-text",
+                ? "text-sm font-medium text-text"
+                : "text-sm text-text-muted/40 hover:text-text",
             )}
           >
             {renderLabel(item)}
