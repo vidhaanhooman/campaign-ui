@@ -1,14 +1,16 @@
 "use client";
 
 import { RT_OPS } from "@/lib/stats-data";
+import { InfoHint } from "./info-hint";
 
 export function OpsStrip() {
   return (
     <div className="grid grid-cols-2 divide-x divide-border rounded-xl border border-border bg-card sm:grid-cols-4">
       {RT_OPS.map((k) => (
         <div key={k.label} className="px-5 py-4">
-          <div className="text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
             {k.label}
+            {k.hint && <InfoHint>{k.hint}</InfoHint>}
           </div>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-mono text-lg leading-none tabular-nums text-foreground">

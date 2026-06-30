@@ -23,7 +23,7 @@ export function StatsTypeTabs() {
             className={cn(
               "inline-flex h-7 items-center rounded-[5px] px-3 text-xs transition-colors",
               active
-                ? "bg-card text-foreground shadow-sm"
+                ? "bg-foreground text-background shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -28,7 +29,7 @@ export default function RootLayout({
       className={cn("dark", "h-full", "antialiased", mono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        {children}
+        <TooltipProvider delay={200}>{children}</TooltipProvider>
         <Toaster />
       </body>
     </html>

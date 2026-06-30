@@ -12,6 +12,7 @@ import {
   fmtMoney,
 } from "@/lib/stats-data";
 import { cn } from "@/lib/utils";
+import { InfoHint } from "./info-hint";
 import { Panel } from "./ui";
 
 type Row = {
@@ -20,6 +21,7 @@ type Row = {
   format: (v: number) => string;
   /** true when a higher value is the winner */
   higherBetter: boolean;
+  hint?: string;
 };
 
 type Group = { label: string; rows: Row[] };
@@ -29,24 +31,24 @@ const BASE_GROUPS: Group[] = [
     label: "Volume",
     rows: [
       { key: "calls", label: "Calls count", format: fmtInt, higherBetter: true },
-      { key: "callsConnected", label: "Calls connected", format: fmtInt, higherBetter: true },
-      { key: "tasksCreated", label: "Tasks created", format: fmtInt, higherBetter: true },
+      { key: "callsConnected", label: "Calls connected", format: fmtInt, higherBetter: true, hint: "Calls where the callee picked up — calls × pick-up rate." },
+      { key: "tasksCreated", label: "Tasks created", format: fmtInt, higherBetter: true, hint: "Distinct dial requests created. Usually ≈ calls; differs if retries are counted separately." },
     ],
   },
   {
     label: "Quality",
     rows: [
-      { key: "connectRate", label: "Pick-up rate", format: (v) => fmtPct(v, 0), higherBetter: true },
-      { key: "avgTalkSec", label: "Avg duration", format: fmtDur, higherBetter: false },
-      { key: "transferRate", label: "Transfer rate", format: (v) => fmtPct(v, 0), higherBetter: false },
-      { key: "csat", label: "CSAT", format: (v) => v.toFixed(1), higherBetter: true },
-      { key: "conversionRate", label: "Conversion rate", format: (v) => fmtPct(v, 1), higherBetter: true },
+      { key: "connectRate", label: "Pick-up rate", format: (v) => fmtPct(v, 0), higherBetter: true, hint: "Share of dials where a human or machine picked up the call." },
+      { key: "avgTalkSec", label: "Avg duration", format: fmtDur, higherBetter: false, hint: "Average length of connected calls. Lower is generally better for the same outcome." },
+      { key: "transferRate", label: "Transfer rate", format: (v) => fmtPct(v, 0), higherBetter: false, hint: "Share of human-answered calls escalated to a live human agent. Lower means the AI is handling more cases on its own." },
+      { key: "csat", label: "CSAT", format: (v) => v.toFixed(1), higherBetter: true, hint: "Customer satisfaction score, 1–5. Collected from post-call survey responses." },
+      { key: "conversionRate", label: "Conversion rate", format: (v) => fmtPct(v, 1), higherBetter: true, hint: "Share of leads that completed the campaign goal." },
     ],
   },
   {
     label: "Cost",
     rows: [
-      { key: "costPerCall", label: "Cost / call", format: fmtMoney, higherBetter: false },
+      { key: "costPerCall", label: "Cost / call", format: fmtMoney, higherBetter: false, hint: "Blended cost per dial — telephony + LLM + TTS + STT." },
     ],
   },
 ];
@@ -181,7 +183,12 @@ function GroupBody({
             i === 0 && "border-t-2 border-border",
           )}
         >
-          <td className="py-2.5 pl-5 pr-3 text-xs text-muted-foreground">{r.label}</td>
+          <td className="py-2.5 pl-5 pr-3 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              {r.label}
+              {r.hint && <InfoHint>{r.hint}</InfoHint>}
+            </span>
+          </td>
           {stats.map((s) => {
             const val = s[r.key] as number;
             const isBest = val === best[r.key];

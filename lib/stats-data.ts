@@ -23,10 +23,38 @@ export type RtWindowKey = "24h" | "7d" | "lifetime";
 
 /** Realtime ops strip — live operational signals. */
 export const RT_OPS = [
-  { label: "Active now", value: "14", suffix: "/ 30", sub: "calls vs pool capacity", tone: "neutral" as const },
-  { label: "Net backlog flow", value: "−3", suffix: "/hr", sub: "in 22/hr · dial 25/hr", tone: "good" as const },
-  { label: "Backlog depth", value: "86", suffix: "", sub: "oldest waiting 7m", tone: "neutral" as const },
-  { label: "Time to first dial", value: "1m 30s", suffix: "", sub: "p50 · p90 6m 12s", tone: "neutral" as const },
+  {
+    label: "Active now",
+    value: "14",
+    suffix: "/ 30",
+    sub: "calls vs pool capacity",
+    tone: "neutral" as const,
+    hint: "Calls currently dialing or in conversation, vs the concurrent-call capacity of your number pool.",
+  },
+  {
+    label: "Net backlog flow",
+    value: "−3",
+    suffix: "/hr",
+    sub: "in 22/hr · dial 25/hr",
+    tone: "good" as const,
+    hint: "Tasks arriving per hour minus tasks dialed per hour. Negative means you're draining the backlog faster than it's filling.",
+  },
+  {
+    label: "Backlog depth",
+    value: "86",
+    suffix: "",
+    sub: "oldest waiting 7m",
+    tone: "neutral" as const,
+    hint: "Number of tasks queued and waiting for a free slot. Watch the oldest-waiting time to spot SLA breaches.",
+  },
+  {
+    label: "Time to first dial",
+    value: "1m 30s",
+    suffix: "",
+    sub: "p50 · p90 6m 12s",
+    tone: "neutral" as const,
+    hint: "How long a new task waits before the first dial attempt. p50 is the median; p90 is the slowest 10% of tasks.",
+  },
 ];
 
 /** Raw funnel counts per window. */
@@ -44,14 +72,14 @@ export function buildFunnel(d: (typeof RT_FUNNEL_RAW)[RtWindowKey]) {
   const pct = (a: number, b: number) => `${Math.round((a / b) * 100)}%`;
   const mult = (a: number, b: number) => `${(a / b).toFixed(1)}×`;
   return [
-    { stage: "Leads",          kind: "lead" as const, count: d.leads,     rel: "100%",                    note: "intake" },
+    { stage: "Tasks",          kind: "task" as const, count: d.leads,     rel: "100%",                    note: "intake" },
     { stage: "Dials",          kind: "call" as const, count: d.dials,     rel: mult(d.dials, d.leads),    note: "incl. retries" },
     { stage: "Delivered",      kind: "call" as const, count: d.delivered, rel: pct(d.delivered, d.dials), note: "of dials · rang" },
     { stage: "Picked up",      kind: "call" as const, count: d.picked,    rel: pct(d.picked, d.delivered), note: "of delivered" },
     { stage: "Human answered", kind: "call" as const, count: d.human,     rel: pct(d.human, d.picked),     note: "of picked" },
     { stage: "Engaged",        kind: "call" as const, count: d.engaged,   rel: pct(d.engaged, d.human),    note: "of human · >30s" },
-    { stage: "Unique reached", kind: "lead" as const, count: d.reached,   rel: pct(d.reached, d.leads),    note: "of leads" },
-    { stage: "Converted",      kind: "lead" as const, count: d.converted, rel: pct(d.converted, d.reached), note: `of reached · ${pct(d.converted, d.leads)} of leads` },
+    { stage: "Unique reached", kind: "task" as const, count: d.reached,   rel: pct(d.reached, d.leads),    note: "of tasks" },
+    { stage: "Converted",      kind: "task" as const, count: d.converted, rel: pct(d.converted, d.reached), note: `of reached · ${pct(d.converted, d.leads)} of tasks` },
   ];
 }
 
@@ -159,16 +187,16 @@ export const OUTCOME_BREAKDOWN = [
   { label: "DNC / opt-out", value: 1000, tone: "warn" as const },
 ];
 
-/** Conversion funnel — mixed lead/call stages; `rel` is relative to its own denominator. */
+/** Conversion funnel — mixed task/call stages; `rel` is relative to its own denominator. */
 export const FUNNEL = [
-  { stage: "Leads", kind: "lead" as const, count: 5000, rel: "100%", note: "intake" },
+  { stage: "Tasks", kind: "task" as const, count: 5000, rel: "100%", note: "intake" },
   { stage: "Dials", kind: "call" as const, count: 11240, rel: "2.2×", note: "incl. retries" },
   { stage: "Delivered", kind: "call" as const, count: 9180, rel: "82%", note: "of dials · rang" },
   { stage: "Picked up", kind: "call" as const, count: 4710, rel: "51%", note: "of delivered" },
   { stage: "Human answered", kind: "call" as const, count: 3420, rel: "73%", note: "of picked" },
   { stage: "Engaged", kind: "call" as const, count: 1980, rel: "58%", note: "of human · >30s" },
-  { stage: "Unique reached", kind: "lead" as const, count: 2760, rel: "55%", note: "of leads" },
-  { stage: "Converted", kind: "lead" as const, count: 612, rel: "22%", note: "of reached · 12% of leads" },
+  { stage: "Unique reached", kind: "task" as const, count: 2760, rel: "55%", note: "of tasks" },
+  { stage: "Converted", kind: "task" as const, count: 612, rel: "22%", note: "of reached · 12% of tasks" },
 ];
 
 /** Lead → converted (612 / 5,000). */
@@ -210,12 +238,41 @@ export const LIFECYCLE = {
 
 /** Call performance — human-answered calls only. */
 export const CALL_PERF_KPIS = [
-  { label: "Median duration", value: "1:24", sub: "avg 2:02 · skewed", tone: "neutral" as const },
-  { label: "Early hangup <10s", value: "18%", sub: "opener signal", tone: "warn" as const },
-  { label: "Ended by caller", value: "36%", sub: "vs agent 64%", tone: "neutral" as const },
-  { label: "Human transfer", value: "7%", sub: "escalated to live agent", tone: "warn" as const },
-  { label: "Latency p50", value: "820ms", sub: "p90 1.6s · p95 2.2s", tone: "neutral" as const },
-  { label: "Avg turns", value: "7.4", sub: "to outcome: 4.1", tone: "neutral" as const },
+  {
+    label: "Median duration",
+    value: "1:24",
+    sub: "avg 2:02 · skewed",
+    tone: "neutral" as const,
+    hint: "Half of human-answered calls are shorter than 1:24. The mean is higher (2:02) because a few long calls skew the average.",
+  },
+  {
+    label: "Early hangup <10s",
+    value: "18%",
+    sub: "opener signal",
+    tone: "warn" as const,
+    hint: "Share of calls where the caller hangs up within 10 seconds of agent speech. Often a sign the opener isn't landing.",
+  },
+  {
+    label: "Ended by caller",
+    value: "36%",
+    sub: "vs agent 64%",
+    tone: "neutral" as const,
+    hint: "Who hung up first. 36% of calls ended on the caller's side; the rest (64%) ended on the agent's side.",
+  },
+  {
+    label: "Latency p50",
+    value: "820ms",
+    sub: "p90 1.6s · p95 2.2s",
+    tone: "neutral" as const,
+    hint: "End-to-end response delay (caller stopped speaking → agent starts). p50 = median; p90/p95 are the slowest 10%/5%.",
+  },
+  {
+    label: "Avg turns",
+    value: "7.4",
+    sub: "to outcome: 4.1",
+    tone: "neutral" as const,
+    hint: "Average number of back-and-forth speech turns per call. The 4.1 figure is turns until the call's outcome is decided.",
+  },
 ] as const;
 
 /** Outcome distribution — human-answered calls. */
@@ -228,15 +285,6 @@ export const CALL_OUTCOMES = [
   { label: "dropped early", pct: 0.18, tone: "bad" as const },
   { label: "silent", pct: 0.05, tone: "bad" as const },
 ] as const;
-
-/** Human transfer — why the agent escalated. */
-export const HUMAN_TRANSFER_REASONS = [
-  { label: "out of scope · no tool", pct: 0.41, tone: "warn" as const },
-  { label: "caller explicitly asked", pct: 0.33, tone: "active" as const },
-  { label: "low model confidence", pct: 0.18, tone: "neutral" as const },
-  { label: "negative sentiment", pct: 0.08, tone: "bad" as const },
-] as const;
-export const HUMAN_TRANSFER_NOTE = "7% of human-answered calls · transfer success 92%";
 
 export type VersionStat = {
   version: string;

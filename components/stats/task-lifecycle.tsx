@@ -9,7 +9,7 @@ type LifecycleState = (typeof LIFECYCLE.states)[number];
 
 export function TaskLifecycle({
   states = LIFECYCLE.states,
-  terminalLabel = "Terminal",
+  terminalLabel = "Closed",
 }: {
   states?: readonly LifecycleState[];
   terminalLabel?: string;
@@ -41,7 +41,7 @@ export function TaskLifecycle({
       <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30">
         <div className="px-5 py-4">
           <div className="text-[10px] font-medium text-muted-foreground">
-            In-flight
+            Live
           </div>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="font-mono text-lg leading-none tabular-nums text-foreground">
