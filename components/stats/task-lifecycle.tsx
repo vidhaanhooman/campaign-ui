@@ -37,49 +37,50 @@ export function TaskLifecycle({
         </span>
       }
     >
-      {/* Two number blocks */}
-      <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30">
-        <div className="px-5 py-4">
-          <div className="text-[10px] font-medium text-muted-foreground">
-            Live
+      <div className="flex h-full flex-col">
+        {/* Two number blocks */}
+        <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30">
+          <div className="px-5 py-4">
+            <div className="text-[10px] font-medium text-muted-foreground">
+              Live
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="font-mono text-lg leading-none tabular-nums text-foreground">
+                {fmtInt(inflightTotal)}
+              </span>
+              <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                {fmtPct(inflightTotal / total, 0)}
+              </span>
+            </div>
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-mono text-lg leading-none tabular-nums text-foreground">
-              {fmtInt(inflightTotal)}
-            </span>
-            <span className="font-mono text-xs tabular-nums text-muted-foreground">
-              {fmtPct(inflightTotal / total, 0)}
-            </span>
+          <div className="px-5 py-4">
+            <div className="text-[10px] font-medium text-muted-foreground">
+              {terminalLabel}
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="font-mono text-lg leading-none tabular-nums text-foreground">
+                {fmtInt(terminalTotal)}
+              </span>
+              <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                {fmtPct(terminalTotal / total, 0)}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="px-5 py-4">
-          <div className="text-[10px] font-medium text-muted-foreground">
-            {terminalLabel}
-          </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-mono text-lg leading-none tabular-nums text-foreground">
-              {fmtInt(terminalTotal)}
-            </span>
-            <span className="font-mono text-xs tabular-nums text-muted-foreground">
-              {fmtPct(terminalTotal / total, 0)}
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* State list with progress bars per row, grouped by bucket */}
-      <div className="mt-5 flex flex-col">
-        <ul className="flex flex-col gap-2">
-          {inflight.map((s) => (
-            <Row key={s.state} state={s} max={inflightMax} total={total} />
-          ))}
-        </ul>
-        <div className="my-3 border-t border-border" />
-        <ul className="flex flex-col gap-2">
-          {terminal.map((s) => (
-            <Row key={s.state} state={s} max={terminalMax} total={total} />
-          ))}
-        </ul>
+        {/* State list with progress bars per row, grouped by bucket */}
+        <div className="mt-5 flex flex-1 flex-col justify-between gap-5">
+          <ul className="flex flex-col gap-3">
+            {inflight.map((s) => (
+              <Row key={s.state} state={s} max={inflightMax} total={total} />
+            ))}
+          </ul>
+          <ul className="flex flex-col gap-3 border-t border-border pt-5">
+            {terminal.map((s) => (
+              <Row key={s.state} state={s} max={terminalMax} total={total} />
+            ))}
+          </ul>
+        </div>
       </div>
     </Panel>
   );

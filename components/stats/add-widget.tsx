@@ -161,9 +161,9 @@ function AddWidgetDialog({
     <>
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent
-          variant="drawer"
+          variant="modal"
           showCloseButton={false}
-          className="!max-w-[640px] flex flex-col p-0"
+          className="flex max-h-[85vh] w-full !max-w-[560px] flex-col overflow-hidden p-0"
         >
           <DialogTitle className="sr-only">Add widget</DialogTitle>
 
