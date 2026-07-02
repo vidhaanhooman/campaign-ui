@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { PieChart, Phone } from "lucide-react";
+import { PhoneCall, PieChart, Phone } from "lucide-react";
 
-import { ATTEMPTS, DISPOSITION, fmtInt, fmtPct } from "@/lib/stats-data";
+import { ATTEMPTS, CALL_OUTCOMES, DISPOSITION, fmtInt, fmtPct } from "@/lib/stats-data";
+import { CallPerformance } from "./call-performance";
 import { Panel } from "./ui";
 
 const BLUE_RAMP = [
@@ -20,30 +21,33 @@ function AttemptsTable() {
   return (
     <table className="w-full table-fixed border-collapse text-sm">
       <colgroup>
-        <col className="w-[18%]" />
+        <col className="w-[22%]" />
         <col className="w-[14%]" />
         <col className="w-[14%]" />
         <col />
       </colgroup>
       <thead>
         <tr className="text-[10px] text-muted-foreground">
-          <th className="pb-2.5 pr-3 text-left font-medium">Attempt</th>
+          <th className="pb-2.5 pl-5 pr-3 text-left font-medium">Attempt</th>
           <th className="px-3 pb-2.5 text-right font-medium">Dials</th>
           <th className="px-3 pb-2.5 text-right font-medium">Connected</th>
-          <th className="pb-2.5 pl-3 text-left font-medium">Connect rate</th>
+          <th className="pb-2.5 pl-3 pr-5 text-left font-medium">Connect rate</th>
         </tr>
       </thead>
       <tbody>
         {ATTEMPTS.map((r) => (
-          <tr key={r.attempt} className="border-t border-border">
-            <td className="py-3 pr-3 text-muted-foreground">attempt {r.attempt}</td>
+          <tr
+            key={r.attempt}
+            className="border-b border-sidebar-border/30 transition-colors last:border-0 hover:bg-secondary/40"
+          >
+            <td className="py-3 pl-5 pr-3 text-muted-foreground">attempt {r.attempt}</td>
             <td className="px-3 py-3 text-right font-mono tabular-nums text-foreground">
               {fmtInt(r.dials)}
             </td>
             <td className="px-3 py-3 text-right font-mono tabular-nums text-foreground">
               {fmtInt(r.connected)}
             </td>
-            <td className="py-3 pl-3">
+            <td className="py-3 pl-3 pr-5">
               <div className="flex items-center gap-2">
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
                   <div
@@ -86,9 +90,17 @@ function arcPath(cx: number, cy: number, rOuter: number, rInner: number, start: 
   ].join(" ");
 }
 
-function DispositionDonut() {
-  const totalDials = ATTEMPTS.reduce((s, a) => s + a.dials, 0);
-  const sorted = [...DISPOSITION].sort((a, b) => b.pct - a.pct);
+function Donut({
+  data,
+  centerLabel,
+  centerCountSuffix,
+}: {
+  data: readonly { label: string; pct: number }[];
+  centerLabel: string;
+  centerCountSuffix: string;
+}) {
+  const total = ATTEMPTS.reduce((s, a) => s + a.dials, 0);
+  const sorted = [...data].sort((a, b) => b.pct - a.pct);
   const [hovered, setHovered] = useState<string | null>(null);
 
   let cursor = 0;
@@ -101,7 +113,7 @@ function DispositionDonut() {
       start,
       end,
       color: BLUE_RAMP[i] ?? BLUE_RAMP[BLUE_RAMP.length - 1],
-      count: Math.round(d.pct * totalDials),
+      count: Math.round(d.pct * total),
     };
   });
 
@@ -113,7 +125,7 @@ function DispositionDonut() {
       <div className="relative shrink-0">
         <svg
           viewBox="0 0 200 200"
-          className="h-48 w-48"
+          className="h-40 w-40"
           onMouseLeave={() => setHovered(null)}
         >
           {segs.map((s) => {
@@ -148,14 +160,14 @@ function DispositionDonut() {
                 {fmtPct(active.pct, 0)}
               </div>
               <div className="font-mono text-[10px] tabular-nums text-muted-foreground">
-                {fmtInt(active.count)} dials
+                {fmtInt(active.count)} {centerCountSuffix}
               </div>
             </>
           ) : (
             <>
-              <div className="text-[10px] text-muted-foreground">total dials</div>
+              <div className="text-[10px] text-muted-foreground">{centerLabel}</div>
               <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
-                {fmtInt(totalDials)}
+                {fmtInt(total)}
               </div>
               <div className="text-[10px] text-muted-foreground">hover a slice</div>
             </>
@@ -195,19 +207,36 @@ function DispositionDonut() {
 
 export function CallingOverview() {
   return (
-    <div className="grid gap-5 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-2">
       <Panel
         title="Attempt-wise dials & connect rate"
         icon={<Phone size={14} />}
+        bodyClassName="px-0 pb-5"
       >
         <AttemptsTable />
       </Panel>
-
+      <Panel title="Dial disposition" icon={<PieChart size={14} />}>
+        <Donut
+          data={DISPOSITION}
+          centerLabel="total dials"
+          centerCountSuffix="dials"
+        />
+      </Panel>
+      <CallPerformance />
       <Panel
-        title="Dial disposition"
-        icon={<PieChart size={14} />}
+        title="Outcome distribution"
+        icon={<PhoneCall size={14} />}
+        action={
+          <span className="text-xs text-muted-foreground">
+            human-answered only
+          </span>
+        }
       >
-        <DispositionDonut />
+        <Donut
+          data={CALL_OUTCOMES}
+          centerLabel="total outcomes"
+          centerCountSuffix="calls"
+        />
       </Panel>
     </div>
   );

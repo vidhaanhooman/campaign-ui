@@ -99,7 +99,7 @@ export function PiePanel({
       {loading ? (
         <Skeleton className="mx-auto aspect-square h-[176px] w-[176px] rounded-full" />
       ) : (
-        <Donut data={data} centerLabel="calls" />
+        <Donut data={data} unit="calls" />
       )}
     </PanelCard>
   );
@@ -136,12 +136,12 @@ export function TablePanel({
   ) : (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="text-[10px] text-muted-foreground">
+        <tr className="border-y border-border bg-secondary/40">
           {columns.map((c) => (
             <th
               key={c.key}
               className={cn(
-                "py-2.5 font-medium first:pl-5 last:pr-5",
+                "py-2.5 text-xs font-medium text-muted-foreground first:pl-5 last:pr-5",
                 c.numeric ? "px-3 text-right" : "px-3 text-left",
               )}
             >
@@ -152,18 +152,15 @@ export function TablePanel({
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-t border-border">
+          <tr key={i} className="border-b border-border/40 last:border-0">
             {columns.map((c) => (
               <td
                 key={c.key}
                 className={cn(
-                  "py-3 first:pl-5 last:pr-5",
+                  "py-2.5 first:pl-5 last:pr-5",
                   c.numeric
-                    ? "px-3 text-right font-mono tabular-nums text-foreground"
-                    : "px-3 text-left",
-                  c.key === columns[0].key
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground",
+                    ? "px-3 text-right font-mono text-xs tabular-nums text-foreground"
+                    : "px-3 text-left text-xs text-muted-foreground",
                 )}
               >
                 {row[c.key]}

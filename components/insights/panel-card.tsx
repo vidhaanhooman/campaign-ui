@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Maximize2, RefreshCw } from "lucide-react";
+import {
+  Bell,
+  Download,
+  Maximize2,
+  MoreHorizontal,
+  RefreshCw,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -9,6 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ChartToolbar } from "./chart-toolbar";
 import { SegmentedToggle } from "./segmented-toggle";
@@ -58,7 +70,7 @@ export function PanelCard({
           className,
         )}
       >
-        <header className="flex items-center gap-2 border-b border-border px-5 py-3">
+        <header className="flex items-center gap-2 px-5 pt-4 pb-3">
           <span className="text-sm font-medium text-foreground">{title}</span>
           <div className="ml-auto flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
             <IconButton label="Refresh" onClick={() => setNonce((n) => n + 1)}>
@@ -67,9 +79,13 @@ export function PanelCard({
             <IconButton label="Enlarge" onClick={() => setOpen(true)}>
               <Maximize2 size={13} />
             </IconButton>
+            <MoreMenu
+              onRefresh={() => setNonce((n) => n + 1)}
+              onEdit={onEdit}
+            />
           </div>
         </header>
-        <div className="flex-1 p-4">
+        <div className="flex-1 px-5 pb-5">
           <React.Fragment key={nonce}>{children}</React.Fragment>
         </div>
       </section>
@@ -117,6 +133,79 @@ function IconButton({
       onClick={onClick}
       className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
     >
+      {children}
+    </button>
+  );
+}
+
+function MoreMenu({
+  onRefresh,
+  onEdit,
+}: {
+  onRefresh: () => void;
+  /** Only rendered when provided — insights panels without a real editor omit it. */
+  onEdit?: () => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const run = (fn: () => void) => {
+    fn();
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            aria-label="More actions"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <MoreHorizontal size={15} />
+          </button>
+        }
+      />
+      <PopoverContent align="end" sideOffset={6} className="w-44 p-1">
+        <MenuItem icon={<RefreshCw size={14} />} onClick={() => run(onRefresh)}>
+          Refresh
+        </MenuItem>
+        <MenuItem
+          icon={<SlidersHorizontal size={14} />}
+          onClick={() => onEdit && run(onEdit)}
+          disabled={!onEdit}
+        >
+          Edit…
+        </MenuItem>
+        <MenuItem icon={<Download size={14} />} disabled>
+          Download image
+        </MenuItem>
+        <MenuItem icon={<Bell size={14} />} disabled>
+          Create alarm
+        </MenuItem>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function MenuItem({
+  icon,
+  children,
+  onClick,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-secondary disabled:pointer-events-none disabled:opacity-40 [&>svg]:text-muted-foreground"
+    >
+      {icon}
       {children}
     </button>
   );

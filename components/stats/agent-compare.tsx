@@ -106,15 +106,16 @@ export function AgentCompare() {
         <table className="w-full border-collapse text-sm">
           {/* Column headers — version names */}
           <thead>
-            <tr className="border-y border-border bg-secondary/40">
+            <tr className="border-b border-sidebar-border/30">
               <th className="w-[28%] py-2.5 pl-5 pr-3 text-left text-xs font-medium text-muted-foreground">
                 Metric
               </th>
-              {VERSION_STATS.map((v) => (
+              {VERSION_STATS.map((v, i) => (
                 <th
                   key={v.version}
                   className={cn(
                     "px-3 py-2.5 text-left text-xs font-medium",
+                    i === VERSION_STATS.length - 1 && "pr-5",
                     v.live ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
@@ -143,7 +144,7 @@ export function AgentCompare() {
         </table>
       </div>
 
-      <div className="flex justify-center border-t border-border bg-secondary/20 px-5 py-3">
+      <div className="flex justify-center px-5 py-3">
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
@@ -179,24 +180,25 @@ function GroupBody({
         <tr
           key={r.key}
           className={cn(
-            "border-b border-border/40 last:border-0",
-            i === 0 && "border-t-2 border-border",
+            "border-b border-sidebar-border/30 transition-colors last:border-0 hover:bg-secondary/40",
+            i === 0 && "[&>td]:pt-4",
           )}
         >
-          <td className="py-2.5 pl-5 pr-3 text-xs text-muted-foreground">
+          <td className="py-2.5 pl-5 pr-3 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               {r.label}
               {r.hint && <InfoHint>{r.hint}</InfoHint>}
             </span>
           </td>
-          {stats.map((s) => {
+          {stats.map((s, si) => {
             const val = s[r.key] as number;
             const isBest = val === best[r.key];
             return (
               <td
                 key={s.version}
                 className={cn(
-                  "px-3 py-2.5 font-mono text-xs tabular-nums",
+                  "px-3 py-2.5 font-mono text-sm tabular-nums",
+                  si === stats.length - 1 && "pr-5",
                   s.live && "bg-secondary/15",
                   isBest ? "text-foreground" : "text-muted-foreground",
                 )}

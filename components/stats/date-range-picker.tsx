@@ -131,7 +131,7 @@ export function DateRangePicker({
           <button
             type="button"
             className={cn(
-              "flex h-8 items-center gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground transition-colors hover:bg-secondary/60 dark:bg-secondary dark:hover:bg-secondary/80",
+              "inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/15 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
               className,
             )}
           >
@@ -210,7 +210,7 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={clear}
-                className="inline-flex h-7 items-center rounded-md border border-border bg-transparent px-3 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="inline-flex h-7 items-center rounded-md border border-sidebar-border/15 bg-transparent px-3 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 Clear
               </button>

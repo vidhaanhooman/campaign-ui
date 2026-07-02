@@ -121,9 +121,9 @@ export function AddWidgetButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/15 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
       >
-        <Plus size={14} />
+        <Plus size={13} />
         Add widget
       </button>
       <AddWidgetDialog open={open} onOpenChange={setOpen} />
@@ -202,7 +202,7 @@ function AddWidgetDialog({
             {/* Visualization */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Visualization</div>
-              <div className="grid grid-cols-6 gap-1 rounded-md border border-border bg-secondary/30 p-1">
+              <div className="grid grid-cols-6 gap-1 rounded-md border border-sidebar-border/15 bg-secondary/30 p-1">
                 {VIZ.map((v) => {
                   const active = viz === v.key;
                   const Icon = v.icon;
@@ -260,7 +260,7 @@ function AddWidgetDialog({
             {/* Range */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Range</div>
-              <div className="flex items-center gap-3 rounded-md border border-border bg-secondary/20 px-4 py-3">
+              <div className="flex items-center gap-3 rounded-md border border-sidebar-border/15 bg-secondary/20 px-4 py-3">
                 <Switch
                   checked={useCustomRange}
                   onCheckedChange={setUseCustomRange}
@@ -363,7 +363,7 @@ function FiltersSheet({
 
         {/* Search */}
         <div className="border-b border-border px-5 py-3">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-sidebar-border/15 bg-transparent px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}

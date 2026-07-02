@@ -1,25 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Zap } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import {
   RT_FUNNEL_RAW,
   RT_LIFECYCLE,
+  RT_OPS,
   STAT_CAMPAIGN_RT,
   buildFunnel,
   type RtWindowKey,
 } from "@/lib/stats-data";
 import { CallingOverview } from "@/components/stats/calling-overview";
-import { CallPerformance } from "@/components/stats/call-performance";
 import { ConversionFunnel } from "@/components/stats/conversion-funnel";
 import { TaskLifecycle } from "@/components/stats/task-lifecycle";
 import { AgentCompare } from "@/components/stats/agent-compare";
 import { StatsTypeTabs } from "@/components/stats/type-tabs";
 import { AddWidgetButton } from "@/components/stats/add-widget";
-import { OpsStrip } from "@/components/stats/ops-strip";
 import { AppShell } from "@/components/app-shell";
+import { KpiCard, PageHeader } from "@/components/stats/ui";
 import {
   DateRangePicker,
   type StatsRange,
@@ -37,6 +36,22 @@ const WINDOW_BY_PRESET: Record<string, RtWindowKey> = {
   "3mo": "lifetime",
 };
 
+/** Compose RT_OPS into the KpiCard shape. */
+const RT_KPIS = RT_OPS.map((k) => ({
+  label: k.label,
+  value: k.suffix ? (
+    <span>
+      {k.value}
+      <span className="ml-1 font-mono text-lg text-muted-foreground">
+        {k.suffix}
+      </span>
+    </span>
+  ) : (
+    k.value
+  ),
+  description: k.sub,
+}));
+
 export default function RealtimeStatsPage() {
   const [range, setRange] = useState<StatsRange | undefined>(undefined);
   const [funnelWindow, setFunnelWindow] = useState<RtWindowKey>("24h");
@@ -48,56 +63,37 @@ export default function RealtimeStatsPage() {
 
   return (
     <AppShell activeNav="Campaigns">
-      <div className="px-8 py-6">
-        {/* Header */}
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-              <Zap size={12} /> Realtime · Campaign performance
-            </div>
-            <h1 className="text-lg font-medium tracking-tight text-foreground">
-              {STAT_CAMPAIGN_RT.name}
-            </h1>
-            <div className="mt-1 flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">
-                {STAT_CAMPAIGN_RT.agentName}{" "}
-                <span className="font-mono text-xs">
-                  · {STAT_CAMPAIGN_RT.agentId}
-                </span>
-              </p>
-              <Badge variant="secondary" className="gap-1.5">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                </span>
-                Live
-              </Badge>
-            </div>
-          </div>
+      <PageHeader
+        icon={<PanelLeft size={16} />}
+        label={STAT_CAMPAIGN_RT.name}
+      />
 
-          <div className="flex items-center gap-2">
-            <StatsTypeTabs />
-            <DateRangePicker
-              value={range}
-              onChange={(r) => {
-                setRange(r);
-                const w = r.preset ? WINDOW_BY_PRESET[r.preset] : undefined;
-                if (w) setFunnelWindow(w);
-              }}
-              defaultPreset="24h"
-            />
-            <AddWidgetButton />
-          </div>
+      <div className="px-6 py-6">
+        {/* Toolbar */}
+        <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
+          <StatsTypeTabs />
+          <DateRangePicker
+            value={range}
+            onChange={(r) => {
+              setRange(r);
+              const w = r.preset ? WINDOW_BY_PRESET[r.preset] : undefined;
+              if (w) setFunnelWindow(w);
+            }}
+            defaultPreset="24h"
+          />
+          <AddWidgetButton />
         </div>
 
-        {/* Ops strip */}
-        <div className="mb-5">
-          <OpsStrip />
+        {/* KPI card row */}
+        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {RT_KPIS.map((k) => (
+            <KpiCard key={k.label} {...k} />
+          ))}
         </div>
 
         {/* Sections */}
-        <div className="flex flex-col gap-5">
-          <div className="grid gap-5 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-6 lg:grid-cols-2">
             <ConversionFunnel data={funnelData} />
             <TaskLifecycle
               states={RT_LIFECYCLE.states}
@@ -105,7 +101,6 @@ export default function RealtimeStatsPage() {
             />
           </div>
           <CallingOverview />
-          <CallPerformance />
           <AgentCompare />
         </div>
       </div>

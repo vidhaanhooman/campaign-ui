@@ -5,12 +5,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
-  Label,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   XAxis,
   YAxis,
 } from "recharts";
@@ -82,21 +78,63 @@ export function MultiLineChart({
   );
 }
 
-/* ── Donut ───────────────────────────────────────────────────────────── */
+/* ── Interactive donut ───────────────────────────────────────────────── */
 
+function polar(cx: number, cy: number, r: number, deg: number) {
+  const rad = ((deg - 90) * Math.PI) / 180;
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)] as const;
+}
+function arcPath(
+  cx: number,
+  cy: number,
+  rO: number,
+  rI: number,
+  start: number,
+  end: number,
+) {
+  const large = end - start > 180 ? 1 : 0;
+  const [x1, y1] = polar(cx, cy, rO, start);
+  const [x2, y2] = polar(cx, cy, rO, end);
+  const [x3, y3] = polar(cx, cy, rI, end);
+  const [x4, y4] = polar(cx, cy, rI, start);
+  return [
+    `M ${x1} ${y1}`,
+    `A ${rO} ${rO} 0 ${large} 1 ${x2} ${y2}`,
+    `L ${x3} ${y3}`,
+    `A ${rI} ${rI} 0 ${large} 0 ${x4} ${y4}`,
+    "Z",
+  ].join(" ");
+}
+
+/**
+ * Hover-interactive donut: hovering a slice (or legend row) dims the others and
+ * shows that slice's name / share / count in the center. Matches the stats
+ * "Dial disposition" donut.
+ */
 export function Donut({
   data,
-  centerLabel = "total",
+  unit = "calls",
 }: {
   data: { name: string; value: number }[];
-  centerLabel?: string;
+  /** Noun shown after counts, e.g. "calls" / "dials". */
+  unit?: string;
 }) {
   const total = data.reduce((a, d) => a + d.value, 0);
+  const [hover, setHover] = React.useState<string | null>(null);
 
-  const config = Object.fromEntries([
-    ["value", { label: "Calls" }],
-    ...data.map((d, i) => [d.name, { label: d.name, color: INSIGHT_RAMP[i % 5] }]),
-  ]) satisfies ChartConfig;
+  let cursor = 0;
+  const segs = data.map((d, i) => {
+    const start = cursor * 360;
+    cursor += total ? d.value / total : 0;
+    const end = cursor * 360;
+    return {
+      ...d,
+      start,
+      end,
+      color: INSIGHT_RAMP[i] ?? INSIGHT_RAMP[INSIGHT_RAMP.length - 1],
+    };
+  });
+  const active = hover ? segs.find((s) => s.name === hover) ?? null : null;
 
   if (total === 0) {
     return (
@@ -108,63 +146,77 @@ export function Donut({
 
   return (
     <div className="flex w-full items-center gap-6">
-      <ChartContainer config={config} className="aspect-square h-44 shrink-0">
-        <PieChart>
-          <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={58}
-            outerRadius={86}
-            strokeWidth={2}
-          >
-            {data.map((_, i) => (
-              <Cell key={i} fill={INSIGHT_RAMP[i % 5]} />
-            ))}
-            <Label
-              content={({ viewBox }) =>
-                viewBox && "cx" in viewBox ? (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    <tspan
-                      x={viewBox.cx}
-                      className="fill-foreground text-lg font-medium"
-                    >
-                      {total}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      dy={18}
-                      className="fill-muted-foreground text-[10px]"
-                    >
-                      {centerLabel}
-                    </tspan>
-                  </text>
-                ) : null
-              }
-            />
-          </Pie>
-        </PieChart>
-      </ChartContainer>
+      <div className="relative shrink-0">
+        <svg
+          viewBox="0 0 200 200"
+          className="h-44 w-44"
+          onMouseLeave={() => setHover(null)}
+        >
+          {segs.map((s) => {
+            const dim = active !== null && active.name !== s.name;
+            return (
+              <path
+                key={s.name}
+                d={arcPath(100, 100, 95, 62, s.start, s.end)}
+                fill={s.color}
+                opacity={dim ? 0.25 : 1}
+                style={{ transition: "opacity 120ms ease", cursor: "pointer" }}
+                onMouseEnter={() => setHover(s.name)}
+              >
+                <title>{`${s.name}: ${Math.round((s.value / total) * 100)}%`}</title>
+              </path>
+            );
+          })}
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          {active ? (
+            <>
+              <div className="max-w-[110px] truncate text-[10px] text-muted-foreground">
+                {active.name}
+              </div>
+              <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
+                {Math.round((active.value / total) * 100)}%
+              </div>
+              <div className="font-mono text-[10px] tabular-nums text-muted-foreground">
+                {active.value.toLocaleString()} {unit}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-[10px] text-muted-foreground">total {unit}</div>
+              <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
+                {total.toLocaleString()}
+              </div>
+              <div className="text-[10px] text-muted-foreground">hover a slice</div>
+            </>
+          )}
+        </div>
+      </div>
 
-      <ul className="flex flex-1 flex-col gap-1.5 text-xs">
-        {data.map((d, i) => (
-          <li key={d.name} className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 shrink-0 rounded-[2px]"
-              style={{ backgroundColor: INSIGHT_RAMP[i % 5] }}
-            />
-            <span className="flex-1 truncate text-muted-foreground">{d.name}</span>
-            <span className="font-mono tabular-nums text-foreground">
-              {Math.round((d.value / total) * 100)}%
-            </span>
-          </li>
-        ))}
+      <ul
+        className="flex flex-1 flex-col gap-1.5 text-xs"
+        onMouseLeave={() => setHover(null)}
+      >
+        {segs.map((s) => {
+          const dim = active !== null && active.name !== s.name;
+          return (
+            <li
+              key={s.name}
+              onMouseEnter={() => setHover(s.name)}
+              className="flex cursor-pointer items-center gap-2 transition-opacity"
+              style={{ opacity: dim ? 0.4 : 1 }}
+            >
+              <span
+                className="h-2 w-2 shrink-0 rounded-[2px]"
+                style={{ backgroundColor: s.color }}
+              />
+              <span className="flex-1 truncate text-muted-foreground">{s.name}</span>
+              <span className="font-mono tabular-nums text-foreground">
+                {Math.round((s.value / total) * 100)}%
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import { Activity, CheckCircle2, Zap, type LucideIcon } from "lucide-react";
 
 import { LIFECYCLE, fmtInt, fmtPct } from "@/lib/stats-data";
-import { Panel } from "./ui";
+import { ChartCard } from "./ui";
 
 type LifecycleState = (typeof LIFECYCLE.states)[number];
 
@@ -22,13 +22,14 @@ export function TaskLifecycle({
   const terminal = states
     .filter((s) => s.bucket === "terminal")
     .sort((a, b) => b.count - a.count);
-  const inflightTotal = inflight.reduce((s, x) => s + x.count, 0);
-  const terminalTotal = terminal.reduce((s, x) => s + x.count, 0);
-  const inflightMax = Math.max(...inflight.map((s) => s.count));
-  const terminalMax = Math.max(...terminal.map((s) => s.count));
+
+  const groups: { label: string; icon: LucideIcon; rows: LifecycleState[] }[] = [
+    { label: "In-flight", icon: Zap, rows: inflight },
+    { label: terminalLabel, icon: CheckCircle2, rows: terminal },
+  ];
 
   return (
-    <Panel
+    <ChartCard
       title="Task lifecycle"
       icon={<Activity size={14} />}
       action={
@@ -37,86 +38,49 @@ export function TaskLifecycle({
         </span>
       }
     >
-      <div className="flex h-full flex-col">
-        {/* Two number blocks */}
-        <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30">
-          <div className="px-5 py-4">
-            <div className="text-[10px] font-medium text-muted-foreground">
-              Live
+      <div className="flex flex-col gap-2">
+        {groups.map((g) => (
+          <div key={g.label}>
+            <div className="flex items-center gap-1.5 px-6 py-2 text-sm font-medium text-foreground">
+              <g.icon size={13} className="text-muted-foreground" />
+              {g.label}
             </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="font-mono text-lg leading-none tabular-nums text-foreground">
-                {fmtInt(inflightTotal)}
-              </span>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                {fmtPct(inflightTotal / total, 0)}
-              </span>
-            </div>
+            <table className="w-full border-collapse text-sm">
+              <colgroup>
+                <col />
+                <col className="w-[30%]" />
+              </colgroup>
+              <tbody>
+                {g.rows.map((s) => (
+                  <Row key={s.state} state={s} total={total} />
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div className="px-5 py-4">
-            <div className="text-[10px] font-medium text-muted-foreground">
-              {terminalLabel}
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="font-mono text-lg leading-none tabular-nums text-foreground">
-                {fmtInt(terminalTotal)}
-              </span>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                {fmtPct(terminalTotal / total, 0)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* State list with progress bars per row, grouped by bucket */}
-        <div className="mt-5 flex flex-1 flex-col justify-between gap-5">
-          <ul className="flex flex-col gap-3">
-            {inflight.map((s) => (
-              <Row key={s.state} state={s} max={inflightMax} total={total} />
-            ))}
-          </ul>
-          <ul className="flex flex-col gap-3 border-t border-border pt-5">
-            {terminal.map((s) => (
-              <Row key={s.state} state={s} max={terminalMax} total={total} />
-            ))}
-          </ul>
-        </div>
+        ))}
       </div>
-    </Panel>
+    </ChartCard>
   );
 }
 
-function Row({
-  state,
-  max,
-  total,
-}: {
-  state: LifecycleState;
-  max: number;
-  total: number;
-}) {
+function Row({ state, total }: { state: LifecycleState; total: number }) {
   return (
-    <li className="flex items-center gap-3">
-      <div className="w-40 shrink-0">
-        <span className="truncate text-xs font-medium text-foreground">{state.state}</span>
-      </div>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
-        <div
-          className="h-full rounded-full"
-          style={{
-            width: `${Math.max(3, (state.count / max) * 100)}%`,
-            backgroundColor: "var(--chart-1)",
-          }}
-        />
-      </div>
-      <div className="flex w-20 shrink-0 items-baseline justify-end gap-1.5">
-        <span className="font-mono text-xs tabular-nums text-foreground">
-          {fmtInt(state.count)}
+    <tr className="border-b border-sidebar-border/30 transition-colors last:border-0 hover:bg-secondary/40">
+      <td className="py-2.5 pl-6 pr-3">
+        <span className="truncate text-sm font-medium text-foreground">
+          {state.state}
         </span>
-        <span className="w-8 text-right font-mono text-xs tabular-nums text-muted-foreground">
-          {fmtPct(state.count / total, 0)}
+      </td>
+      <td className="py-2.5 pl-3 pr-6 text-right">
+        <span className="inline-flex items-baseline justify-end gap-2.5">
+          <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
+            {fmtInt(state.count)}
+          </span>
+          <span className="font-mono text-sm tabular-nums text-muted-foreground">
+            {fmtPct(state.count / total, 0)}
+          </span>
         </span>
-      </div>
-    </li>
+      </td>
+    </tr>
   );
 }

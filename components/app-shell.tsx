@@ -3,20 +3,20 @@
 import * as React from "react";
 import {
   Bell,
-  BookOpen,
   Bot,
-  ChevronsUpDown,
-  FileText,
-  FlaskConical,
+  ChevronRight,
+  CircleArrowUp,
   FileText as ReportIcon,
+  FlaskConical,
   Globe,
   Headphones,
   Library,
+  LineChart,
   ListChecks,
   MessageSquare,
-  PanelLeftClose,
   Phone,
   Radio,
+  Settings,
   ShieldAlert,
   SpellCheck,
   Wrench,
@@ -40,6 +40,11 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
       { label: "Test Agents", icon: Headphones },
       { label: "Simulation", icon: FlaskConical },
       { label: "QA", icon: ShieldAlert },
+    ],
+  },
+  {
+    group: "TOOLING",
+    items: [
       { label: "Tools", icon: Wrench },
       { label: "Library", icon: Library },
       { label: "Pronunciation", icon: SpellCheck },
@@ -49,11 +54,8 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "CALL",
-    items: [{ label: "Campaigns", icon: Radio }],
-  },
-  {
-    group: "LOGS",
     items: [
+      { label: "Campaigns", icon: Radio },
       { label: "Conversation Logs", icon: MessageSquare },
       { label: "Execution Logs", icon: ListChecks },
     ],
@@ -63,15 +65,29 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
     items: [
       { label: "Alerts", icon: Bell },
       { label: "Reports", icon: ReportIcon },
-      { label: "Docs", icon: BookOpen },
+      { label: "Insights", icon: LineChart },
     ],
   },
 ];
+
+/** Groups that start collapsed — user can expand as needed. */
+const COLLAPSED_BY_DEFAULT = new Set(["TOOLING", "MONITOR"]);
 
 /**
  * App chrome shared across pages: the HoomanLabs sidebar + a scrollable main
  * content area. `activeNav` highlights the matching sidebar item.
  */
+type SidebarCtx = { collapsed: boolean; toggle: () => void };
+const SidebarContext = React.createContext<SidebarCtx>({
+  collapsed: false,
+  toggle: () => {},
+});
+
+/** Toggle the sidebar from anywhere inside AppShell. */
+export function useSidebar() {
+  return React.useContext(SidebarContext);
+}
+
 export function AppShell({
   activeNav = "Campaigns",
   children,
@@ -79,6 +95,30 @@ export function AppShell({
   activeNav?: string;
   children: React.ReactNode;
 }) {
+  const [collapsed, setCollapsed] = React.useState(false);
+  const sidebar = React.useMemo<SidebarCtx>(
+    () => ({ collapsed, toggle: () => setCollapsed((c) => !c) }),
+    [collapsed],
+  );
+  const [openGroups, setOpenGroups] = React.useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    for (const sec of SIDEBAR) {
+      const hasActive = sec.items.some((it) => it.label === activeNav);
+      if (hasActive || !COLLAPSED_BY_DEFAULT.has(sec.group)) {
+        initial.add(sec.group);
+      }
+    }
+    return initial;
+  });
+
+  const toggleGroup = (group: string) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      return next;
+    });
+
   return (
     <div
       className="flex h-screen w-screen overflow-hidden"
@@ -86,64 +126,96 @@ export function AppShell({
     >
       {/* sidebar */}
       <aside
-        className="flex w-[228px] shrink-0 flex-col border-r border-border"
-        style={{ backgroundColor: "var(--background)" }}
+        className={cn(
+          "flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border/15 bg-background text-foreground transition-[width] duration-200",
+          collapsed ? "w-0 border-r-0" : "w-[248px]",
+        )}
       >
-        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-          <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-xs font-medium text-[#f5b8c5]">
-            HO
-          </div>
-          <span className="flex-1 text-sm font-medium text-foreground">
+        {/* Workspace header */}
+        <div className="flex items-center gap-2.5 px-4 pt-4 pb-4">
+          <span className="flex size-7 items-center justify-center rounded-full border border-sidebar-border/15 text-sidebar-foreground">
+            <CircleArrowUp size={16} strokeWidth={1.75} />
+          </span>
+          <span className="flex-1 text-sm font-semibold text-sidebar-foreground">
             HoomanLabs
           </span>
-          <ChevronsUpDown size={13} className="text-muted-foreground" />
-          <button className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
-            <PanelLeftClose size={13} />
-          </button>
         </div>
-        <nav className="scroll-thin flex-1 space-y-4 overflow-y-auto px-2 py-3">
-          {SIDEBAR.map((sec) => (
-            <div key={sec.group}>
-              <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                {sec.group}
+
+        {/* Primary nav */}
+        <nav className="scroll-hidden flex-1 overflow-y-auto px-2 pb-2">
+          {SIDEBAR.map((sec, si) => {
+            const isOpen = openGroups.has(sec.group);
+            return (
+              <div
+                key={sec.group}
+                className={cn(
+                  si === 0 ? "" : "mt-3 border-t border-sidebar-border/15 pt-3",
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(sec.group)}
+                  className="flex w-full items-center gap-1.5 rounded-md px-3 pb-1.5 pt-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-sidebar-foreground"
+                >
+                  <ChevronRight
+                    size={11}
+                    className={cn(
+                      "shrink-0 transition-transform",
+                      isOpen && "rotate-90",
+                    )}
+                  />
+                  <span className="flex-1 text-left">{sec.group}</span>
+                </button>
+                {isOpen && (
+                  <ul className="space-y-0.5">
+                    {sec.items.map((it) => {
+                      const Icon = it.icon;
+                      const active = it.label === activeNav;
+                      return (
+                        <li key={it.label}>
+                          <button
+                            className={cn(
+                              "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                              active
+                                ? "bg-sidebar-accent text-sidebar-foreground"
+                                : "text-sidebar-foreground hover:bg-sidebar-accent/60",
+                            )}
+                          >
+                            <Icon size={16} strokeWidth={1.75} className="shrink-0" />
+                            <span className="flex-1 truncate text-left">
+                              {it.label}
+                            </span>
+                            {it.badge && (
+                              <span className="rounded bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
+                                {it.badge}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-              <ul className="space-y-0.5">
-                {sec.items.map((it) => {
-                  const Icon = it.icon;
-                  const active = it.label === activeNav;
-                  return (
-                    <li key={it.label}>
-                      <button
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-sm transition-colors",
-                          active
-                            ? "bg-secondary text-foreground"
-                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
-                        )}
-                      >
-                        <Icon size={15} className="shrink-0 text-muted-foreground" />
-                        <span className="flex-1 truncate text-left">
-                          {it.label}
-                        </span>
-                        {it.badge && (
-                          <span className="rounded bg-blue-400/15 px-1.5 py-0 text-[10px] text-blue-400">
-                            {it.badge}
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+            );
+          })}
+
+          {/* Settings */}
+          <div className="mt-3 border-t border-sidebar-border/15 pt-3">
+            <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
+              <Settings size={16} strokeWidth={1.75} className="shrink-0" />
+              <span className="flex-1 truncate text-left">Settings</span>
+            </button>
+          </div>
         </nav>
       </aside>
 
       {/* main */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="scroll-thin flex-1 overflow-y-auto">{children}</div>
-      </div>
+      <SidebarContext.Provider value={sidebar}>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="scroll-thin flex-1 overflow-y-auto">{children}</div>
+        </div>
+      </SidebarContext.Provider>
     </div>
   );
 }

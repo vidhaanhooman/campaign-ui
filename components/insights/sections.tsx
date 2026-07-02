@@ -81,7 +81,7 @@ export function KpiStrip({
   ];
 
   return (
-    <div className="grid grid-cols-1 divide-x divide-border rounded-lg border border-border bg-secondary/30 sm:grid-cols-3">
+    <div className="grid grid-cols-1 divide-x divide-border rounded-lg border border-border bg-card sm:grid-cols-3">
       {groups.map((g) => (
         <div key={g.channel} className="px-5 py-4">
           <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
@@ -167,7 +167,7 @@ export function ConversationsChart({
 
   return (
     <section className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <header className="flex items-center gap-4 border-b border-border px-5 py-3.5">
+      <header className="flex items-center gap-4 px-5 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-foreground">
             Conversations &amp; Tasks
@@ -185,7 +185,7 @@ export function ConversationsChart({
           <Maximize2 size={13} />
         </button>
       </header>
-      <div className="p-4">
+      <div className="px-5 pb-5">
         {loading ? (
           <Skeleton className="h-[300px] w-full" />
         ) : (
@@ -248,7 +248,7 @@ export function StatCards({
 
   return (
     <>
-      <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30 sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-card sm:grid-cols-4">
         {items.map((s) => (
           <div key={s.label} className="group/tile relative px-5 py-4">
             <button

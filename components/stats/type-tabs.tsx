@@ -13,7 +13,7 @@ const TABS = [
 export function StatsTypeTabs() {
   const pathname = usePathname();
   return (
-    <div className="inline-flex h-8 items-center gap-0.5 rounded-md border border-border bg-secondary/30 p-0.5">
+    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/15 bg-secondary p-1">
       {TABS.map((t) => {
         const active = pathname === t.href;
         return (
@@ -21,9 +21,9 @@ export function StatsTypeTabs() {
             key={t.href}
             href={t.href}
             className={cn(
-              "inline-flex h-7 items-center rounded-[5px] px-3 text-xs transition-colors",
+              "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
               active
-                ? "bg-foreground text-background shadow-sm"
+                ? "border border-sidebar-border/40 bg-background text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

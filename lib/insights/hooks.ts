@@ -17,6 +17,8 @@ import {
   resolveInboundSummary,
   resolveKpiSummary,
   resolveMetricSeries,
+  resolveMultiScalar,
+  resolveMultiSeries,
   resolveNumberWise,
   resolveOutboundSummary,
   resolvePickupByTime,
@@ -32,11 +34,13 @@ import {
   type InboundSummary,
   type KpiSummary,
   type MetricPoint,
+  type MetricSpec,
+  type MultiPoint,
   type NumberWiseRow,
   type OutboundSummary,
   type SeriesPoint,
 } from "./resolver"
-import type { DataResult, Metric, TimeRange } from "./types"
+import type { DataResult, FilterClause, Metric, TimeRange } from "./types"
 
 // Brief loading whenever `key` changes. setState only fires inside the timeout
 // (async), and the loading flag is derived during render — so no synchronous
@@ -53,14 +57,16 @@ function useLoadingFor(key: string): boolean {
 export function useScalar(
   metric: Metric,
   range: TimeRange,
-  refreshKey = 0
+  refreshKey = 0,
+  where: FilterClause[] = []
 ): DataResult<{ value: number }> {
-  const loading = useLoadingFor(`scalar|${metric.id}|${range}|${refreshKey}`)
+  const fk = JSON.stringify(where)
+  const loading = useLoadingFor(`scalar|${metric.id}|${range}|${refreshKey}|${fk}`)
   const data = React.useMemo(
-    () => ({ value: resolveScalar(metric, range) }),
+    () => ({ value: resolveScalar(metric, range, where) }),
     // refreshKey intentionally re-runs resolution when the user hits Refresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [metric, range, refreshKey]
+    [metric, range, refreshKey, fk]
   )
   return { data, loading }
 }
@@ -78,15 +84,51 @@ export function useSeries(
 export function useMetricSeries(
   metric: Metric | undefined,
   range: TimeRange,
-  refreshKey = 0
+  refreshKey = 0,
+  where: FilterClause[] = []
 ): DataResult<MetricPoint[]> {
+  const fk = JSON.stringify(where)
   const loading = useLoadingFor(
-    `metricseries|${metric?.id ?? "none"}|${range}|${refreshKey}`
+    `metricseries|${metric?.id ?? "none"}|${range}|${refreshKey}|${fk}`
   )
   const data = React.useMemo(
-    () => (metric ? resolveMetricSeries(metric, range) : []),
+    () => (metric ? resolveMetricSeries(metric, range, where) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [metric, range, refreshKey]
+    [metric, range, refreshKey, fk]
+  )
+  return { data, loading }
+}
+
+export function useMultiSeries(
+  specs: MetricSpec[],
+  range: TimeRange,
+  refreshKey = 0
+): DataResult<MultiPoint[]> {
+  const key = specs
+    .map((s) => `${s.metric.id}:${JSON.stringify(s.where)}`)
+    .join("|")
+  const loading = useLoadingFor(`multiseries|${key}|${range}|${refreshKey}`)
+  const data = React.useMemo(
+    () => resolveMultiSeries(specs, range),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key, range, refreshKey]
+  )
+  return { data, loading }
+}
+
+export function useMultiScalar(
+  specs: MetricSpec[],
+  range: TimeRange,
+  refreshKey = 0
+): DataResult<GroupPoint[]> {
+  const key = specs
+    .map((s) => `${s.metric.id}:${JSON.stringify(s.where)}`)
+    .join("|")
+  const loading = useLoadingFor(`multiscalar|${key}|${range}|${refreshKey}`)
+  const data = React.useMemo(
+    () => resolveMultiScalar(specs, range),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key, range, refreshKey]
   )
   return { data, loading }
 }
@@ -94,13 +136,15 @@ export function useMetricSeries(
 export function useGrouped(
   field: string,
   range: TimeRange,
-  refreshKey = 0
+  refreshKey = 0,
+  where: FilterClause[] = []
 ): DataResult<GroupPoint[]> {
-  const loading = useLoadingFor(`grouped|${field}|${range}|${refreshKey}`)
+  const fk = JSON.stringify(where)
+  const loading = useLoadingFor(`grouped|${field}|${range}|${refreshKey}|${fk}`)
   const data = React.useMemo(
-    () => resolveGrouped(field, range),
+    () => resolveGrouped(field, range, where),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [field, range, refreshKey]
+    [field, range, refreshKey, fk]
   )
   return { data, loading }
 }

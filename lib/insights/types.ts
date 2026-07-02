@@ -29,6 +29,26 @@ export type ViewByGranularity = "Hour" | "Day" | "Month"
 export interface WidgetConfig {
   groupBy?: string
   viewBy?: ViewByGranularity
+  filters?: FilterClause[]
+  /** Filters scoped per metric id — each metric filters independently. */
+  metricFilters?: Record<string, FilterClause[]>
+  /** When groupBy === "time", the bucket size ("minute" | "hour" | "day"). */
+  granularity?: string
+  /* ── Per-visualization options ─────────────────────────────────── */
+  /** Number: text prepended to the value (e.g. "$"). */
+  prefix?: string
+  /** Number: text appended to the value (e.g. "ms"). */
+  suffix?: string
+  /** Line: draw the legend row under the chart. */
+  showLegend?: boolean
+  /** Line: curve interpolation. */
+  curveType?: "monotone" | "linear" | "step"
+  /** Bar: stack multi-metric bars instead of grouping. */
+  stacked?: boolean
+  /** Pie: render as donut (with center hole). */
+  donut?: boolean
+  /** Table: show a totals footer row. */
+  showTotals?: boolean
 }
 
 export interface Widget {

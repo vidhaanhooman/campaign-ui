@@ -39,10 +39,10 @@ export function OutboundView({
   ];
 
   return (
-    <div className="space-y-3.5 p-5">
+    <div className="flex flex-col gap-5">
       <StatCards items={stats} range={range} refreshKey={refreshKey} />
 
-      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <LinePanel
           className="lg:col-span-2"
           onEdit={onEdit}
@@ -70,7 +70,7 @@ export function OutboundView({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <PiePanel
           onEdit={onEdit}
           title="End Reason Wise Count"

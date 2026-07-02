@@ -14,7 +14,15 @@ function inRange(e: CallEvent, range: TimeRange) {
 }
 
 function matchFilter(e: CallEvent, where: FilterClause[] = []) {
-  return where.every((f) => String(e[f.field]) === String(f.value))
+  if (!where.length) return true
+  // Group clauses by field: OR within the same field, AND across fields.
+  const byField = where.reduce<Record<string, string[]>>((acc, f) => {
+    (acc[f.field] ??= []).push(String(f.value))
+    return acc
+  }, {})
+  return Object.entries(byField).every(([field, values]) =>
+    values.includes(String(e[field as keyof CallEvent])),
+  )
 }
 
 // Compute a metric's scalar from an arbitrary event slice.
@@ -29,6 +37,14 @@ function scalarOf(metric: Metric, ev: CallEvent[]): number {
         const c = ev.filter((e) => e.connected)
         return c.length ? c.reduce((a, e) => a + e.duration, 0) / c.length : 0
       }
+      // Backed via existing mock fields.
+      if (metric.source.key === "voicemail_count")
+        return ev.filter((e) => e.outcome === "Voicemail").length
+      if (metric.source.key === "init_failed")
+        return ev.filter((e) => !e.connected && e.outcome !== "Voicemail").length
+      if (metric.source.key === "call_failure_rate")
+        return calls ? ((calls - connected) / calls) * 100 : 0
+      // Everything else is a user-defined / SQL metric with no mock backing.
       return 0
     case "derived":
       return calls ? (connected / calls) * 100 : 0
@@ -42,10 +58,14 @@ function scalarOf(metric: Metric, ev: CallEvent[]): number {
 }
 
 // A single scalar for number cards.
-export function resolveScalar(metric: Metric, range: TimeRange): number {
+export function resolveScalar(
+  metric: Metric,
+  range: TimeRange,
+  where: FilterClause[] = []
+): number {
   return scalarOf(
     metric,
-    EVENTS.filter((e) => inRange(e, range))
+    EVENTS.filter((e) => inRange(e, range) && matchFilter(e, where))
   )
 }
 
@@ -57,24 +77,80 @@ export interface MetricPoint {
 // Per-day series of a metric's value — for line charts driven by the chosen metric.
 export function resolveMetricSeries(
   metric: Metric,
-  range: TimeRange
+  range: TimeRange,
+  where: FilterClause[] = []
 ): MetricPoint[] {
   const span = RANGE_DAYS[range]
   const out: MetricPoint[] = []
   if (range === "today") {
     for (let h = 0; h < 24; h += 2) {
       const ev = EVENTS.filter(
-        (e) => e.dayAgo === 0 && e.hour >= h && e.hour < h + 2
+        (e) =>
+          e.dayAgo === 0 && e.hour >= h && e.hour < h + 2 && matchFilter(e, where)
       )
       out.push({ label: `${h}:00`, value: Math.round(scalarOf(metric, ev)) })
     }
   } else {
     for (let d = span - 1; d >= 0; d--) {
-      const ev = EVENTS.filter((e) => e.dayAgo === d)
+      const ev = EVENTS.filter((e) => e.dayAgo === d && matchFilter(e, where))
       out.push({ label: `D-${d}`, value: Math.round(scalarOf(metric, ev)) })
     }
   }
   return out
+}
+
+export interface MultiPoint {
+  label: string
+  [metricId: string]: string | number
+}
+
+/** A metric plus its own filter clauses — each metric filters independently. */
+export interface MetricSpec {
+  metric: Metric
+  where: FilterClause[]
+}
+
+// Per-bucket series for several metrics at once, each with its own filters.
+export function resolveMultiSeries(
+  specs: MetricSpec[],
+  range: TimeRange
+): MultiPoint[] {
+  const span = RANGE_DAYS[range]
+  const buckets: { label: string; ev: CallEvent[] }[] = []
+  if (range === "today") {
+    for (let h = 0; h < 24; h += 2) {
+      buckets.push({
+        label: `${h}:00`,
+        ev: EVENTS.filter((e) => e.dayAgo === 0 && e.hour >= h && e.hour < h + 2),
+      })
+    }
+  } else {
+    for (let d = span - 1; d >= 0; d--) {
+      buckets.push({
+        label: `D-${d}`,
+        ev: EVENTS.filter((e) => e.dayAgo === d),
+      })
+    }
+  }
+  return buckets.map((b) => {
+    const point: MultiPoint = { label: b.label }
+    specs.forEach((s) => {
+      const ev = b.ev.filter((e) => matchFilter(e, s.where))
+      point[s.metric.id] = Math.round(scalarOf(s.metric, ev))
+    })
+    return point
+  })
+}
+
+// One scalar per metric (each with its own filters) — bar / table comparisons.
+export function resolveMultiScalar(
+  specs: MetricSpec[],
+  range: TimeRange
+): GroupPoint[] {
+  return specs.map((s) => {
+    const ev = EVENTS.filter((e) => inRange(e, range) && matchFilter(e, s.where))
+    return { name: s.metric.label, value: Math.round(scalarOf(s.metric, ev)) }
+  })
 }
 
 export interface SeriesPoint {
@@ -137,8 +213,12 @@ function bucketOf(e: CallEvent, field: string): string {
 }
 
 // Category buckets for bar / pie — works for any group-by field.
-export function resolveGrouped(field: string, range: TimeRange): GroupPoint[] {
-  const ev = EVENTS.filter((e) => inRange(e, range))
+export function resolveGrouped(
+  field: string,
+  range: TimeRange,
+  where: FilterClause[] = []
+): GroupPoint[] {
+  const ev = EVENTS.filter((e) => inRange(e, range) && matchFilter(e, where))
   const map: Record<string, number> = {}
   ev.forEach((e) => {
     const k = bucketOf(e, field)

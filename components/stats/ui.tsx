@@ -1,4 +1,6 @@
 import * as React from "react";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { useSidebar } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 
 /** Section panel — the card surface used across the stats page. */
@@ -22,11 +24,11 @@ export function Panel({
   return (
     <section
       className={cn(
-        "flex flex-col rounded-xl border border-border bg-card",
+        "flex flex-col rounded-xl border border-sidebar-border/15 bg-card",
         className,
       )}
     >
-      <header className="flex items-start gap-3 px-5 pt-4 pb-3">
+      <header className="flex items-start gap-3 px-5 pb-4 pt-4">
         {icon && <span className="mt-0.5 text-muted-foreground">{icon}</span>}
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-medium text-foreground">{title}</h2>
@@ -54,7 +56,7 @@ export function StatTile({
   delta?: { value: string; up?: boolean };
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-secondary/40 px-4 py-3.5">
+    <div className="flex flex-col gap-1 px-1 py-2">
       <span className="text-xs text-muted-foreground">
         {label}
       </span>
@@ -74,6 +76,153 @@ export function StatTile({
         )}
         {sub}
       </div>
+    </div>
+  );
+}
+
+/** KPI card — dashboard-style tile: label, delta chip, big number, trend + description. */
+export function KpiCard({
+  label,
+  value,
+  delta,
+  trend,
+  description,
+  className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  delta?: { value: string; up?: boolean };
+  trend?: string;
+  description?: string;
+  className?: string;
+}) {
+  const TrendIcon = delta?.up === false ? TrendingDown : TrendingUp;
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col rounded-2xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5",
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm text-muted-foreground">{label}</span>
+        {delta && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium tabular-nums text-foreground">
+            <TrendIcon size={11} />
+            {delta.value}
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-3xl font-bold leading-tight tracking-tight text-foreground tabular-nums">
+        {value}
+      </div>
+      {(trend || description) && (
+        <div className="mt-3 flex flex-col gap-1">
+          {trend && (
+            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+              {trend}
+              <TrendIcon size={14} />
+            </div>
+          )}
+          {description && (
+            <div className="text-sm text-muted-foreground">{description}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Chart card — title + date subtitle up top, chart body, trend + description footer. */
+export function ChartCard({
+  title,
+  subtitle,
+  icon,
+  footerTrend,
+  footerDescription,
+  action,
+  className,
+  bodyClassName,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  footerTrend?: string;
+  footerDescription?: string;
+  action?: React.ReactNode;
+  className?: string;
+  bodyClassName?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "flex flex-col rounded-xl border border-sidebar-border/15 bg-card",
+        className,
+      )}
+    >
+      <header className="flex items-start justify-between gap-3 px-6 pt-5 pb-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {icon && <span className="text-muted-foreground">{icon}</span>}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+            {subtitle && (
+              <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </header>
+      <div className={cn("flex-1", bodyClassName)}>{children}</div>
+      {(footerTrend || footerDescription) && (
+        <footer className="flex flex-col gap-1 px-6 pt-4 pb-5">
+          {footerTrend && (
+            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+              {footerTrend}
+              <TrendingUp size={14} />
+            </div>
+          )}
+          {footerDescription && (
+            <div className="text-xs text-muted-foreground">{footerDescription}</div>
+          )}
+        </footer>
+      )}
+    </section>
+  );
+}
+
+/** Page header — sidebar-toggle icon · divider · section label, with hairline underline. */
+export function PageHeader({
+  icon,
+  label,
+  action,
+  className,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  action?: React.ReactNode;
+  className?: string;
+}) {
+  const { toggle } = useSidebar();
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 border-b border-border px-6 py-3",
+        className,
+      )}
+    >
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label="Toggle sidebar"
+        className="flex h-7 w-7 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary"
+      >
+        {icon}
+      </button>
+      <span className="h-4 w-px bg-border" aria-hidden />
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      {action && <div className="ml-auto">{action}</div>}
     </div>
   );
 }

@@ -47,7 +47,7 @@ export function LineDetailView({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
       {/* Total tiles */}
-      <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-secondary/30 sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-border rounded-lg border border-border bg-card sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="px-5 py-4">
             <p className="truncate text-[10px] font-medium text-muted-foreground">
