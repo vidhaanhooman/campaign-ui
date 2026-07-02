@@ -35,7 +35,7 @@ export default function DevPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--background)" }}>
       {/* top bar */}
-      <header className="flex items-center gap-4 border-b border-border px-6 py-3" style={{ backgroundColor: "var(--card)" }}>
+      <header className="flex items-center gap-4 border-b border-sidebar-border/30 px-6 py-3" style={{ backgroundColor: "var(--card)" }}>
         <Link
           href="/campaigns"
           className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -47,7 +47,7 @@ export default function DevPage() {
           bypass — every screen
         </span>
 
-        <div className="ml-auto inline-flex items-center rounded-md border border-input bg-secondary p-0.5">
+        <div className="ml-auto inline-flex items-center rounded-md border border-sidebar-border/30 bg-secondary p-0.5">
           {(
             [
               { v: "realtime", label: "Realtime" },
@@ -73,7 +73,7 @@ export default function DevPage() {
 
       {/* step jumper */}
       {view !== "components" && (
-        <div className="flex items-center gap-2 border-b border-border px-6 py-2.5" style={{ backgroundColor: "var(--card)" }}>
+        <div className="flex items-center gap-2 border-b border-sidebar-border/30 px-6 py-2.5" style={{ backgroundColor: "var(--card)" }}>
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
             Jump to step
           </span>
@@ -89,7 +89,7 @@ export default function DevPage() {
                 className={cn(
                   "rounded-md px-3 py-1 text-xs transition-colors",
                   active
-                    ? "bg-secondary text-foreground border border-input"
+                    ? "bg-secondary text-foreground border border-sidebar-border/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
                 )}
               >
@@ -104,7 +104,7 @@ export default function DevPage() {
       <main className="flex-1 p-6 overflow-auto">
         {view === "realtime" && (
           <div
-            className="mx-auto border border-input rounded-lg overflow-hidden shadow-xl shadow-black/40"
+            className="mx-auto border border-sidebar-border/15 rounded-xl overflow-hidden shadow-xl shadow-black/40"
             style={{ backgroundColor: "var(--card)", width: "1080px", height: "780px" }}
           >
             <RealtimeWizard
@@ -118,7 +118,7 @@ export default function DevPage() {
 
         {view === "batch" && (
           <div
-            className="mx-auto border border-input rounded-lg overflow-hidden shadow-xl shadow-black/40"
+            className="mx-auto border border-sidebar-border/15 rounded-xl overflow-hidden shadow-xl shadow-black/40"
             style={{ backgroundColor: "var(--card)", width: "1080px", height: "780px" }}
           >
             <BatchWizard
@@ -210,7 +210,7 @@ function ComponentGallery() {
           <button className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90">
             Primary
           </button>
-          <button className="rounded-md border border-input px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+          <button className="rounded-md border border-sidebar-border/30 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
             Secondary
           </button>
           <button className="rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -249,7 +249,7 @@ function Section({
       <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-3">
         {title}
       </div>
-      <div className="rounded-lg border border-input bg-card p-5">
+      <div className="rounded-xl border border-sidebar-border/15 bg-card p-5">
         {children}
       </div>
     </section>
@@ -266,7 +266,7 @@ function Swatch({
   textFor?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-border overflow-hidden">
+    <div className="rounded-md border border-sidebar-border/15 overflow-hidden">
       <div
         className="h-12 flex items-center justify-center font-mono text-xs"
         style={{
@@ -286,7 +286,7 @@ function Swatch({
 
 function Pill({ color, label }: { color: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-input bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
       <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", color)} />
       {label}
     </span>

@@ -17,7 +17,7 @@ export function WindowSelector({
   onChange: (v: RtWindowKey) => void;
 }) {
   return (
-    <div className="inline-flex h-7 items-center gap-0.5 rounded-md border border-border bg-secondary/30 p-0.5">
+    <div className="inline-flex h-7 items-center gap-0.5 rounded-xl border border-sidebar-border/15 bg-secondary/30 p-0.5">
       {WINDOWS.map((w) => {
         const active = value === w.value;
         return (
@@ -26,7 +26,7 @@ export function WindowSelector({
             type="button"
             onClick={() => onChange(w.value)}
             className={cn(
-              "inline-flex h-6 items-center rounded-[5px] px-2.5 text-xs transition-colors",
+              "inline-flex h-6 items-center rounded-lg px-2.5 text-xs transition-colors",
               active
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",

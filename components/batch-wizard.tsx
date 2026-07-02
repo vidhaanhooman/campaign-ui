@@ -225,7 +225,7 @@ export function BatchWizard({
           </h1>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <X size={14} />
           </button>
@@ -243,7 +243,7 @@ export function BatchWizard({
                     setStep(s.id);
                   }}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
+                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
                     active && "bg-secondary text-foreground",
                     !active &&
                       "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
@@ -636,8 +636,8 @@ export function BatchWizard({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 rounded-lg border border-sidebar-border/30 bg-secondary px-3 py-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <div className="flex items-center gap-3 rounded-xl border border-sidebar-border/30 bg-secondary px-3 py-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                         <FileSpreadsheet size={13} />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -645,7 +645,7 @@ export function BatchWizard({
                           <span className="truncate text-sm font-medium text-foreground">
                             {csvName}
                           </span>
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
                             <Check size={10} strokeWidth={3} /> Uploaded
                           </span>
                         </div>
@@ -659,7 +659,7 @@ export function BatchWizard({
                             setUploaded(false);
                             setCsvName("");
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                         >
                           <RotateCcw size={12} /> Replace file
                         </button>
@@ -1298,7 +1298,7 @@ function ReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="overflow-hidden rounded-lg border border-sidebar-border/15 bg-card">
+      <div className="overflow-hidden rounded-xl border border-sidebar-border/15 bg-card">
         {visible.map(([label, value], i) => (
           <div
             key={i}
@@ -1369,7 +1369,7 @@ function BatchSummary({
       : [];
 
   return (
-    <div className="rounded-lg border border-sidebar-border/30 bg-secondary overflow-hidden">
+    <div className="rounded-xl border border-sidebar-border/30 bg-secondary overflow-hidden">
       <div className="px-4 py-3 border-b border-sidebar-border/30">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary

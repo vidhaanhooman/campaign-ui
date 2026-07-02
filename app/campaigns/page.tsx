@@ -178,9 +178,9 @@ export default function CampaignsPage() {
             {statsOpen && (
               <div className="grid grid-cols-1 gap-4 border-t border-sidebar-border/15 px-5 py-5 md:grid-cols-2">
                 {/* Backlog card */}
-                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5">
+                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-primary/5 to-card px-6 py-5">
                   <div className="text-sm text-muted-foreground">Backlog</div>
-                  <div className="mt-2 text-3xl font-bold leading-tight tabular-nums text-foreground">
+                  <div className="mt-2 text-3xl font-semibold leading-tight tabular-nums text-foreground">
                     {backlog}
                   </div>
                   <div className="mt-4 space-y-2">
@@ -201,14 +201,14 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Slot utilization card */}
-                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5">
+                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-primary/5 to-card px-6 py-5">
                   <div className="text-sm text-muted-foreground">
                     Slot utilization
                   </div>
                   <div className="mt-3 flex items-center gap-5">
                     <SlotRing used={slotsUsed} total={slotsTotal} />
                     <div>
-                      <div className="text-3xl font-bold leading-tight tabular-nums text-foreground">
+                      <div className="text-3xl font-semibold leading-tight tabular-nums text-foreground">
                         {slotsUsed}
                         <span className="text-muted-foreground">
                           /{slotsTotal}
@@ -308,17 +308,17 @@ export default function CampaignsPage() {
                       {r.slotsUsed} / {r.slotsTotal}
                     </td>
                     <td className="px-3 py-3">
-                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
                         {r.status}
                       </span>
                     </td>
                     <td className="py-3 pl-3 pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground">
+                        <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
                           <Eye size={14} />
                         </button>
-                        <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground">
+                        <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
                           <MoreHorizontal size={14} />
                         </button>
                       </div>

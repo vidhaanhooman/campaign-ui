@@ -148,7 +148,7 @@ export function AgentCompare() {
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
-          className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-secondary"
+          className="inline-flex items-center gap-2 rounded-lg border border-sidebar-border/30 bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-secondary"
         >
           <TableIcon size={13} className="text-foreground" />
           {expanded ? "Show core comparison" : "Full comparison"}

@@ -30,7 +30,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-foreground bg-foreground text-background" : "border-input",
+        checked ? "border-foreground bg-foreground text-background" : "border-sidebar-border/30",
       )}
     >
       {checked && <Check size={11} strokeWidth={3} />}
@@ -66,7 +66,7 @@ export function AgentPicker({
           <button
             type="button"
             className={cn(
-              "flex h-8 items-center gap-1.5 rounded-md border border-input bg-secondary px-2.5 text-xs text-foreground transition-colors hover:bg-secondary/80",
+              "flex h-8 items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-secondary px-2.5 text-xs text-foreground transition-colors hover:bg-secondary/80",
               className,
             )}
           >
@@ -86,15 +86,15 @@ export function AgentPicker({
         className="w-[380px] overflow-hidden p-0"
       >
         <div className="flex flex-col">
-          <div className="flex h-11 items-center gap-2 border-b border-border px-4">
+          <div className="flex h-11 items-center gap-2 border-b border-sidebar-border/30 px-4">
             <Bot size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Agent</span>
             <span className="ml-auto font-mono text-[11px] text-muted-foreground">
               {filtered.length}
             </span>
           </div>
-          <div className="border-b border-border p-2">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-transparent px-2.5">
+          <div className="border-b border-sidebar-border/30 p-2">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border/30 bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}
@@ -141,7 +141,7 @@ export function AgentPicker({
                         {a.id}
                       </span>
                     </span>
-                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-secondary px-2 text-[10px] text-muted-foreground">
+                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-sidebar-border/30 bg-secondary px-2 text-[10px] text-muted-foreground">
                       {a.mode}
                     </span>
                   </button>
@@ -149,7 +149,7 @@ export function AgentPicker({
               })
             )}
           </div>
-          <div className="flex items-center justify-between border-t border-border p-2">
+          <div className="flex items-center justify-between border-t border-sidebar-border/30 p-2">
             <button
               type="button"
               disabled={!agentId}
@@ -157,7 +157,7 @@ export function AgentPicker({
                 onChange("");
                 setOpen(false);
               }}
-              className="rounded-md border border-input px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              className="rounded-md border border-sidebar-border/30 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
             >
               Clear
             </button>

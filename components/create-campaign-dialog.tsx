@@ -187,7 +187,7 @@ function TypePicker({
                 <button
                   key={opt.type}
                   onClick={() => onPick(opt.type)}
-                  className="group relative flex flex-col gap-4 rounded-lg border border-sidebar-border/30 bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
+                  className="group relative flex flex-col gap-4 rounded-xl border border-sidebar-border/30 bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -533,7 +533,7 @@ export function RealtimeWizard({
                   <span className="font-medium">{s.title}</span>
                 </button>
                 {i < STEPS.length - 1 && (
-                  <span className="h-px w-4 bg-border" />
+                  <span className="h-px w-4 bg-sidebar-border/15" />
                 )}
               </div>
             );
@@ -774,10 +774,10 @@ export function RealtimeWizard({
                         className={cn(
                           "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
                           disabled
-                            ? "cursor-not-allowed border-sidebar-border/30/40 bg-secondary/20 text-muted-foreground"
+                            ? "cursor-not-allowed border-sidebar-border/30 bg-secondary/20 text-muted-foreground"
                             : on
                               ? "border-sidebar-border/30 bg-secondary text-foreground"
-                              : "border-sidebar-border/30/60 bg-secondary/40 hover:bg-secondary text-muted-foreground",
+                              : "border-sidebar-border/30 bg-secondary/40 hover:bg-secondary text-muted-foreground",
                         )}
                       >
                         <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
@@ -1412,7 +1412,7 @@ function CampaignSummary({
       : [];
 
   return (
-    <div className="rounded-lg border border-sidebar-border/30 bg-secondary overflow-hidden">
+    <div className="rounded-xl border border-sidebar-border/30 bg-secondary overflow-hidden">
       <div className="px-4 py-3 border-b border-sidebar-border/30">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
@@ -1644,7 +1644,7 @@ function RtReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="rounded-md border border-sidebar-border/15 overflow-hidden divide-y divide-border">
+      <div className="rounded-md border border-sidebar-border/15 overflow-hidden divide-y divide-sidebar-border/30">
         {visible.map(([label, value], i) => (
           <div key={i} className="grid grid-cols-[180px_1fr] text-xs">
             <div
@@ -1884,7 +1884,7 @@ function PayloadCard({
   const locked = OVERRIDABLE.filter((f) => !overrides.has(f.key));
 
   return (
-    <div className="rounded-lg border border-sidebar-border/30 bg-secondary p-4 space-y-4">
+    <div className="rounded-xl border border-sidebar-border/30 bg-secondary p-4 space-y-4">
       <div>
         <div className="text-xs font-medium text-foreground mb-1">Task API payload</div>
         <p className="text-xs text-muted-foreground leading-relaxed">

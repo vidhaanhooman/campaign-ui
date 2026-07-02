@@ -54,7 +54,7 @@ export function NumberStepper({
   return (
     <div
       className={cn(
-        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-input bg-transparent dark:bg-secondary transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         className,
       )}
     >
@@ -82,7 +82,7 @@ export function NumberStepper({
       <div
         onPointerDown={startScrub}
         title="Drag to adjust"
-        className="flex cursor-ew-resize select-none flex-col border-l border-input/70 bg-card/40"
+        className="flex cursor-ew-resize select-none flex-col border-l border-sidebar-border/30 bg-card/40"
         style={{ width: 22 }}
       >
         <button
@@ -117,7 +117,7 @@ export function NumberStepper({
             onChange(clamp(value - step));
           }}
           className={cn(
-            "flex h-1/2 w-full items-center justify-center border-t border-input/70 transition-colors",
+            "flex h-1/2 w-full items-center justify-center border-t border-sidebar-border/30 transition-colors",
             atMin
               ? "text-muted-foreground/50 cursor-not-allowed"
               : "text-muted-foreground hover:text-foreground hover:bg-card",

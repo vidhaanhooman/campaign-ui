@@ -403,7 +403,7 @@ export function WidgetBuilder({
 
           {/* Visualization options — Edit mode only; per-viz section, adapts to the selected chart */}
           {isEditing && (
-          <div className="rounded-lg border border-border bg-secondary/30 p-4">
+          <div className="rounded-lg border border-sidebar-border/15 bg-secondary/30 p-4">
             <div className="mb-3 text-sm font-medium text-foreground">
               Visualization options
             </div>
@@ -643,7 +643,7 @@ function MetricRow({
                       </span>
                     </span>
                     {m.sql && (
-                      <span className="ml-2 mt-0.5 rounded bg-purple-500/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-purple-300">
+                      <span className="ml-2 mt-0.5 rounded-md bg-purple-500/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-purple-300">
                         SQL
                       </span>
                     )}

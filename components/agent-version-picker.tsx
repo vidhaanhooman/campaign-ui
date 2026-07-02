@@ -75,7 +75,7 @@ export function AgentVersionPicker({
         render={
           <button
             type="button"
-            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-input bg-transparent dark:bg-secondary px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         }
       >
@@ -103,15 +103,15 @@ export function AgentVersionPicker({
         side="bottom"
         sideOffset={6}
         style={SURFACE_BG}
-        className={cn(CARD, "p-0 w-[720px] max-w-[94vw] overflow-hidden border-[color:var(--border)]")}
+        className={cn(CARD, "p-0 w-[720px] max-w-[94vw] overflow-hidden border-sidebar-border/30")}
       >
         <div className="grid h-[400px] grid-cols-[1fr_280px] grid-rows-[auto_1fr_auto]">
           {/* HEADERS */}
-          <div className="flex h-12 items-center gap-2 border-b border-r border-border px-4 text-sm font-medium text-foreground">
+          <div className="flex h-12 items-center gap-2 border-b border-r border-sidebar-border/30 px-4 text-sm font-medium text-foreground">
             <Bot size={13} className="text-muted-foreground" />
             Agent
           </div>
-          <div className="flex h-12 items-center border-b border-border px-4">
+          <div className="flex h-12 items-center border-b border-sidebar-border/30 px-4">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Versions
             </span>
@@ -121,10 +121,10 @@ export function AgentVersionPicker({
           </div>
 
           {/* AGENT BODY */}
-          <div className="flex min-h-0 flex-col overflow-hidden border-r border-border">
+          <div className="flex min-h-0 flex-col overflow-hidden border-r border-sidebar-border/30">
             <div className="p-2">
               {/* Search input recipe */}
-              <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-secondary px-2.5">
+              <div className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border/30 bg-secondary px-2.5">
                 <Search size={13} className="shrink-0 text-muted-foreground" />
                 <input
                   value={query}
@@ -168,7 +168,7 @@ export function AgentVersionPicker({
                           {a.id}
                         </span>
                       </span>
-                      <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-input bg-card px-2 text-[10px] text-muted-foreground">
+                      <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-sidebar-border/30 bg-card px-2 text-[10px] text-muted-foreground">
                         {a.mode}
                       </span>
                     </button>
@@ -225,13 +225,13 @@ export function AgentVersionPicker({
 
           {/* FOOTERS */}
           <div
-            className="flex items-center justify-end gap-2 border-t border-r border-border px-3"
+            className="flex items-center justify-end gap-2 border-t border-r border-sidebar-border/30 px-3"
             style={{ height: 52 }}
           >
             {/* Secondary button recipe */}
             <button
               onClick={reset}
-              className="rounded-md border border-input px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-md border border-sidebar-border/30 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Clear
             </button>
@@ -253,7 +253,7 @@ export function AgentVersionPicker({
             </button>
           </div>
           <div
-            className="flex items-center border-t border-border px-4 text-xs text-muted-foreground"
+            className="flex items-center border-t border-sidebar-border/30 px-4 text-xs text-muted-foreground"
             style={{ height: 52 }}
           >
             Pick Live to always use the version in production.
@@ -270,7 +270,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-white bg-primary text-primary-foreground" : "border-input",
+        checked ? "border-white bg-primary text-primary-foreground" : "border-sidebar-border/30",
       )}
     >
       {checked && <Check size={11} strokeWidth={3} />}

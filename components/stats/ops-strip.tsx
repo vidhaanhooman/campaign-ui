@@ -5,7 +5,7 @@ import { InfoHint } from "./info-hint";
 
 export function OpsStrip() {
   return (
-    <div className="grid grid-cols-2 divide-x divide-border rounded-xl border border-border bg-card sm:grid-cols-4">
+    <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-sidebar-border/15 bg-card sm:grid-cols-4">
       {RT_OPS.map((k) => (
         <div key={k.label} className="px-5 py-4">
           <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">

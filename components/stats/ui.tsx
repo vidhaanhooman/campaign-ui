@@ -100,20 +100,20 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-2xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5",
+        "relative flex flex-col rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-primary/5 to-card px-6 py-5",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm text-muted-foreground">{label}</span>
         {delta && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium tabular-nums text-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md border border-sidebar-border/30 bg-transparent px-2 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
             <TrendIcon size={11} />
             {delta.value}
           </span>
         )}
       </div>
-      <div className="mt-2 text-3xl font-bold leading-tight tracking-tight text-foreground tabular-nums">
+      <div className="mt-2 text-3xl font-semibold leading-tight tracking-tight text-foreground tabular-nums">
         {value}
       </div>
       {(trend || description) && (
@@ -208,7 +208,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-border px-6 py-3",
+        "flex items-center gap-3 border-b border-sidebar-border/30 px-6 py-3",
         className,
       )}
     >
@@ -220,7 +220,7 @@ export function PageHeader({
       >
         {icon}
       </button>
-      <span className="h-4 w-px bg-border" aria-hidden />
+      <span className="h-4 w-px bg-sidebar-border/30" aria-hidden />
       <span className="text-sm font-medium text-foreground">{label}</span>
       {action && <div className="ml-auto">{action}</div>}
     </div>

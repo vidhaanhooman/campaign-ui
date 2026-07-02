@@ -186,7 +186,7 @@ export function AppShell({
                               {it.label}
                             </span>
                             {it.badge && (
-                              <span className="rounded bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
+                              <span className="rounded-md bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
                                 {it.badge}
                               </span>
                             )}

@@ -154,7 +154,7 @@ export default function InsightsPage() {
         </div>
 
         {/* Row 2 — underline tabs (left) + filters + icon Refresh (right) */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-sidebar-border/30">
           <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
             <TabsList variant="line">
               {TABS.map((t) => (
@@ -180,7 +180,7 @@ export default function InsightsPage() {
               onClick={refresh}
               aria-label="Refresh"
               title="Refresh"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-sidebar-border/30 bg-transparent text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <RefreshCw size={13} />
             </button>

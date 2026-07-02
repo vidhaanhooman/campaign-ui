@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 /* Default-style trigger (matches every other input) that opens the time wheel. */
 const TIME_TRIGGER_CLASS =
-  "flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent dark:bg-secondary py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-sidebar-border/30 bg-secondary py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function TimeField({
   value,
@@ -118,7 +118,7 @@ export function TimeSelect({
 
 const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
 const CARD =
-  "rounded-lg border border-input shadow-xl shadow-black/40";
+  "rounded-lg border border-sidebar-border/30 shadow-xl shadow-black/40";
 
 const ITEM_H = 32;
 const COL_H = 192;
@@ -149,7 +149,7 @@ export function TimePicker({
           <button
             type="button"
             className={cn(
-              "flex h-[52px] items-center gap-3 rounded-md border border-input bg-secondary px-3 text-left transition-colors hover:border-muted-foreground/40 focus:border-white outline-none",
+              "flex h-[52px] items-center gap-3 rounded-md border border-sidebar-border/30 bg-secondary px-3 text-left transition-colors hover:border-muted-foreground/40 focus:border-white outline-none",
               className,
             )}
           />
@@ -208,7 +208,7 @@ export function TimeWheel({
     <div className="relative" style={{ height: COL_H }}>
       {/* center selection band — sits BEHIND items so values show through */}
       <div
-        className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-secondary border border-input"
+        className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-secondary border border-sidebar-border/30"
         style={{ height: ITEM_H }}
       />
 
