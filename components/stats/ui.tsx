@@ -192,15 +192,17 @@ export function ChartCard({
   );
 }
 
-/** Page header — sidebar-toggle icon · divider · section label, with hairline underline. */
+/** Page header — sidebar-toggle icon · divider · title (+ optional subline), with hairline underline. */
 export function PageHeader({
   icon,
   label,
+  sublabel,
   action,
   className,
 }: {
   icon: React.ReactNode;
   label: string;
+  sublabel?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
 }) {
@@ -216,13 +218,22 @@ export function PageHeader({
         type="button"
         onClick={toggle}
         aria-label="Toggle sidebar"
-        className="flex h-7 w-7 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary"
       >
         {icon}
       </button>
-      <span className="h-4 w-px bg-sidebar-border/30" aria-hidden />
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      {action && <div className="ml-auto">{action}</div>}
+      <span className="h-4 w-px shrink-0 bg-sidebar-border/30" aria-hidden />
+      <div className="flex min-w-0 flex-col">
+        <span className="truncate text-sm font-medium text-foreground">
+          {label}
+        </span>
+        {sublabel && (
+          <span className="truncate text-xs text-muted-foreground">
+            {sublabel}
+          </span>
+        )}
+      </div>
+      {action && <div className="ml-auto shrink-0">{action}</div>}
     </div>
   );
 }
