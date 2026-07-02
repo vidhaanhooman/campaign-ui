@@ -93,7 +93,7 @@ export function CreateCampaignDialog({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-input shadow-2xl shadow-black/60"
+        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-sidebar-border/30 shadow-2xl shadow-black/60"
       >
         <DialogTitle className="sr-only">Create campaign</DialogTitle>
 
@@ -187,7 +187,7 @@ function TypePicker({
                 <button
                   key={opt.type}
                   onClick={() => onPick(opt.type)}
-                  className="group relative flex flex-col gap-4 rounded-lg border border-input bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
+                  className="group relative flex flex-col gap-4 rounded-lg border border-sidebar-border/30 bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -205,7 +205,7 @@ function TypePicker({
                     {opt.tagline}
                   </div>
 
-                  <div className="mt-auto space-y-3 pt-3 border-t border-border">
+                  <div className="mt-auto space-y-3 pt-3 border-t border-sidebar-border/15">
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
                         Good for
@@ -489,7 +489,7 @@ export function RealtimeWizard({
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR — title row, then a centered step row below */}
-      <header className="border-b border-border">
+      <header className="border-b border-sidebar-border/30">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-medium tracking-tight text-foreground">
             Create realtime campaign
@@ -561,12 +561,12 @@ export function RealtimeWizard({
                       "h-9 w-full rounded-md border bg-secondary px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
                       showErrors && step1Errors.name
                         ? "border-red-400"
-                        : "border-input",
+                        : "border-sidebar-border/30",
                     )}
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
-                <div className="flex items-start gap-3 rounded-md border border-input bg-secondary px-3 py-3">
+                <div className="flex items-start gap-3 rounded-md border border-sidebar-border/30 bg-secondary px-3 py-3">
                   <Switch
                     checked={abOn}
                     onCheckedChange={(v) => {
@@ -774,10 +774,10 @@ export function RealtimeWizard({
                         className={cn(
                           "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
                           disabled
-                            ? "cursor-not-allowed border-input/40 bg-secondary/20 text-muted-foreground"
+                            ? "cursor-not-allowed border-sidebar-border/30/40 bg-secondary/20 text-muted-foreground"
                             : on
-                              ? "border-input bg-secondary text-foreground"
-                              : "border-input/60 bg-secondary/40 hover:bg-secondary text-muted-foreground",
+                              ? "border-sidebar-border/30 bg-secondary text-foreground"
+                              : "border-sidebar-border/30/60 bg-secondary/40 hover:bg-secondary text-muted-foreground",
                         )}
                       >
                         <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
@@ -911,7 +911,7 @@ export function RealtimeWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="inline-flex items-center rounded-md border border-input bg-secondary p-0.5 mb-3">
+                    <div className="inline-flex items-center rounded-md border border-sidebar-border/30 bg-secondary p-0.5 mb-3">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -1003,7 +1003,7 @@ export function RealtimeWizard({
                         {["not_connected", "busy_callback"].map((d) => (
                           <span
                             key={d}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-2 py-0.5 text-xs font-mono text-foreground"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-card px-2 py-0.5 text-xs font-mono text-foreground"
                             title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
                           >
                             <Lock size={10} className="text-muted-foreground" />
@@ -1026,7 +1026,7 @@ export function RealtimeWizard({
                   </FieldGroup>
                 )}
 
-                <div className="border-t border-border pt-5 space-y-5">
+                <div className="border-t border-sidebar-border/15 pt-5 space-y-5">
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
@@ -1064,7 +1064,7 @@ export function RealtimeWizard({
                   </div>
 
                   {/* Use idle workspace slots */}
-                  <div className="flex items-start gap-3 rounded-md border border-input bg-secondary px-3 py-3">
+                  <div className="flex items-start gap-3 rounded-md border border-sidebar-border/30 bg-secondary px-3 py-3">
                     <Switch
                       checked={bursting}
                       onCheckedChange={(v) => setBursting(Boolean(v))}
@@ -1185,7 +1185,7 @@ export function RealtimeWizard({
                           pool.map((n) => (
                             <span
                               key={n}
-                              className="rounded-md border border-input bg-card px-2 py-0.5 text-xs font-mono"
+                              className="rounded-md border border-sidebar-border/30 bg-card px-2 py-0.5 text-xs font-mono"
                             >
                               {n}
                             </span>
@@ -1277,7 +1277,7 @@ export function RealtimeWizard({
                           [...overrides].map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center gap-1 rounded-md border border-input bg-card px-2 py-0.5 text-xs text-muted-foreground"
+                              className="inline-flex items-center gap-1 rounded-md border border-sidebar-border/30 bg-card px-2 py-0.5 text-xs text-muted-foreground"
                             >
                               <Zap size={11} />
                               {OVERRIDABLE.find((o) => o.key === k)?.label}
@@ -1322,7 +1322,7 @@ export function RealtimeWizard({
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between border-t border-border px-8 py-3">
+        <div className="flex items-center justify-between border-t border-sidebar-border/15 px-8 py-3">
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
             className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -1333,7 +1333,7 @@ export function RealtimeWizard({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-input px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+              className="rounded-md border border-sidebar-border/30 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               Cancel
             </button>
@@ -1412,8 +1412,8 @@ function CampaignSummary({
       : [];
 
   return (
-    <div className="rounded-lg border border-input bg-secondary overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
+    <div className="rounded-lg border border-sidebar-border/30 bg-secondary overflow-hidden">
+      <div className="px-4 py-3 border-b border-sidebar-border/30">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
@@ -1617,7 +1617,7 @@ function Hint({
   body: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-md border border-input bg-secondary px-3 py-2.5">
+    <div className="flex items-start gap-2.5 rounded-md border border-sidebar-border/30 bg-secondary px-3 py-2.5">
       <div className="mt-0.5 text-muted-foreground">{icon}</div>
       <div>
         <div className="text-sm font-medium text-foreground">{title}</div>
@@ -1644,11 +1644,11 @@ function RtReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="rounded-md border border-border overflow-hidden divide-y divide-border">
+      <div className="rounded-md border border-sidebar-border/15 overflow-hidden divide-y divide-border">
         {visible.map(([label, value], i) => (
           <div key={i} className="grid grid-cols-[180px_1fr] text-xs">
             <div
-              className="border-r border-border px-3 py-2 text-muted-foreground"
+              className="border-r border-sidebar-border/15 px-3 py-2 text-muted-foreground"
               style={{ backgroundColor: "var(--background)" }}
             >
               {label}
@@ -1664,7 +1664,7 @@ function RtReviewSection({
 function CurlBlock({ curl }: { curl: string }) {
   const lines = curl.split("\n");
   return (
-    <pre className="rounded-md border border-input bg-secondary p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground overflow-x-auto">
+    <pre className="rounded-md border border-sidebar-border/30 bg-secondary p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground overflow-x-auto">
       {lines.map((line, i) => (
         <div key={i}>{renderCurlLine(line)}</div>
       ))}
@@ -1884,7 +1884,7 @@ function PayloadCard({
   const locked = OVERRIDABLE.filter((f) => !overrides.has(f.key));
 
   return (
-    <div className="rounded-lg border border-input bg-secondary p-4 space-y-4">
+    <div className="rounded-lg border border-sidebar-border/30 bg-secondary p-4 space-y-4">
       <div>
         <div className="text-xs font-medium text-foreground mb-1">Task API payload</div>
         <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1892,7 +1892,7 @@ function PayloadCard({
           call.
         </p>
       </div>
-      <pre className="rounded-md border border-input p-3 font-mono text-xs leading-[1.8] whitespace-pre-wrap text-foreground" style={{ backgroundColor: "var(--background)" }}>
+      <pre className="rounded-md border border-sidebar-border/30 p-3 font-mono text-xs leading-[1.8] whitespace-pre-wrap text-foreground" style={{ backgroundColor: "var(--background)" }}>
         <span className="text-muted-foreground">{"{"}</span>
         {required.map(([k, v], i) => (
           <div key={i} className="pl-4">
@@ -1925,7 +1925,7 @@ function PayloadCard({
             {locked.map((f) => (
               <span
                 key={f.key}
-                className="flex items-center gap-1.5 rounded-md border border-input bg-card px-2 py-0.5 text-xs font-mono text-muted-foreground"
+                className="flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-card px-2 py-0.5 text-xs font-mono text-muted-foreground"
               >
                 <Lock size={11} /> {f.label}
               </span>
