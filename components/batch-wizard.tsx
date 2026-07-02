@@ -225,7 +225,7 @@ export function BatchWizard({
           </h1>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <X size={14} />
           </button>
@@ -243,7 +243,7 @@ export function BatchWizard({
                     setStep(s.id);
                   }}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
+                    "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
                     active && "bg-secondary text-foreground",
                     !active &&
                       "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
@@ -263,7 +263,7 @@ export function BatchWizard({
                   <span className="font-medium">{s.title}</span>
                 </button>
                 {i < STEPS.length - 1 && (
-                  <span className="h-px w-4 bg-border" />
+                  <span className="h-px w-4 bg-sidebar-border/15" />
                 )}
               </div>
             );
@@ -1218,7 +1218,7 @@ export function BatchWizard({
         >
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
-            className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <ChevronLeft size={14} />
             Back
@@ -1226,7 +1226,7 @@ export function BatchWizard({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-sidebar-border/30 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+              className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
             >
               Cancel
             </button>
@@ -1243,9 +1243,7 @@ export function BatchWizard({
                   onClose();
                 }
               }}
-              className={cn(
-                "rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90",
-              )}
+              className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {step === STEPS.length ? "Start campaign" : "Continue"}
             </button>
