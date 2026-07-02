@@ -202,7 +202,7 @@ function AddWidgetDialog({
             {/* Visualization */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Visualization</div>
-              <div className="grid grid-cols-6 gap-1 rounded-md border border-sidebar-border/15 bg-secondary/30 p-1">
+              <div className="grid grid-cols-6 gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
                 {VIZ.map((v) => {
                   const active = viz === v.key;
                   const Icon = v.icon;
@@ -212,9 +212,9 @@ function AddWidgetDialog({
                       type="button"
                       onClick={() => setViz(v.key)}
                       className={cn(
-                        "inline-flex h-8 items-center justify-center gap-1.5 rounded-[5px] px-2 text-xs transition-colors",
+                        "inline-flex h-7 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition-colors",
                         active
-                          ? "bg-foreground text-background shadow-sm"
+                          ? "border border-sidebar-border/40 bg-background text-foreground"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
