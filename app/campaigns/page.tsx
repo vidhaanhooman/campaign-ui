@@ -141,8 +141,8 @@ export default function CampaignsPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
       {/* sidebar */}
-      <aside className="w-[228px] shrink-0 border-r border-border flex flex-col" style={{ backgroundColor: "var(--background)" }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+      <aside className="w-[228px] shrink-0 border-r border-sidebar-border/15 flex flex-col" style={{ backgroundColor: "var(--background)" }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border/30">
           <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-[#f5b8c5] text-xs font-medium">
             HO
           </div>
@@ -192,18 +192,18 @@ export default function CampaignsPage() {
       {/* main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* header */}
-        <header className="flex items-center justify-between px-8 py-4 border-b border-border">
+        <header className="flex items-center justify-between px-8 py-4 border-b border-sidebar-border/30">
           <h1 className="text-lg font-medium tracking-tight text-foreground">Campaigns</h1>
           <div className="flex items-center gap-2">
-            <button className="flex h-9 items-center gap-1.5 rounded-md border border-input px-3 text-xs text-muted-foreground hover:text-foreground">
+            <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
               <RefreshCw size={14} /> Refresh
             </button>
-            <button className="flex h-9 items-center gap-1.5 rounded-md border border-input px-3 text-xs text-muted-foreground hover:text-foreground">
+            <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
               <PauseCircle size={14} /> Pause all
             </button>
             <button
               onClick={() => setOpen(true)}
-              className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+              className="flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Plus size={14} /> Create campaign
             </button>
@@ -212,7 +212,7 @@ export default function CampaignsPage() {
 
         <div className="scroll-thin flex-1 overflow-y-auto px-8 py-6 space-y-6">
           {/* unified stat strip */}
-          <div className="rounded-lg border border-input bg-card px-8 py-6 shadow-xl shadow-black/40">
+          <div className="rounded-xl border border-sidebar-border/15 bg-card px-8 py-6">
             <div className="grid grid-cols-[auto_1fr_auto_1fr_auto_1.4fr] items-center gap-8">
               <StatLabel label="Pending" />
               <StatPair
@@ -221,7 +221,7 @@ export default function CampaignsPage() {
                   { sub: "Retry", value: "0" },
                 ]}
               />
-              <div className="h-12 w-px bg-border" />
+              <div className="h-12 w-px bg-sidebar-border/15" />
               <div className="flex items-center gap-8">
                 <StatLabel label="Scheduled" />
                 <StatPair
@@ -231,7 +231,7 @@ export default function CampaignsPage() {
                   ]}
                 />
               </div>
-              <div className="h-12 w-px bg-border" />
+              <div className="h-12 w-px bg-sidebar-border/15" />
               <RunningCallsCard />
             </div>
           </div>
@@ -239,13 +239,13 @@ export default function CampaignsPage() {
           {/* tabs + search */}
           <div className="flex items-center gap-3">
             {/* Segmented control */}
-            <div className="inline-flex items-center rounded-md border border-input bg-secondary p-0.5">
+            <div className="inline-flex items-center rounded-xl border border-sidebar-border/30 bg-secondary p-0.5">
               {(["batch", "realtime"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   className={cn(
-                    "h-7 rounded-md px-4 text-xs transition-colors capitalize",
+                    "h-6 rounded-lg px-3 text-xs transition-colors capitalize",
                     tab === t
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground",
@@ -257,25 +257,25 @@ export default function CampaignsPage() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               {/* Search input */}
-              <div className="flex h-9 w-80 items-center gap-2 rounded-md border border-input bg-secondary px-2.5">
+              <div className="flex h-8 w-80 items-center gap-2 rounded-xl border border-sidebar-border/30 bg-secondary px-2.5">
                 <Search size={13} className="shrink-0 text-muted-foreground" />
                 <input
                   placeholder="Search by campaign ID…"
                   className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <button className="flex h-9 items-center gap-1.5 rounded-md border border-input px-3 text-xs text-muted-foreground hover:text-foreground">
+              <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
                 <Filter size={14} /> Filter
               </button>
-              <button className="flex h-9 items-center gap-1.5 rounded-md border border-input px-3 text-xs text-muted-foreground hover:text-foreground">
+              <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
                 <Calendar size={14} /> Date
               </button>
             </div>
           </div>
 
           {/* table */}
-          <div className="rounded-lg border border-input bg-card overflow-hidden shadow-xl shadow-black/40">
-            <div className="grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] px-6 py-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b border-border">
+          <div className="rounded-xl border border-sidebar-border/15 bg-card overflow-hidden">
+            <div className="grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] px-6 py-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b border-sidebar-border/30">
               <div>Campaign</div>
               <div>Agent</div>
               <div>Created At</div>
@@ -289,7 +289,7 @@ export default function CampaignsPage() {
                 key={r.id}
                 className={cn(
                   "grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] items-center px-6 py-4 text-sm",
-                  i < ROWS.length - 1 && "border-b border-border",
+                  i < ROWS.length - 1 && "border-b border-sidebar-border/30",
                 )}
               >
                 <div>
@@ -310,7 +310,7 @@ export default function CampaignsPage() {
                   {r.slotsUsed} / {r.slotsTotal}
                 </div>
                 <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-input bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
                     {r.status}
                   </span>
