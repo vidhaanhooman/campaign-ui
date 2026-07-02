@@ -275,56 +275,70 @@ export default function CampaignsPage() {
 
           {/* table */}
           <div className="rounded-xl border border-sidebar-border/15 bg-card overflow-hidden">
-            <div className="grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] px-6 py-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b border-sidebar-border/30">
-              <div>Campaign</div>
-              <div>Agent</div>
-              <div>Created At</div>
-              <div>Tasks</div>
-              <div>Slots</div>
-              <div>Status</div>
-              <div />
-            </div>
-            {ROWS.map((r, i) => (
-              <div
-                key={r.id}
-                className={cn(
-                  "grid grid-cols-[1.6fr_1.6fr_1fr_0.55fr_0.55fr_0.8fr_0.35fr] items-center px-6 py-4 text-sm",
-                  i < ROWS.length - 1 && "border-b border-sidebar-border/30",
-                )}
-              >
-                <div>
-                  <div className="font-medium text-foreground">{r.name}</div>
-                  <button className="mt-1 flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground">
-                    <Copy size={11} /> {r.id}
-                  </button>
-                </div>
-                <div>
-                  <div className="font-medium text-foreground">{r.agent}</div>
-                  <button className="mt-1 flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground">
-                    <Copy size={11} /> {r.agentId}
-                  </button>
-                </div>
-                <div className="text-muted-foreground text-xs font-mono tabular-nums">{r.createdAt}</div>
-                <div className="text-foreground text-sm font-mono tabular-nums">{r.tasks}</div>
-                <div className="font-mono text-xs text-foreground tabular-nums">
-                  {r.slotsUsed} / {r.slotsTotal}
-                </div>
-                <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-                    {r.status}
-                  </span>
-                </div>
-                <div className="flex items-center justify-end gap-1">
-                  <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
-                    <Eye size={14} />
-                  </button>
-                  <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
-                    <MoreHorizontal size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
+            <table className="w-full border-collapse text-sm">
+              <colgroup>
+                <col />
+                <col />
+                <col className="w-[15%]" />
+                <col className="w-[8%]" />
+                <col className="w-[8%]" />
+                <col className="w-[12%]" />
+                <col className="w-[6%]" />
+              </colgroup>
+              <thead>
+                <tr className="border-b border-sidebar-border/30">
+                  <th className="py-2.5 pl-6 pr-3 text-left text-xs font-medium text-muted-foreground">Campaign</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Agent</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Created at</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Tasks</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Slots</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Status</th>
+                  <th className="py-2.5 pl-3 pr-6" />
+                </tr>
+              </thead>
+              <tbody>
+                {ROWS.map((r) => (
+                  <tr
+                    key={r.id}
+                    className="border-b border-sidebar-border/30 transition-colors last:border-0 hover:bg-secondary/40"
+                  >
+                    <td className="py-3 pl-6 pr-3">
+                      <div className="text-sm font-medium text-foreground">{r.name}</div>
+                      <button className="mt-1 flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-foreground">
+                        <Copy size={11} /> {r.id}
+                      </button>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="text-sm font-medium text-foreground">{r.agent}</div>
+                      <button className="mt-1 flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-foreground">
+                        <Copy size={11} /> {r.agentId}
+                      </button>
+                    </td>
+                    <td className="px-3 py-3 font-mono text-sm tabular-nums text-muted-foreground">{r.createdAt}</td>
+                    <td className="px-3 py-3 font-mono text-sm tabular-nums text-foreground">{r.tasks}</td>
+                    <td className="px-3 py-3 font-mono text-sm tabular-nums text-foreground">
+                      {r.slotsUsed} / {r.slotsTotal}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-sidebar-border/30 bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="py-3 pl-3 pr-6">
+                      <div className="flex items-center justify-end gap-1">
+                        <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground">
+                          <Eye size={14} />
+                        </button>
+                        <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground">
+                          <MoreHorizontal size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
