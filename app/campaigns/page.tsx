@@ -2,38 +2,21 @@
 
 import { useState } from "react";
 import {
-  Bell,
-  BookOpen,
-  Bot,
-  ChevronsUpDown,
+  Calendar,
+  ChevronDown,
   Copy,
   Eye,
-  FileText,
-  FlaskConical,
-  Globe,
-  Headphones,
-  Info,
-  Library,
-  ListChecks,
-  MessageSquare,
+  Filter,
   MoreHorizontal,
-  PanelLeftClose,
+  PanelLeft,
   PauseCircle,
-  Phone,
   Plus,
-  Radio,
   RefreshCw,
   Search,
-  ShieldAlert,
-  SpellCheck,
-  Wrench,
-  Calendar,
-  Filter,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/stats/ui";
 import { CreateCampaignDialog } from "@/components/create-campaign-dialog";
 import { cn } from "@/lib/utils";
 
@@ -107,147 +90,152 @@ const ROWS: Row[] = [
   },
 ];
 
-const SIDEBAR = [
-  { group: "BUILD", items: [
-    { label: "Overview", icon: Globe },
-    { label: "Agents", icon: Bot },
-    { label: "Test Agents", icon: Headphones },
-    { label: "Simulation", icon: FlaskConical },
-    { label: "QA", icon: ShieldAlert },
-    { label: "Tools", icon: Wrench },
-    { label: "Library", icon: Library },
-    { label: "Pronunciation", icon: SpellCheck },
-    { label: "Numbers", icon: Phone },
-    { label: "DND", icon: Bell, badge: "Beta" },
-  ]},
-  { group: "CALL", items: [
-    { label: "Campaigns", icon: Radio, active: true },
-  ]},
-  { group: "LOGS", items: [
-    { label: "Conversation Logs", icon: MessageSquare },
-    { label: "Execution Logs", icon: ListChecks },
-  ]},
-  { group: "MONITOR", items: [
-    { label: "Alerts", icon: Bell },
-    { label: "Reports", icon: FileText },
-    { label: "Docs", icon: BookOpen },
-  ]},
-];
-
 export default function CampaignsPage() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"batch" | "realtime">("batch");
+  const [statsOpen, setStatsOpen] = useState(false);
+
+  /* ── Snapshot values (wire to live data later) ─────────────────── */
+  const pendingFirst = 0;
+  const pendingRetry = 0;
+  const scheduledFirst = 0;
+  const scheduledRetry = 0;
+  const slotsUsed = 0;
+  const slotsTotal = 4;
+
+  const pending = pendingFirst + pendingRetry;
+  const scheduled = scheduledFirst + scheduledRetry;
+  const running = slotsUsed;
+  const backlog = pending + scheduled;
+  const slotsFree = slotsTotal - slotsUsed;
+
+  const status =
+    running > 0
+      ? { label: "Running", dot: "bg-emerald-400" }
+      : backlog > 0
+        ? { label: "Backlogged", dot: "bg-amber-400" }
+        : { label: "Idle", dot: "bg-muted-foreground/60" };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
-      {/* sidebar */}
-      <aside className="w-[228px] shrink-0 border-r border-sidebar-border/15 flex flex-col" style={{ backgroundColor: "var(--background)" }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border/30">
-          <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-[#f5b8c5] text-xs font-medium">
-            HO
-          </div>
-          <span className="text-sm font-medium flex-1 text-foreground">HoomanLabs</span>
-          <ChevronsUpDown size={13} className="text-muted-foreground" />
-          <button className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
-            <PanelLeftClose size={13} />
-          </button>
-        </div>
-        <nav className="scroll-thin flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {SIDEBAR.map((sec) => (
-            <div key={sec.group}>
-              <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                {sec.group}
-              </div>
-              <ul className="space-y-0.5">
-                {sec.items.map((it) => {
-                  const Icon = it.icon;
-                  const active = "active" in it && it.active;
-                  return (
-                    <li key={it.label}>
-                      <button
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-1.5 rounded-md text-sm transition-colors",
-                          active
-                            ? "bg-secondary text-foreground"
-                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
-                        )}
-                      >
-                        <Icon size={15} className="shrink-0 text-muted-foreground" />
-                        <span className="flex-1 truncate text-left">{it.label}</span>
-                        {"badge" in it && it.badge && (
-                          <span className="rounded bg-blue-400/15 px-1.5 py-0 text-[10px] text-blue-400">
-                            {it.badge}
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </nav>
-      </aside>
-
-      {/* main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* header */}
-        <header className="flex items-center justify-between px-8 py-4 border-b border-sidebar-border/30">
-          <h1 className="text-lg font-medium tracking-tight text-foreground">Campaigns</h1>
+    <AppShell activeNav="Campaigns">
+      <PageHeader
+        icon={<PanelLeft size={16} />}
+        label="Campaigns"
+        action={
           <div className="flex items-center gap-2">
-            <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
-              <RefreshCw size={14} /> Refresh
+            <button className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+              <RefreshCw size={13} /> Refresh
             </button>
-            <button className="flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs text-muted-foreground hover:text-foreground">
-              <PauseCircle size={14} /> Pause all
+            <button className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/30 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+              <PauseCircle size={13} /> Pause all
             </button>
             <button
               onClick={() => setOpen(true)}
-              className="flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+              className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              <Plus size={14} /> Create campaign
+              <Plus size={13} /> Create campaign
             </button>
           </div>
-        </header>
+        }
+      />
 
-        <div className="scroll-thin flex-1 overflow-y-auto px-8 py-6 space-y-6">
-          {/* unified stat strip */}
-          <div className="rounded-xl border border-sidebar-border/15 bg-card px-8 py-6">
-            <div className="grid grid-cols-[auto_1fr_auto_1fr_auto_1.4fr] items-center gap-8">
-              <StatLabel label="Pending" />
-              <StatPair
-                cols={[
-                  { sub: "First Call", value: "0" },
-                  { sub: "Retry", value: "0" },
-                ]}
+      <div className="px-8 py-6 space-y-6">
+          {/* Compact status line + expandable KPI cards */}
+          <div className="rounded-xl border border-sidebar-border/15 bg-card">
+            <button
+              type="button"
+              onClick={() => setStatsOpen((v) => !v)}
+              className="flex w-full items-center gap-3 px-5 py-3 text-sm"
+            >
+              <span
+                className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)}
+                aria-hidden
               />
-              <div className="h-12 w-px bg-sidebar-border/15" />
-              <div className="flex items-center gap-8">
-                <StatLabel label="Scheduled" />
-                <StatPair
-                  cols={[
-                    { sub: "First Call", value: "0" },
-                    { sub: "Retry", value: "0" },
-                  ]}
+              <span className="font-medium text-foreground">{status.label}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="tabular-nums text-muted-foreground">
+                <span className="text-foreground">{backlog}</span> in queue
+              </span>
+              <span className="text-muted-foreground">·</span>
+              <span className="tabular-nums text-muted-foreground">
+                <span className="text-foreground">
+                  {slotsFree}/{slotsTotal}
+                </span>{" "}
+                slots free
+              </span>
+              <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+                updated just now
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "transition-transform",
+                    statsOpen && "rotate-180",
+                  )}
                 />
+              </span>
+            </button>
+
+            {statsOpen && (
+              <div className="grid grid-cols-1 gap-4 border-t border-sidebar-border/15 px-5 py-5 md:grid-cols-2">
+                {/* Backlog card */}
+                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5">
+                  <div className="text-sm text-muted-foreground">Backlog</div>
+                  <div className="mt-2 text-3xl font-bold leading-tight tabular-nums text-foreground">
+                    {backlog}
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <BacklogRow
+                      label="Pending · first call"
+                      value={pendingFirst}
+                    />
+                    <BacklogRow label="Pending · retry" value={pendingRetry} />
+                    <BacklogRow
+                      label="Scheduled · first call"
+                      value={scheduledFirst}
+                    />
+                    <BacklogRow
+                      label="Scheduled · retry"
+                      value={scheduledRetry}
+                    />
+                  </div>
+                </div>
+
+                {/* Slot utilization card */}
+                <div className="rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-card to-secondary/20 px-6 py-5">
+                  <div className="text-sm text-muted-foreground">
+                    Slot utilization
+                  </div>
+                  <div className="mt-3 flex items-center gap-5">
+                    <SlotRing used={slotsUsed} total={slotsTotal} />
+                    <div>
+                      <div className="text-3xl font-bold leading-tight tabular-nums text-foreground">
+                        {slotsUsed}
+                        <span className="text-muted-foreground">
+                          /{slotsTotal}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {slotsFree} free · capacity {slotsTotal}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="h-12 w-px bg-sidebar-border/15" />
-              <RunningCallsCard />
-            </div>
+            )}
           </div>
 
           {/* tabs + search */}
           <div className="flex items-center gap-3">
             {/* Segmented control */}
-            <div className="inline-flex items-center rounded-xl border border-sidebar-border/30 bg-secondary p-0.5">
+            <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
               {(["batch", "realtime"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   className={cn(
-                    "h-6 rounded-lg px-3 text-xs transition-colors capitalize",
+                    "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium capitalize transition-colors",
                     tab === t
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "border border-sidebar-border/40 bg-background text-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -340,50 +328,47 @@ export default function CampaignsPage() {
               </tbody>
             </table>
           </div>
-        </div>
       </div>
 
       <CreateCampaignDialog open={open} onOpenChange={setOpen} />
+    </AppShell>
+  );
+}
+
+function BacklogRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
 
-function StatLabel({ label }: { label: string }) {
+function SlotRing({ used, total }: { used: number; total: number }) {
+  const pct = total > 0 ? used / total : 0;
+  const R = 26;
+  const C = 2 * Math.PI * R;
+  const dash = C * pct;
   return (
-    <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-      {label}
-      <Info size={13} className="text-muted-foreground" />
-    </div>
-  );
-}
-
-function StatPair({ cols }: { cols: { sub: string; value: string }[] }) {
-  return (
-    <div className="flex items-center gap-8">
-      {cols.map((c) => (
-        <div key={c.sub}>
-          <div className="text-xs text-muted-foreground mb-1">{c.sub}</div>
-          <div className="text-lg font-medium leading-none text-foreground tabular-nums">
-            {c.value}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RunningCallsCard() {
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-2.5">
-        <span className="text-sm font-medium text-foreground">Running Calls</span>
-        <span className="text-xs font-mono text-muted-foreground tabular-nums">
-          0/4 slots used
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-        <div className="h-full w-0 bg-foreground" />
-      </div>
-    </div>
+    <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+      <circle
+        cx="32"
+        cy="32"
+        r={R}
+        fill="none"
+        stroke="var(--secondary)"
+        strokeWidth="6"
+      />
+      <circle
+        cx="32"
+        cy="32"
+        r={R}
+        fill="none"
+        stroke="var(--chart-1)"
+        strokeWidth="6"
+        strokeDasharray={`${dash} ${C - dash}`}
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

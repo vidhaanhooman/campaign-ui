@@ -16,14 +16,14 @@ function LevelButtons({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="inline-flex items-center rounded-md border border-input bg-secondary p-0.5">
+    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
       {PRIORITY_LEVELS.map((l) => (
         <button
           key={l.value}
           type="button"
           onClick={() => onChange(l.value)}
           className={cn(
-            "h-7 rounded-md px-3 text-xs transition-colors",
+            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
             value === l.value
               ? "bg-primary text-primary-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -59,7 +59,7 @@ export function PriorityField({
 
       <div className="flex flex-col items-start gap-2">
         {retries > 1 && (
-          <div className="inline-flex items-center rounded-md border border-input bg-secondary p-0.5">
+          <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
             {(
               [
                 { v: "all", label: "All attempts" },
@@ -71,7 +71,7 @@ export function PriorityField({
                 type="button"
                 onClick={() => setPrioMode(o.v)}
                 className={cn(
-                  "h-7 rounded-md px-3 text-xs transition-colors",
+                  "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                   prioMode === o.v
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground",

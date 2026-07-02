@@ -911,7 +911,7 @@ export function RealtimeWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="inline-flex items-center rounded-md border border-sidebar-border/30 bg-secondary p-0.5 mb-3">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -923,9 +923,9 @@ export function RealtimeWizard({
                           type="button"
                           onClick={() => setRetryMode(o.v)}
                           className={cn(
-                            "h-7 rounded-md px-3 text-xs transition-colors",
+                            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                             retryMode === o.v
-                              ? "bg-primary text-primary-foreground shadow-sm"
+                              ? "border border-sidebar-border/40 bg-background text-foreground"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >

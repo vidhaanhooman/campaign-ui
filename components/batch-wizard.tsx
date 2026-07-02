@@ -636,16 +636,16 @@ export function BatchWizard({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 rounded-md border border-sidebar-border/30 bg-secondary px-3 py-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-md bg-card">
-                        <FileSpreadsheet size={13} className="text-foreground" />
+                    <div className="flex items-center gap-3 rounded-lg border border-sidebar-border/30 bg-secondary px-3 py-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <FileSpreadsheet size={13} />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground truncate">
+                          <span className="truncate text-sm font-medium text-foreground">
                             {csvName}
                           </span>
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-sidebar-border/30 bg-card px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
                             <Check size={10} strokeWidth={3} /> Uploaded
                           </span>
                         </div>
@@ -659,7 +659,7 @@ export function BatchWizard({
                             setUploaded(false);
                             setCsvName("");
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-card px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                         >
                           <RotateCcw size={12} /> Replace file
                         </button>
@@ -702,7 +702,7 @@ export function BatchWizard({
 
                 <FieldGroup label="Campaign start">
                   <div className="flex flex-col items-start gap-3">
-                    <div className="inline-flex items-center rounded-md border border-sidebar-border/30 bg-secondary p-0.5">
+                    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
                       {(
                         [
                           { v: "now", label: "Start now" },
@@ -714,9 +714,9 @@ export function BatchWizard({
                           type="button"
                           onClick={() => setStartMode(o.v)}
                           className={cn(
-                            "h-7 rounded-md px-3 text-xs transition-colors",
+                            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                             startMode === o.v
-                              ? "bg-primary text-primary-foreground shadow-sm"
+                              ? "border border-sidebar-border/40 bg-background text-foreground"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
@@ -806,7 +806,7 @@ export function BatchWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="inline-flex items-center rounded-md border border-sidebar-border/30 bg-secondary p-0.5 mb-3">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -818,9 +818,9 @@ export function BatchWizard({
                           type="button"
                           onClick={() => setRetryMode(o.v)}
                           className={cn(
-                            "h-7 rounded-md px-3 text-xs transition-colors",
+                            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                             retryMode === o.v
-                              ? "bg-primary text-primary-foreground shadow-sm"
+                              ? "border border-sidebar-border/40 bg-background text-foreground"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
@@ -1298,19 +1298,19 @@ function ReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="rounded-md border border-sidebar-border/15 overflow-hidden divide-y divide-border">
+      <div className="overflow-hidden rounded-lg border border-sidebar-border/15 bg-card">
         {visible.map(([label, value], i) => (
           <div
             key={i}
-            className="grid grid-cols-[180px_1fr] text-xs"
+            className={cn(
+              "grid grid-cols-[180px_1fr] text-sm",
+              i < visible.length - 1 && "border-b border-sidebar-border/30",
+            )}
           >
-            <div
-              className="border-r border-sidebar-border/15 px-3 py-2 text-muted-foreground"
-              style={{ backgroundColor: "var(--background)" }}
-            >
+            <div className="border-r border-sidebar-border/30 bg-secondary/40 px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
-            <div className="px-3 py-2 text-foreground">{value}</div>
+            <div className="px-3 py-2.5 text-foreground">{value}</div>
           </div>
         ))}
       </div>
