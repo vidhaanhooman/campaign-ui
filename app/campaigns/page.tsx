@@ -18,6 +18,13 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { CreateCampaignDialog } from "@/components/create-campaign-dialog";
+import {
+  FilterDropdown,
+  type FilterSection,
+  type FilterValues,
+  type QuickFilter,
+} from "@/components/filter-dropdown";
+import { Bot, CheckCircle2, Hash, Tag, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -90,10 +97,91 @@ const ROWS: Row[] = [
   },
 ];
 
+const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
+  {
+    items: [
+      {
+        id: "status",
+        label: "Status",
+        icon: <CheckCircle2 size={15} />,
+        type: "multi-select",
+        options: [
+          { value: "Running", label: "Running", dot: "bg-emerald-400" },
+          { value: "Paused", label: "Paused", dot: "bg-amber-400" },
+          { value: "Completed", label: "Completed", dot: "bg-white/60" },
+        ],
+      },
+      {
+        id: "agent",
+        label: "Agent",
+        icon: <Bot size={15} />,
+        type: "multi-select",
+        searchable: true,
+        options: [
+          { value: "debt", label: "Debt Collection Pitch Agent" },
+          { value: "web_out", label: "Website Agent Outbound" },
+          { value: "sales", label: "Sales Follow-up Agent" },
+          { value: "support", label: "Support Escalation Agent" },
+        ],
+      },
+      {
+        id: "campaignId",
+        label: "Campaign ID",
+        icon: <Hash size={15} />,
+        type: "text",
+        placeholder: "contains…",
+      },
+    ],
+  },
+  {
+    title: "Volume",
+    items: [
+      {
+        id: "tasks",
+        label: "Tasks",
+        icon: <Tag size={15} />,
+        type: "range",
+        min: 0,
+        max: 1000,
+        step: 10,
+      },
+      {
+        id: "slotsUsed",
+        label: "Slots used",
+        icon: <Timer size={15} />,
+        type: "pill",
+        maxExact: 4,
+      },
+    ],
+  },
+];
+
+const CAMPAIGN_QUICK_FILTERS: QuickFilter[] = [
+  {
+    id: "qf:running",
+    label: "Running now",
+    icon: <CheckCircle2 size={15} />,
+    values: { status: ["Running"] },
+  },
+  {
+    id: "qf:paused",
+    label: "Paused",
+    icon: <CheckCircle2 size={15} />,
+    values: { status: ["Paused"] },
+  },
+  {
+    id: "qf:high-volume",
+    label: "High volume (100+ tasks)",
+    icon: <Tag size={15} />,
+    values: { tasks: { kind: "range", min: 100, max: null } },
+  },
+];
+
 export default function CampaignsPage() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"batch" | "realtime">("batch");
   const [statsOpen, setStatsOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterValues>({});
 
   /* ── Snapshot values (wire to live data later) ─────────────────── */
   const pendingFirst = 0;
@@ -252,9 +340,12 @@ export default function CampaignsPage() {
                   className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
-                <Filter size={14} /> Filter
-              </button>
+              <FilterDropdown
+                schema={CAMPAIGN_FILTER_SCHEMA}
+                value={filters}
+                onChange={setFilters}
+                quickFilters={CAMPAIGN_QUICK_FILTERS}
+              />
               <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
                 <Calendar size={14} /> Date
               </button>

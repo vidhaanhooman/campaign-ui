@@ -522,7 +522,7 @@ function FieldPicker({
           </div>
         </div>
         {/* Options */}
-        <div className="scroll-thin max-h-[280px] overflow-y-auto p-1">
+        <div className="scroll-thin max-h-[280px] space-y-1 overflow-y-auto p-1">
           {filtered.length === 0 ? (
             <div className="px-3 py-6 text-center text-xs text-muted-foreground">
               No fields match &ldquo;{query}&rdquo;
@@ -545,6 +545,7 @@ function FieldPicker({
                     isOn ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
                   )}
                 >
+                  <Checkbox checked={isOn} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium text-foreground">
                       {o.label}
@@ -553,12 +554,6 @@ function FieldPicker({
                       {o.desc}
                     </span>
                   </span>
-                  {isOn && (
-                    <Check
-                      size={15}
-                      className="mt-0.5 shrink-0 text-[var(--chart-1)]"
-                    />
-                  )}
                 </button>
               );
             })
@@ -595,6 +590,22 @@ function FieldBlock({
       </div>
       {children}
     </section>
+  );
+}
+
+/** Design-system checkbox — white fill when checked, dimmed-white outline off. */
+function Checkbox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      className={cn(
+        "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+        checked
+          ? "border-foreground bg-foreground text-background"
+          : "border-white/25",
+      )}
+    >
+      {checked && <Check size={11} strokeWidth={3} />}
+    </span>
   );
 }
 

@@ -131,7 +131,7 @@ export function DateRangePicker({
           <button
             type="button"
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
+              "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
               className,
             )}
           >
@@ -210,14 +210,14 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={clear}
-                className="inline-flex h-7 items-center rounded-md border border-border bg-transparent px-3 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="inline-flex h-7 items-center rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={apply}
-                className="inline-flex h-7 items-center rounded-md bg-foreground px-3 text-xs text-background hover:bg-foreground/90"
+                className="inline-flex h-7 items-center rounded-lg bg-foreground px-3 text-xs text-background hover:bg-foreground/90"
               >
                 Apply
               </button>
@@ -245,10 +245,10 @@ function PresetRow({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors",
+        "flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors",
         active
-          ? "bg-[#333333]/30 text-foreground"
-          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+          ? "bg-white/[0.06] text-foreground"
+          : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
       )}
     >
       <span>{label}</span>
@@ -360,7 +360,7 @@ function RangeCalendar({
               setViewYear((y) => y - 1);
             } else setViewMonth((m) => m - 1);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
           aria-label="Previous month"
         >
           <ChevronLeft size={14} />
@@ -376,7 +376,7 @@ function RangeCalendar({
               setViewYear((y) => y + 1);
             } else setViewMonth((m) => m + 1);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
           aria-label="Next month"
         >
           <ChevronRight size={14} />
@@ -440,7 +440,7 @@ function RangeCalendar({
                   ? "text-muted-foreground/40"
                   : "text-foreground",
                 // middle: subtle background fill (continuous band across the row)
-                middle && "bg-[#333333]/30",
+                middle && "bg-white/[0.06]",
                 // endpoint: solid white box with dark text — only the OUTER side rounds
                 isEndpoint && "bg-foreground font-medium text-background",
                 isEndpoint && isSingle && "rounded-md",
@@ -454,7 +454,7 @@ function RangeCalendar({
                 // hover (when nothing pending & nothing selected on this day)
                 !inSelection &&
                   !isToday &&
-                  "hover:rounded-md hover:bg-secondary/60",
+                  "hover:rounded-md hover:bg-white/[0.04]",
               )}
             >
               {c.d}
@@ -486,7 +486,7 @@ function TimeBlock({
         render={
           <button
             type="button"
-            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-2 text-left transition-colors hover:bg-secondary/80"
+            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-2 text-left transition-colors hover:bg-[#333333]/50"
           >
             <div className="flex flex-col">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
