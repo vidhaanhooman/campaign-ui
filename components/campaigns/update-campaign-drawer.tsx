@@ -353,7 +353,12 @@ function FieldPicker({
                 <button
                   key={o.key}
                   type="button"
-                  onClick={() => onToggle(o)}
+                  onClick={() => {
+                    onToggle(o);
+                    // Close so the revealed editor below isn't hidden under
+                    // the open dropdown — reopen to add another field.
+                    setOpen(false);
+                  }}
                   className={cn(
                     "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors",
                     isOn ? "bg-secondary" : "hover:bg-secondary/60",
