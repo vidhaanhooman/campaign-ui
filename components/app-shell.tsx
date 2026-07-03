@@ -127,7 +127,7 @@ export function AppShell({
       {/* sidebar */}
       <aside
         className={cn(
-          "flex shrink-0 flex-col overflow-hidden border-r border-white/10 bg-background text-foreground transition-[width] duration-200",
+          "flex shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-background text-foreground transition-[width] duration-200",
           collapsed ? "w-0 border-r-0" : "w-[248px]",
         )}
       >
@@ -149,7 +149,7 @@ export function AppShell({
               <div
                 key={sec.group}
                 className={cn(
-                  si === 0 ? "" : "mt-3 border-t border-white/10 pt-3",
+                  si === 0 ? "" : "mt-3 border-t border-white/[0.06] pt-3",
                 )}
               >
                 <button
@@ -201,7 +201,7 @@ export function AppShell({
           })}
 
           {/* Settings */}
-          <div className="mt-3 border-t border-white/10 pt-3">
+          <div className="mt-3 border-t border-white/[0.06] pt-3">
             <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
               <Settings size={16} strokeWidth={1.75} className="shrink-0" />
               <span className="flex-1 truncate text-left">Settings</span>

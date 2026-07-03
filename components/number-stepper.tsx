@@ -82,7 +82,7 @@ export function NumberStepper({
       <div
         onPointerDown={startScrub}
         title="Drag to adjust"
-        className="flex cursor-ew-resize select-none flex-col border-l border-white/10 bg-[#333333]/30/40"
+        className="flex cursor-ew-resize select-none flex-col border-l border-white/[0.06] bg-[#333333]/30/40"
         style={{ width: 22 }}
       >
         <button
@@ -117,7 +117,7 @@ export function NumberStepper({
             onChange(clamp(value - step));
           }}
           className={cn(
-            "flex h-1/2 w-full items-center justify-center border-t border-white/10 transition-colors",
+            "flex h-1/2 w-full items-center justify-center border-t border-white/[0.06] transition-colors",
             atMin
               ? "text-muted-foreground/50 cursor-not-allowed"
               : "text-muted-foreground hover:text-foreground hover:bg-[#333333]/30",

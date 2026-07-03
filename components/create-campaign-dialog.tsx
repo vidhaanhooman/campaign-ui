@@ -93,7 +93,7 @@ export function CreateCampaignDialog({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-white/10 shadow-2xl shadow-black/60"
+        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-white/[0.06] shadow-2xl shadow-black/60"
       >
         <DialogTitle className="sr-only">Create campaign</DialogTitle>
 
@@ -205,7 +205,7 @@ function TypePicker({
                     {opt.tagline}
                   </div>
 
-                  <div className="mt-auto space-y-3 pt-3 border-t border-white/10">
+                  <div className="mt-auto space-y-3 pt-3 border-t border-white/[0.06]">
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
                         Good for
@@ -489,7 +489,7 @@ export function RealtimeWizard({
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR — title row, then a centered step row below */}
-      <header className="border-b border-white/10">
+      <header className="border-b border-white/[0.06]">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-medium tracking-tight text-foreground">
             Create realtime campaign
@@ -1026,7 +1026,7 @@ export function RealtimeWizard({
                   </FieldGroup>
                 )}
 
-                <div className="border-t border-white/10 pt-5 space-y-5">
+                <div className="border-t border-white/[0.06] pt-5 space-y-5">
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
@@ -1322,7 +1322,7 @@ export function RealtimeWizard({
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between border-t border-white/10 px-8 py-3">
+        <div className="flex items-center justify-between border-t border-white/[0.06] px-8 py-3">
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
             className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -1413,7 +1413,7 @@ function CampaignSummary({
 
   return (
     <div className="rounded-xl border border-border bg-[#333333]/30 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10">
+      <div className="px-4 py-3 border-b border-white/[0.06]">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
@@ -1648,7 +1648,7 @@ function RtReviewSection({
         {visible.map(([label, value], i) => (
           <div key={i} className="grid grid-cols-[180px_1fr] text-xs">
             <div
-              className="border-r border-white/10 px-3 py-2 text-muted-foreground"
+              className="border-r border-white/[0.06] px-3 py-2 text-muted-foreground"
               style={{ backgroundColor: "var(--background)" }}
             >
               {label}

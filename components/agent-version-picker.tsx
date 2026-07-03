@@ -107,11 +107,11 @@ export function AgentVersionPicker({
       >
         <div className="grid h-[400px] grid-cols-[1fr_280px] grid-rows-[auto_1fr_auto]">
           {/* HEADERS */}
-          <div className="flex h-12 items-center gap-2 border-b border-r border-white/10 px-4 text-sm font-medium text-foreground">
+          <div className="flex h-12 items-center gap-2 border-b border-r border-white/[0.06] px-4 text-sm font-medium text-foreground">
             <Bot size={13} className="text-muted-foreground" />
             Agent
           </div>
-          <div className="flex h-12 items-center border-b border-white/10 px-4">
+          <div className="flex h-12 items-center border-b border-white/[0.06] px-4">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Versions
             </span>
@@ -121,7 +121,7 @@ export function AgentVersionPicker({
           </div>
 
           {/* AGENT BODY */}
-          <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/10">
+          <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/[0.06]">
             <div className="p-2">
               {/* Search input recipe */}
               <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
@@ -225,7 +225,7 @@ export function AgentVersionPicker({
 
           {/* FOOTERS */}
           <div
-            className="flex items-center justify-end gap-2 border-t border-r border-white/10 px-3"
+            className="flex items-center justify-end gap-2 border-t border-r border-white/[0.06] px-3"
             style={{ height: 52 }}
           >
             {/* Secondary button recipe */}
@@ -253,7 +253,7 @@ export function AgentVersionPicker({
             </button>
           </div>
           <div
-            className="flex items-center border-t border-white/10 px-4 text-xs text-muted-foreground"
+            className="flex items-center border-t border-white/[0.06] px-4 text-xs text-muted-foreground"
             style={{ height: 52 }}
           >
             Pick Live to always use the version in production.

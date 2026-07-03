@@ -105,7 +105,7 @@ export function OutcomePicker({
         className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
       >
         <div className="flex flex-col">
-          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/10">
+          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/[0.06]">
             <Flag size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Retry outcomes</span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
@@ -113,7 +113,7 @@ export function OutcomePicker({
             </span>
           </div>
 
-          <div className="p-2 border-b border-white/10">
+          <div className="p-2 border-b border-white/[0.06]">
             <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
@@ -145,7 +145,7 @@ export function OutcomePicker({
                   <div
                     className={cn(
                       "flex items-center gap-2 px-4 py-2",
-                      gi > 0 && "border-t border-white/10",
+                      gi > 0 && "border-t border-white/[0.06]",
                     )}
                   >
                     {group.label === "Connected" ? (
@@ -192,7 +192,7 @@ export function OutcomePicker({
           </div>
 
           {outcomes.length > 0 && (
-            <div className="flex items-center justify-between border-t border-white/10 px-3 py-2">
+            <div className="flex items-center justify-between border-t border-white/[0.06] px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 {outcomes.length} extra outcome{outcomes.length === 1 ? "" : "s"}{" "}
                 will trigger a retry

@@ -154,7 +154,7 @@ export default function InsightsPage() {
         </div>
 
         {/* Row 2 — underline tabs (left) + filters + icon Refresh (right) */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/10">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06]">
           <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
             <TabsList variant="line">
               {TABS.map((t) => (

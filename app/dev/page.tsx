@@ -35,7 +35,7 @@ export default function DevPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--background)" }}>
       {/* top bar */}
-      <header className="flex items-center gap-4 border-b border-white/10 px-6 py-3" style={{ backgroundColor: "var(--card)" }}>
+      <header className="flex items-center gap-4 border-b border-white/[0.06] px-6 py-3" style={{ backgroundColor: "var(--card)" }}>
         <Link
           href="/campaigns"
           className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -73,7 +73,7 @@ export default function DevPage() {
 
       {/* step jumper */}
       {view !== "components" && (
-        <div className="flex items-center gap-2 border-b border-white/10 px-6 py-2.5" style={{ backgroundColor: "var(--card)" }}>
+        <div className="flex items-center gap-2 border-b border-white/[0.06] px-6 py-2.5" style={{ backgroundColor: "var(--card)" }}>
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
             Jump to step
           </span>

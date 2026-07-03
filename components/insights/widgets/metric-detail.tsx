@@ -47,7 +47,7 @@ function DetailCard({
         className,
       )}
     >
-      <header className="border-b border-white/10 px-5 py-3">
+      <header className="border-b border-white/[0.06] px-5 py-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
       </header>
       <div className="p-4">{children}</div>
@@ -94,7 +94,7 @@ export function MetricDetail({
                 </thead>
                 <tbody>
                   {numbers.data.map((r) => (
-                    <tr key={r.from} className="border-t border-white/10">
+                    <tr key={r.from} className="border-t border-white/[0.06]">
                       <td className="py-2 pr-3 font-mono text-xs text-foreground">
                         {r.from}
                       </td>

@@ -176,7 +176,7 @@ export default function CampaignsPage() {
             </button>
 
             {statsOpen && (
-              <div className="grid grid-cols-1 gap-4 border-t border-white/10 px-5 py-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 border-t border-white/[0.06] px-5 py-5 md:grid-cols-2">
                 {/* Backlog card */}
                 <div className="rounded-xl border border-border bg-[#333333]/30 px-6 py-5">
                   <div className="text-sm text-muted-foreground">Backlog</div>
@@ -274,7 +274,7 @@ export default function CampaignsPage() {
                 <col className="w-[6%]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-white/[0.06]">
                   <th className="py-2.5 pl-6 pr-3 text-left text-xs font-medium text-muted-foreground">Campaign</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Agent</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Created at</th>
@@ -288,7 +288,7 @@ export default function CampaignsPage() {
                 {ROWS.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-white/10 transition-colors last:border-0 hover:bg-secondary/40"
+                    className="border-b border-white/[0.06] transition-colors last:border-0 hover:bg-secondary/40"
                   >
                     <td className="py-3 pl-6 pr-3">
                       <div className="text-sm font-medium text-foreground">{r.name}</div>
