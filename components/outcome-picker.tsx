@@ -45,7 +45,7 @@ export function OutcomePicker({
           <button
             type="button"
             className={cn(
-              "w-full min-h-8 flex items-center gap-2 rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary px-3 py-1.5 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "w-full min-h-8 flex items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-1.5 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               className,
             )}
           />
@@ -114,7 +114,7 @@ export function OutcomePicker({
           </div>
 
           <div className="p-2 border-b border-sidebar-border/30">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border/30 bg-secondary px-2.5">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}

@@ -37,7 +37,7 @@
   --sidebar-accent-foreground: oklch(0 0 0);
   --sidebar-border: oklch(0.9400 0 0);
   --sidebar-ring: oklch(0 0 0);
-  --font-sans: Geist, sans-serif;
+  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Georgia, serif;
   --font-mono: Geist Mono, monospace;
   --radius: 0.5rem;
@@ -70,7 +70,7 @@
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.6900 0.2000 23.9100);
   --destructive-foreground: oklch(0 0 0);
-  --border: oklch(0.2600 0 0);
+  --border: oklch(0.2160 0.0060 56.0430);
   --input: oklch(0.3200 0 0);
   --ring: oklch(0.7200 0 0);
   --chart-1: oklch(0.8100 0.1700 75.3500);
@@ -78,13 +78,13 @@
   --chart-3: oklch(0.5600 0 0);
   --chart-4: oklch(0.4400 0 0);
   --chart-5: oklch(0.9200 0 0);
-  --sidebar: oklch(0.1800 0 0);
+  --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0 0 0);
   --sidebar-accent: oklch(0.3200 0 0);
   --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.3200 0 0);
+  --sidebar-border: oklch(1 0 0);
   --sidebar-ring: oklch(0.7200 0 0);
 }
 

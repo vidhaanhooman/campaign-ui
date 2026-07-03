@@ -156,15 +156,18 @@ export function UpdateCampaignDrawer({
         </DialogHeader>
 
         {/* Body — scrolls independently */}
-        <div className="scroll-thin min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+        <div className="scroll-thin min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
           {/* Field picker */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <span className="text-sm font-medium text-foreground">Fields</span>
             <FieldPicker
               options={FIELDS}
               selected={selected}
               onToggle={toggleField}
             />
+            <p className="text-xs text-muted-foreground">
+              Choose one or more fields to change.
+            </p>
           </div>
 
           {/* One editor block per selected field, in registry order */}
@@ -176,19 +179,15 @@ export function UpdateCampaignDrawer({
             >
               {f.key === "agent" && (
                 <div className="grid grid-cols-2 gap-3">
-                  <Labeled label="Agent">
-                    <AgentSelect
-                      agentId={draft.agentId}
-                      onChange={(id) => update("agentId", id)}
-                    />
-                  </Labeled>
-                  <Labeled label="Version">
-                    <VersionSelect
-                      agentId={draft.agentId}
-                      versionName={draft.agentVersion}
-                      onChange={(name) => update("agentVersion", name)}
-                    />
-                  </Labeled>
+                  <AgentSelect
+                    agentId={draft.agentId}
+                    onChange={(id) => update("agentId", id)}
+                  />
+                  <VersionSelect
+                    agentId={draft.agentId}
+                    versionName={draft.agentVersion}
+                    onChange={(name) => update("agentVersion", name)}
+                  />
                 </div>
               )}
 
@@ -238,6 +237,7 @@ export function UpdateCampaignDrawer({
                     next[i] = v;
                     update("attemptPriorities", next);
                   }}
+                  hideLabel
                 />
               )}
 
@@ -304,7 +304,7 @@ function FieldPicker({
         render={
           <button
             type="button"
-            className="flex h-9 w-full items-center gap-2 rounded-lg border border-sidebar-border/30 bg-secondary px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <span
               className={cn(
@@ -329,7 +329,7 @@ function FieldPicker({
       >
         {/* Search */}
         <div className="border-b border-sidebar-border/30 p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-sidebar-border/30 bg-secondary px-2.5">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -400,7 +400,7 @@ function FieldBlock({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3 border-t border-sidebar-border/15 pt-5">
+    <section className="space-y-2.5">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">{label}</span>
         <button
@@ -414,21 +414,6 @@ function FieldBlock({
       </div>
       {children}
     </section>
-  );
-}
-
-function Labeled({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      {children}
-    </div>
   );
 }
 

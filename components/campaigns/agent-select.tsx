@@ -37,7 +37,7 @@ function TriggerButton({
       type="button"
       disabled={disabled}
       className={cn(
-        "flex h-8 w-full items-center gap-1.5 rounded-lg border border-sidebar-border/30 bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-secondary",
+        "flex h-8 w-full items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
       )}
       {...props}
     >
@@ -103,7 +103,7 @@ export function AgentSelect({
         </div>
         {/* Search */}
         <div className="border-b border-sidebar-border/30 p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-sidebar-border/30 bg-transparent px-2.5 dark:bg-secondary">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -225,7 +225,7 @@ export function VersionSelect({
           </span>
         </div>
         <div className="border-b border-sidebar-border/30 p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-sidebar-border/30 bg-transparent px-2.5 dark:bg-secondary">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}

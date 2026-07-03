@@ -54,7 +54,7 @@ export function NumberStepper({
   return (
     <div
       className={cn(
-        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-border bg-[#333333]/30 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         className,
       )}
     >

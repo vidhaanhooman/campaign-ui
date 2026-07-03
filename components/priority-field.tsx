@@ -44,6 +44,7 @@ export function PriorityField({
   setPrioMode,
   getAttemptPrio,
   setAttemptPrio,
+  hideLabel = false,
 }: {
   priority: number;
   setPriority: (v: number) => void;
@@ -52,10 +53,14 @@ export function PriorityField({
   setPrioMode: (m: "all" | "perAttempt") => void;
   getAttemptPrio: (i: number) => number;
   setAttemptPrio: (i: number, v: number) => void;
+  /** Hide the built-in "Priority" heading (when a parent already labels it). */
+  hideLabel?: boolean;
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium text-foreground">Priority</div>
+      {!hideLabel && (
+        <div className="text-sm font-medium text-foreground">Priority</div>
+      )}
 
       <div className="flex flex-col items-start gap-2">
         {retries > 1 && (
