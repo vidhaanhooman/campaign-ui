@@ -32,7 +32,7 @@ export default function UpdateCampaignPreviewPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-sidebar-border/15 bg-card p-5">
+        <div className="rounded-xl border border-border bg-[#333333]/30 p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-medium text-foreground">
               Current configuration
@@ -64,7 +64,7 @@ export default function UpdateCampaignPreviewPage() {
           </dl>
 
           {lastSubmit && (
-            <div className="mt-4 rounded-md border border-sidebar-border/15 bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+            <div className="mt-4 rounded-md border border-border bg-[#333333]/30 px-3 py-2 text-xs text-muted-foreground">
               Last update: {lastSubmit}
             </div>
           )}

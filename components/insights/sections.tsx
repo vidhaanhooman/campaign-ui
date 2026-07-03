@@ -30,7 +30,7 @@ import { MetricBreakdown } from "./widgets/metric-breakdown";
 import { MetricDetail } from "./widgets/metric-detail";
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-lg bg-secondary", className)} />;
+  return <div className={cn("animate-pulse rounded-lg bg-[#333333]/30", className)} />;
 }
 
 /* ── KPI strip — three channel cards ─────────────────────────────────── */
@@ -81,7 +81,7 @@ export function KpiStrip({
   ];
 
   return (
-    <div className="grid grid-cols-1 divide-x divide-sidebar-border/30 rounded-xl border border-sidebar-border/15 bg-card sm:grid-cols-3">
+    <div className="grid grid-cols-1 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-3">
       {groups.map((g) => (
         <div key={g.channel} className="px-5 py-4">
           <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
@@ -166,7 +166,7 @@ export function ConversationsChart({
   }
 
   return (
-    <section className="group flex flex-col overflow-hidden rounded-xl border border-sidebar-border/15 bg-card">
+    <section className="group flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30">
       <header className="flex items-center gap-4 px-5 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-foreground">
@@ -248,7 +248,7 @@ export function StatCards({
 
   return (
     <>
-      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-sidebar-border/15 bg-card sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-4">
         {items.map((s) => (
           <div key={s.label} className="group/tile relative px-5 py-4">
             <button

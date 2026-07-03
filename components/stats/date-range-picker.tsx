@@ -131,7 +131,7 @@ export function DateRangePicker({
           <button
             type="button"
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/15 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
+              "inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
               className,
             )}
           >
@@ -148,7 +148,7 @@ export function DateRangePicker({
       >
         <div className="flex">
           {/* ── Quick range column ─────────────────────────────────── */}
-          <div className="flex w-40 flex-col gap-0.5 border-r border-sidebar-border/30 p-3">
+          <div className="flex w-40 flex-col gap-0.5 border-r border-border p-3">
             <div className="mb-2 px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Quick range
             </div>
@@ -206,11 +206,11 @@ export function DateRangePicker({
             </div>
 
             {/* Footer */}
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-sidebar-border/30 pt-3">
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
               <button
                 type="button"
                 onClick={clear}
-                className="inline-flex h-7 items-center rounded-md border border-sidebar-border/15 bg-transparent px-3 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="inline-flex h-7 items-center rounded-md border border-border bg-transparent px-3 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 Clear
               </button>
@@ -247,7 +247,7 @@ function PresetRow({
       className={cn(
         "flex items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors",
         active
-          ? "bg-secondary text-foreground"
+          ? "bg-[#333333]/30 text-foreground"
           : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
       )}
     >
@@ -440,7 +440,7 @@ function RangeCalendar({
                   ? "text-muted-foreground/40"
                   : "text-foreground",
                 // middle: subtle background fill (continuous band across the row)
-                middle && "bg-secondary",
+                middle && "bg-[#333333]/30",
                 // endpoint: solid white box with dark text — only the OUTER side rounds
                 isEndpoint && "bg-foreground font-medium text-background",
                 isEndpoint && isSingle && "rounded-md",
@@ -486,7 +486,7 @@ function TimeBlock({
         render={
           <button
             type="button"
-            className="flex items-center justify-between gap-2 rounded-lg border border-sidebar-border/30 bg-secondary px-3 py-2 text-left transition-colors hover:bg-secondary/80"
+            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-2 text-left transition-colors hover:bg-secondary/80"
           >
             <div className="flex flex-col">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">

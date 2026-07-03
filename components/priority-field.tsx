@@ -16,7 +16,7 @@ function LevelButtons({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
+    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
       {PRIORITY_LEVELS.map((l) => (
         <button
           key={l.value}
@@ -64,7 +64,7 @@ export function PriorityField({
 
       <div className="flex flex-col items-start gap-2">
         {retries > 1 && (
-          <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
+          <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
             {(
               [
                 { v: "all", label: "All attempts" },

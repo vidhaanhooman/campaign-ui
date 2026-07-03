@@ -12,7 +12,7 @@ import { NUMBERS } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
 
 const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
-const CARD = "rounded-lg border border-sidebar-border/30 shadow-xl shadow-black/40";
+const CARD = "rounded-lg border border-border shadow-xl shadow-black/40";
 
 export function NumberPoolPicker({
   pool,
@@ -79,7 +79,7 @@ export function NumberPoolPicker({
                 {pool.slice(0, 3).map((n) => (
                   <span
                     key={n}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border/30 bg-card px-2 py-0.5 text-xs font-mono text-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono text-foreground"
                   >
                     {n}
                     <span
@@ -144,7 +144,7 @@ export function NumberPoolPicker({
           className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
         >
           <div className="flex flex-col">
-            <div className="px-4 h-11 flex items-center gap-2 border-b border-sidebar-border/30">
+            <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
               <Phone size={13} className="text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">
                 Calling numbers
@@ -153,7 +153,7 @@ export function NumberPoolPicker({
                 {pool.length}/{NUMBERS.length}
               </span>
             </div>
-            <div className="p-2 border-b border-sidebar-border/30">
+            <div className="p-2 border-b border-border">
               <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
                 <Search size={13} className="shrink-0 text-muted-foreground" />
                 <input
@@ -189,7 +189,7 @@ export function NumberPoolPicker({
                       className={cn(
                         "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors",
                         checked
-                          ? "bg-secondary text-foreground"
+                          ? "bg-[#333333]/30 text-foreground"
                           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                       )}
                     >
@@ -208,7 +208,7 @@ export function NumberPoolPicker({
               )}
             </div>
             {pool.length > 0 && (
-              <div className="flex items-center justify-between border-t border-sidebar-border/30 px-3 py-2">
+              <div className="flex items-center justify-between border-t border-border px-3 py-2">
                 <span className="text-xs text-muted-foreground">
                   {pool.length === 1
                     ? "Single number — add more to rotate across attempts."
@@ -235,7 +235,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-white bg-primary text-primary-foreground" : "border-sidebar-border/30",
+        checked ? "border-white bg-primary text-primary-foreground" : "border-border",
       )}
     >
       {checked && (

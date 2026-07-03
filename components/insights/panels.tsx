@@ -8,7 +8,7 @@ import { PanelCard } from "./panel-card";
 
 /* ── Loading skeleton ────────────────────────────────────────────────── */
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-secondary", className)} />;
+  return <div className={cn("animate-pulse rounded-md bg-[#333333]/30", className)} />;
 }
 
 /* ── Line panel ──────────────────────────────────────────────────────── */
@@ -136,7 +136,7 @@ export function TablePanel({
   ) : (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-y border-sidebar-border/30 bg-secondary/40">
+        <tr className="border-y border-border bg-[#333333]/30">
           {columns.map((c) => (
             <th
               key={c.key}
@@ -152,7 +152,7 @@ export function TablePanel({
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-b border-sidebar-border/30 last:border-0">
+          <tr key={i} className="border-b border-border last:border-0">
             {columns.map((c) => (
               <td
                 key={c.key}

@@ -12,7 +12,7 @@ import { AGENT_DETAILS } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
 
 const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
-const CARD = "rounded-lg border border-sidebar-border/30 shadow-xl shadow-black/40";
+const CARD = "rounded-lg border border-border shadow-xl shadow-black/40";
 
 export function VersionPicker({
   agentId,
@@ -51,7 +51,7 @@ export function VersionPicker({
             disabled={!enabled}
             title={enabled ? undefined : "Pick an agent first."}
             className={cn(
-              "w-full h-8 flex items-center gap-2 rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:text-muted-foreground/50",
+              "w-full h-8 flex items-center gap-2 rounded-lg border border-border bg-transparent dark:bg-secondary px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:text-muted-foreground/50",
               className,
             )}
           />
@@ -80,15 +80,15 @@ export function VersionPicker({
         className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
       >
         <div className="flex flex-col">
-          <div className="px-4 h-11 flex items-center gap-2 border-b border-sidebar-border/30">
+          <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <GitBranch size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Version</span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
               {filtered.length}
             </span>
           </div>
-          <div className="p-2 border-b border-sidebar-border/30">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border/30 bg-transparent px-2.5">
+          <div className="p-2 border-b border-border">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}
@@ -117,7 +117,7 @@ export function VersionPicker({
                     className={cn(
                       "w-full flex items-center gap-3 rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                       selected
-                        ? "bg-secondary text-foreground"
+                        ? "bg-[#333333]/30 text-foreground"
                         : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                     )}
                   >
@@ -160,7 +160,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-white bg-primary text-primary-foreground" : "border-sidebar-border/30",
+        checked ? "border-white bg-primary text-primary-foreground" : "border-border",
       )}
     >
       {checked && (

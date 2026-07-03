@@ -42,11 +42,11 @@ function DeepCard({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-sidebar-border/15 bg-card",
+        "flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30",
         className,
       )}
     >
-      <header className="flex items-center justify-between border-b border-sidebar-border/30 px-5 py-3">
+      <header className="flex items-center justify-between border-b border-border px-5 py-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
       </header>
       <div className="p-4">{children}</div>
@@ -78,7 +78,7 @@ function DurationFunnel({ stages }: { stages: FunnelStage[] }) {
           );
         })}
       </div>
-      <div className="space-y-1 border-t border-sidebar-border/30 pt-3 text-xs text-muted-foreground">
+      <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
         {stages.map((s, i) => {
           const prev = i === 0 ? s.value : stages[i - 1].value;
           const cont = prev ? Math.round((s.value / prev) * 100) : 0;
@@ -120,7 +120,7 @@ function CallsDeepDive({
 
   return (
     <div className="h-full space-y-3.5 overflow-y-auto pr-1">
-      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-sidebar-border/15 bg-card sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="px-5 py-4">
             <p className="truncate text-[10px] font-medium text-muted-foreground">

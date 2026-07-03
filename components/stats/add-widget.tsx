@@ -121,7 +121,7 @@ export function AddWidgetButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-sidebar-border/15 bg-secondary px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
       >
         <Plus size={13} />
         Add widget
@@ -168,7 +168,7 @@ function AddWidgetDialog({
           <DialogTitle className="sr-only">Add widget</DialogTitle>
 
           {/* Header */}
-          <div className="flex items-center gap-2 border-b border-sidebar-border/30 px-5 py-4">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-4">
             <Plus size={16} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Add widget</span>
             <button
@@ -202,7 +202,7 @@ function AddWidgetDialog({
             {/* Visualization */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Visualization</div>
-              <div className="grid grid-cols-6 gap-1 rounded-xl border border-sidebar-border/30 bg-secondary p-1">
+              <div className="grid grid-cols-6 gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
                 {VIZ.map((v) => {
                   const active = viz === v.key;
                   const Icon = v.icon;
@@ -214,7 +214,7 @@ function AddWidgetDialog({
                       className={cn(
                         "inline-flex h-7 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition-colors",
                         active
-                          ? "border border-sidebar-border/40 bg-background text-foreground"
+                          ? "border border-border bg-background text-foreground"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -255,12 +255,12 @@ function AddWidgetDialog({
               </button>
             </div>
 
-            <div className="border-t border-sidebar-border/30" />
+            <div className="border-t border-border" />
 
             {/* Range */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Range</div>
-              <div className="flex items-center gap-3 rounded-md border border-sidebar-border/15 bg-secondary/20 px-4 py-3">
+              <div className="flex items-center gap-3 rounded-md border border-border bg-[#333333]/30 px-4 py-3">
                 <Switch
                   checked={useCustomRange}
                   onCheckedChange={setUseCustomRange}
@@ -280,7 +280,7 @@ function AddWidgetDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-3 border-t border-sidebar-border/30 px-5 py-3">
+          <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
             <span
               className={cn(
                 "text-xs",
@@ -305,7 +305,7 @@ function AddWidgetDialog({
                   "inline-flex h-8 items-center rounded-md px-3 text-xs transition-colors",
                   canSubmit
                     ? "bg-foreground text-background hover:bg-foreground/90"
-                    : "cursor-not-allowed bg-secondary text-muted-foreground",
+                    : "cursor-not-allowed bg-[#333333]/30 text-muted-foreground",
                 )}
               >
                 Add widget
@@ -348,7 +348,7 @@ function FiltersSheet({
         <DialogTitle className="sr-only">Filters</DialogTitle>
 
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-sidebar-border/30 px-5 py-4">
+        <div className="flex items-center gap-2 border-b border-border px-5 py-4">
           <Filter size={16} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Filters</span>
           <button
@@ -362,8 +362,8 @@ function FiltersSheet({
         </div>
 
         {/* Search */}
-        <div className="border-b border-sidebar-border/30 px-5 py-3">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-sidebar-border/15 bg-transparent px-2.5">
+        <div className="border-b border-border px-5 py-3">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -408,7 +408,7 @@ function FiltersSheet({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-sidebar-border/30 px-5 py-3">
+        <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
           <button
             type="button"
             className="text-xs text-muted-foreground transition-colors hover:text-foreground"

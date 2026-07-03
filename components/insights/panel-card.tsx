@@ -66,7 +66,7 @@ export function PanelCard({
     <>
       <section
         className={cn(
-          "group flex flex-col overflow-hidden rounded-xl border border-sidebar-border/15 bg-card",
+          "group flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30",
           className,
         )}
       >

@@ -24,7 +24,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        "flex flex-col rounded-xl border border-sidebar-border/15 bg-card",
+        "flex flex-col rounded-xl border border-border bg-[#333333]/30",
         className,
       )}
     >
@@ -100,14 +100,14 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-xl border border-sidebar-border/15 bg-gradient-to-t from-primary/5 to-card px-6 py-5",
+        "relative flex flex-col rounded-xl border border-border bg-[#333333]/30 px-6 py-5",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm text-muted-foreground">{label}</span>
         {delta && (
-          <span className="inline-flex items-center gap-1 rounded-md border border-sidebar-border/30 bg-transparent px-2 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md border border-border bg-transparent px-2 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
             <TrendIcon size={11} />
             {delta.value}
           </span>
@@ -158,7 +158,7 @@ export function ChartCard({
   return (
     <section
       className={cn(
-        "flex flex-col rounded-xl border border-sidebar-border/15 bg-card",
+        "flex flex-col rounded-xl border border-border bg-[#333333]/30",
         className,
       )}
     >
@@ -210,7 +210,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-sidebar-border/30 px-6 py-3",
+        "flex items-center gap-3 border-b border-border px-6 py-3",
         className,
       )}
     >
@@ -249,7 +249,7 @@ export function MiniBar({
   barClassName?: string;
 }) {
   return (
-    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-secondary", className)}>
+    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-[#333333]/30", className)}>
       <div
         className={cn("h-full rounded-full bg-foreground/70", barClassName)}
         style={{ width: `${Math.max(2, Math.min(100, pct * 100))}%` }}

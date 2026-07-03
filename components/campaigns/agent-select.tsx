@@ -94,7 +94,7 @@ export function AgentSelect({
         className="w-[380px] overflow-hidden p-0"
       >
         {/* Header */}
-        <div className="flex h-11 items-center gap-2 border-b border-sidebar-border/30 px-4">
+        <div className="flex h-11 items-center gap-2 border-b border-border px-4">
           <Bot size={13} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Agent</span>
           <span className="ml-auto font-mono text-[11px] text-muted-foreground">
@@ -102,7 +102,7 @@ export function AgentSelect({
           </span>
         </div>
         {/* Search */}
-        <div className="border-b border-sidebar-border/30 p-2">
+        <div className="border-b border-border p-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
@@ -134,7 +134,7 @@ export function AgentSelect({
                   className={cn(
                     "flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors",
                     selected
-                      ? "bg-secondary"
+                      ? "bg-[#333333]/30"
                       : "hover:bg-secondary/60",
                   )}
                 >
@@ -154,7 +154,7 @@ export function AgentSelect({
                       {a.id}
                     </span>
                   </span>
-                  <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-sidebar-border/15 bg-secondary px-2 text-[10px] text-muted-foreground">
+                  <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-[#333333]/30 px-2 text-[10px] text-muted-foreground">
                     {a.mode}
                   </span>
                 </button>
@@ -217,14 +217,14 @@ export function VersionSelect({
         sideOffset={6}
         className="w-[320px] overflow-hidden p-0"
       >
-        <div className="flex h-11 items-center gap-2 border-b border-sidebar-border/30 px-4">
+        <div className="flex h-11 items-center gap-2 border-b border-border px-4">
           <GitBranch size={13} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Version</span>
           <span className="ml-auto font-mono text-[11px] text-muted-foreground">
             {filtered.length}
           </span>
         </div>
-        <div className="border-b border-sidebar-border/30 p-2">
+        <div className="border-b border-border p-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
@@ -249,7 +249,7 @@ export function VersionSelect({
                 }}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors",
-                  selected ? "bg-secondary" : "hover:bg-secondary/60",
+                  selected ? "bg-[#333333]/30" : "hover:bg-secondary/60",
                 )}
               >
                 <Checkbox checked={selected} />
@@ -289,7 +289,7 @@ function Checkbox({ checked }: { checked: boolean }) {
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
         checked
           ? "border-foreground bg-foreground text-background"
-          : "border-sidebar-border/30",
+          : "border-border",
       )}
     >
       {checked && <Check size={11} strokeWidth={3} />}

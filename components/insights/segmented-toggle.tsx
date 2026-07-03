@@ -27,7 +27,7 @@ export function SegmentedToggle({
     <div
       role="tablist"
       className={cn(
-        "inline-flex h-8 items-center gap-0.5 rounded-md border border-border bg-secondary/30 p-0.5",
+        "inline-flex h-8 items-center gap-0.5 rounded-md border border-border bg-[#333333]/30 p-0.5",
         className,
       )}
     >

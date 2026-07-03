@@ -47,7 +47,7 @@ export function LineDetailView({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
       {/* Total tiles */}
-      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-sidebar-border/15 bg-card sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="px-5 py-4">
             <p className="truncate text-[10px] font-medium text-muted-foreground">
@@ -66,7 +66,7 @@ export function LineDetailView({
       </div>
 
       {/* Full-size line chart */}
-      <div className="rounded-xl border border-sidebar-border/15 p-4">
+      <div className="rounded-xl border border-border p-4">
         <ChartContainer config={config} className="aspect-auto h-[340px] w-full">
           <LineChart data={data} margin={{ top: 12, right: 16, left: 4 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -95,10 +95,10 @@ export function LineDetailView({
       </div>
 
       {/* Period breakdown table */}
-      <div className="overflow-hidden rounded-xl border border-sidebar-border/15">
+      <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-sidebar-border/30 text-left text-xs text-muted-foreground">
+            <tr className="border-b border-border text-left text-xs text-muted-foreground">
               <th className="px-4 py-2 font-medium">Period</th>
               {series.map((s) => (
                 <th key={s.key} className="px-4 py-2 text-right font-medium">
@@ -109,7 +109,7 @@ export function LineDetailView({
           </thead>
           <tbody>
             {tableRows.map((d, i) => (
-              <tr key={i} className="border-b border-sidebar-border/30 last:border-0">
+              <tr key={i} className="border-b border-border last:border-0">
                 <td className="px-4 py-2 text-foreground">{String(d.label)}</td>
                 {series.map((s) => (
                   <td

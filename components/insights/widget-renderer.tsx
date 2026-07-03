@@ -59,7 +59,7 @@ function Shell({
   span,
 }: { title: string; children: React.ReactNode } & EditProps) {
   return (
-    <section className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-sidebar-border/15 bg-card">
+    <section className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30">
       <header className="flex items-center gap-2 px-5 pt-4 pb-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
         <div className="ml-auto flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -222,7 +222,7 @@ function MultiTableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-sidebar-border/30 bg-secondary/40">
+            <tr className="border-y border-border bg-[#333333]/30">
               <th className="py-2.5 pl-1 text-left text-xs font-medium text-muted-foreground">
                 Metric
               </th>
@@ -233,7 +233,7 @@ function MultiTableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
           </thead>
           <tbody>
             {data.map((row, i) => (
-              <tr key={i} className="border-b border-sidebar-border/30 last:border-0">
+              <tr key={i} className="border-b border-border last:border-0">
                 <td className="py-2.5 pl-1 text-xs text-muted-foreground">{row.name}</td>
                 <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-foreground">
                   {row.value}
@@ -260,7 +260,7 @@ function TableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-sidebar-border/30 bg-secondary/40">
+            <tr className="border-y border-border bg-[#333333]/30">
               {["Agent", "Calls", "Connected", "Pickup Rate (%)", "Avg Duration (s)"].map(
                 (h, i) => (
                   <th
@@ -278,7 +278,7 @@ function TableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
           </thead>
           <tbody>
             {agents.data.map((r, i) => (
-              <tr key={i} className="border-b border-sidebar-border/30 last:border-0">
+              <tr key={i} className="border-b border-border last:border-0">
                 <td className="py-2.5 pl-1 text-xs text-muted-foreground">{r.agent}</td>
                 {(["calls", "connected", "pickup", "avgdur"] as const).map((k) => (
                   <td

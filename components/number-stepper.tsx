@@ -82,7 +82,7 @@ export function NumberStepper({
       <div
         onPointerDown={startScrub}
         title="Drag to adjust"
-        className="flex cursor-ew-resize select-none flex-col border-l border-sidebar-border/30 bg-card/40"
+        className="flex cursor-ew-resize select-none flex-col border-l border-border bg-[#333333]/30/40"
         style={{ width: 22 }}
       >
         <button
@@ -100,7 +100,7 @@ export function NumberStepper({
             "flex h-1/2 w-full items-center justify-center transition-colors",
             atMax
               ? "text-muted-foreground/50 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-card",
+              : "text-muted-foreground hover:text-foreground hover:bg-[#333333]/30",
           )}
         >
           <ChevronUp size={11} strokeWidth={2.5} />
@@ -117,10 +117,10 @@ export function NumberStepper({
             onChange(clamp(value - step));
           }}
           className={cn(
-            "flex h-1/2 w-full items-center justify-center border-t border-sidebar-border/30 transition-colors",
+            "flex h-1/2 w-full items-center justify-center border-t border-border transition-colors",
             atMin
               ? "text-muted-foreground/50 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-card",
+              : "text-muted-foreground hover:text-foreground hover:bg-[#333333]/30",
           )}
         >
           <ChevronDown size={11} strokeWidth={2.5} />

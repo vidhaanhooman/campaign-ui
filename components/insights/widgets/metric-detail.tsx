@@ -43,11 +43,11 @@ function DetailCard({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-sidebar-border/15 bg-card",
+        "flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30",
         className,
       )}
     >
-      <header className="border-b border-sidebar-border/30 px-5 py-3">
+      <header className="border-b border-border px-5 py-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
       </header>
       <div className="p-4">{children}</div>
@@ -94,7 +94,7 @@ export function MetricDetail({
                 </thead>
                 <tbody>
                   {numbers.data.map((r) => (
-                    <tr key={r.from} className="border-t border-sidebar-border/30">
+                    <tr key={r.from} className="border-t border-border">
                       <td className="py-2 pr-3 font-mono text-xs text-foreground">
                         {r.from}
                       </td>

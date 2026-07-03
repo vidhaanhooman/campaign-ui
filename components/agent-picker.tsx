@@ -16,7 +16,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-white bg-primary text-primary-foreground" : "border-sidebar-border/30",
+        checked ? "border-white bg-primary text-primary-foreground" : "border-border",
       )}
     >
       {checked && (
@@ -27,7 +27,7 @@ function Checkbox({ checked }: { checked: boolean }) {
 }
 
 const SURFACE_BG = { backgroundColor: "var(--popover)" } as const;
-const CARD = "rounded-lg border border-sidebar-border/30 shadow-xl shadow-black/40";
+const CARD = "rounded-lg border border-border shadow-xl shadow-black/40";
 
 export function AgentPicker({
   agentId,
@@ -58,7 +58,7 @@ export function AgentPicker({
           <button
             type="button"
             className={cn(
-              "w-full h-8 flex items-center gap-2.5 rounded-lg border border-sidebar-border/30 bg-transparent dark:bg-secondary px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "w-full h-8 flex items-center gap-2.5 rounded-lg border border-border bg-transparent dark:bg-secondary px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               className,
             )}
           />
@@ -85,15 +85,15 @@ export function AgentPicker({
         className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
       >
         <div className="flex flex-col">
-          <div className="px-4 h-11 flex items-center gap-2 border-b border-sidebar-border/30">
+          <div className="px-4 h-11 flex items-center gap-2 border-b border-border">
             <Bot size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Agent</span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
               {filtered.length}
             </span>
           </div>
-          <div className="p-2 border-b border-sidebar-border/30">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border/30 bg-transparent px-2.5">
+          <div className="p-2 border-b border-border">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}
@@ -122,7 +122,7 @@ export function AgentPicker({
                     className={cn(
                       "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
                       selected
-                        ? "bg-secondary text-foreground"
+                        ? "bg-[#333333]/30 text-foreground"
                         : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                     )}
                   >
@@ -140,7 +140,7 @@ export function AgentPicker({
                         {a.id}
                       </span>
                     </span>
-                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-sidebar-border/30 bg-card px-2 text-[10px] text-muted-foreground">
+                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-[#333333]/30 px-2 text-[10px] text-muted-foreground">
                       {a.mode}
                     </span>
                   </button>

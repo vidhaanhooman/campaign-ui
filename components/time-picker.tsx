@@ -118,7 +118,7 @@ export function TimeSelect({
 
 const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
 const CARD =
-  "rounded-lg border border-sidebar-border/30 shadow-xl shadow-black/40";
+  "rounded-lg border border-border shadow-xl shadow-black/40";
 
 const ITEM_H = 32;
 const COL_H = 192;
@@ -208,7 +208,7 @@ export function TimeWheel({
     <div className="relative" style={{ height: COL_H }}>
       {/* center selection band — sits BEHIND items so values show through */}
       <div
-        className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-secondary border border-sidebar-border/30"
+        className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 z-0 rounded-md bg-[#333333]/30 border border-border"
         style={{ height: ITEM_H }}
       />
 

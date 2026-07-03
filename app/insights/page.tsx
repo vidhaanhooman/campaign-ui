@@ -122,7 +122,7 @@ export default function InsightsPage() {
 
   const emptyState = (
     <div className="flex items-center gap-4 rounded-lg border border-dashed border-border px-5 py-4">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#333333]/30 text-muted-foreground">
         <LayoutDashboard size={18} />
       </div>
       <div className="min-w-0 flex-1">
@@ -154,7 +154,7 @@ export default function InsightsPage() {
         </div>
 
         {/* Row 2 — underline tabs (left) + filters + icon Refresh (right) */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-sidebar-border/30">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border">
           <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
             <TabsList variant="line">
               {TABS.map((t) => (
@@ -180,7 +180,7 @@ export default function InsightsPage() {
               onClick={refresh}
               aria-label="Refresh"
               title="Refresh"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-sidebar-border/30 bg-transparent text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-transparent text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <RefreshCw size={13} />
             </button>
