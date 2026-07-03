@@ -716,7 +716,7 @@ export function BatchWizard({
                           className={cn(
                             "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                             startMode === o.v
-                              ? "border border-sidebar-border/40 bg-background text-foreground"
+                              ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
