@@ -136,7 +136,7 @@ export function TablePanel({
   ) : (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-y border-white/[0.06] bg-[#333333]/30">
+        <tr className="border-y border-white/[0.04] bg-[#333333]/30">
           {columns.map((c) => (
             <th
               key={c.key}
@@ -152,7 +152,7 @@ export function TablePanel({
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-b border-white/[0.06] last:border-0">
+          <tr key={i} className="border-b border-white/[0.04] last:border-0">
             {columns.map((c) => (
               <td
                 key={c.key}

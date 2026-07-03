@@ -18,22 +18,52 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { AgentSelect, VersionSelect } from "@/components/campaigns/agent-select";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
 import { PriorityField } from "@/components/priority-field";
+import { NumberStepper } from "@/components/number-stepper";
+import { TimeField } from "@/components/time-picker";
+import { DatePickerTime } from "@/components/date-picker-time";
 import {
   diffCampaign,
+  TIMEZONES,
   type CampaignEditState,
 } from "@/lib/campaign-update";
 import { cn } from "@/lib/utils";
+
+/** "YYYY-MM-DD" from a Date, in local time. */
+const ymd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 
 /* ═══════════════════════════════════════════════════════════════════════
    Updatable-field registry — pick which fields to change, then only those
    editors appear. Each maps to one or more keys on CampaignEditState.
    ═══════════════════════════════════════════════════════════════════════ */
 
-type FieldKey = "agent" | "callingNumber" | "retryOutcome" | "priority";
+type FieldKey =
+  | "agent"
+  | "callingNumber"
+  | "callingHours"
+  | "timezone"
+  | "retryOutcome"
+  | "retries"
+  | "priority"
+  | "startAfter"
+  | "endAfter"
+  | "slots"
+  | "name";
 
 const FIELDS: {
   key: FieldKey;
@@ -54,16 +84,58 @@ const FIELDS: {
     stateKeys: ["callingNumbers"],
   },
   {
+    key: "callingHours",
+    label: "Calling Hours",
+    desc: "Change the daily calling window",
+    stateKeys: ["channelStart", "channelEnd"],
+  },
+  {
+    key: "timezone",
+    label: "Timezone",
+    desc: "Change the campaign timezone",
+    stateKeys: ["timezone"],
+  },
+  {
     key: "retryOutcome",
-    label: "Retry Outcome",
+    label: "Retry Outcomes",
     desc: "Select to change current retry outcomes",
     stateKeys: ["retryOutcomes"],
+  },
+  {
+    key: "retries",
+    label: "Retries",
+    desc: "Change the total number of attempts",
+    stateKeys: ["retries"],
   },
   {
     key: "priority",
     label: "Priority",
     desc: "Select to change current priority order",
     stateKeys: ["priority", "priorityMode", "attemptPriorities"],
+  },
+  {
+    key: "startAfter",
+    label: "Start After",
+    desc: "Change when the campaign starts",
+    stateKeys: ["startAfter"],
+  },
+  {
+    key: "endAfter",
+    label: "End After",
+    desc: "Change when the campaign ends",
+    stateKeys: ["endAfter"],
+  },
+  {
+    key: "slots",
+    label: "Slots",
+    desc: "Change the concurrent slot limit",
+    stateKeys: ["slots", "useAllSlots"],
+  },
+  {
+    key: "name",
+    label: "Name",
+    desc: "Rename the campaign",
+    stateKeys: ["name"],
   },
 ];
 
@@ -146,7 +218,7 @@ export function UpdateCampaignDrawer({
         showCloseButton={false}
         className="!max-w-[480px] flex flex-col overflow-hidden p-0"
       >
-        <DialogHeader className="border-b border-white/[0.06] px-6 py-4">
+        <DialogHeader className="border-b border-white/[0.04] px-6 py-4">
           <DialogTitle className="text-base font-semibold">
             Update Campaign
           </DialogTitle>
@@ -241,6 +313,115 @@ export function UpdateCampaignDrawer({
                 />
               )}
 
+              {f.key === "callingHours" && (
+                <div className="flex items-stretch gap-2">
+                  <TimeField
+                    value={draft.channelStart}
+                    onChange={(v) => update("channelStart", v)}
+                    placeholder="Start"
+                    className="flex-1"
+                  />
+                  <TimeField
+                    value={draft.channelEnd}
+                    onChange={(v) => update("channelEnd", v)}
+                    placeholder="End"
+                    className="flex-1"
+                  />
+                </div>
+              )}
+
+              {f.key === "timezone" && (
+                <Select
+                  value={draft.timezone}
+                  onValueChange={(v) => v && update("timezone", v)}
+                >
+                  <SelectTrigger className="h-9 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {f.key === "retries" && (
+                <NumberStepper
+                  value={draft.retries}
+                  onChange={(v) => update("retries", Math.max(1, v))}
+                  min={1}
+                  className="w-full"
+                />
+              )}
+
+              {f.key === "startAfter" && (
+                <DatePickerTime
+                  idPrefix="upd-start"
+                  date={draft.startAfter ? new Date(draft.startAfter) : undefined}
+                  time={draft.startAfter.split("T")[1] || "00:00"}
+                  onDateChange={(d) =>
+                    d &&
+                    update(
+                      "startAfter",
+                      `${ymd(d)}T${draft.startAfter.split("T")[1] || "00:00"}`,
+                    )
+                  }
+                  onTimeChange={(t) =>
+                    update("startAfter", `${draft.startAfter.split("T")[0]}T${t}`)
+                  }
+                />
+              )}
+
+              {f.key === "endAfter" && (
+                <DatePickerTime
+                  idPrefix="upd-end"
+                  date={draft.endAfter ? new Date(draft.endAfter) : undefined}
+                  time={draft.endAfter.split("T")[1] || "00:00"}
+                  onDateChange={(d) =>
+                    d &&
+                    update(
+                      "endAfter",
+                      `${ymd(d)}T${draft.endAfter.split("T")[1] || "00:00"}`,
+                    )
+                  }
+                  onTimeChange={(t) =>
+                    update("endAfter", `${draft.endAfter.split("T")[0]}T${t}`)
+                  }
+                />
+              )}
+
+              {f.key === "slots" && (
+                <div className="space-y-3">
+                  <NumberStepper
+                    value={draft.slots}
+                    onChange={(v) => update("slots", v)}
+                    min={0}
+                    className="w-full"
+                  />
+                  <label className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                    <Switch
+                      checked={draft.useAllSlots}
+                      onCheckedChange={(v) => update("useAllSlots", Boolean(v))}
+                      className="mt-0.5"
+                    />
+                    <span className="flex-1 text-sm text-foreground">
+                      Use all workspace slots when no other campaigns are active
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {f.key === "name" && (
+                <Input
+                  value={draft.name}
+                  onChange={(e) => update("name", e.target.value)}
+                  placeholder="Campaign name"
+                />
+              )}
+
               {campaignStatus === "running" && f.key === "agent" && (
                 <Warning>
                   Live traffic — new calls use this from the next batch.
@@ -253,7 +434,7 @@ export function UpdateCampaignDrawer({
         {/* Changes diff — only once there is something to show */}
         {isDirty && <ChangesSummary changes={changes} />}
 
-        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-white/[0.06] !bg-transparent px-6 !py-3">
+        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-white/[0.04] !bg-transparent px-6 !py-3">
           <Button variant="ghost" onClick={() => attemptClose(false)}>
             Cancel
           </Button>
@@ -328,8 +509,8 @@ function FieldPicker({
         className="w-[432px] overflow-hidden p-0"
       >
         {/* Search */}
-        <div className="border-b border-white/[0.06] p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
+        <div className="border-b border-white/[0.04] p-2">
+          <div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -360,8 +541,8 @@ function FieldPicker({
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors",
-                    isOn ? "bg-[#333333]/30" : "hover:bg-secondary/60",
+                    "flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                    isOn ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
                   )}
                 >
                   <span className="min-w-0 flex-1">
@@ -434,7 +615,7 @@ function ChangesSummary({
   changes: ReturnType<typeof diffCampaign>;
 }) {
   return (
-    <div className="border-t border-white/[0.06] bg-[#333333]/30 px-6 py-3">
+    <div className="border-t border-white/[0.04] bg-[#333333]/30 px-6 py-3">
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         Changes · {changes.length}
       </span>

@@ -45,9 +45,9 @@ export function KpiStrip({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-[84px] w-full" />
+          <Skeleton key={i} className="h-[108px] w-full" />
         ))}
       </div>
     );
@@ -81,18 +81,21 @@ export function KpiStrip({
   ];
 
   return (
-    <div className="grid grid-cols-1 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {groups.map((g) => (
-        <div key={g.channel} className="px-5 py-4">
-          <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-            <g.icon size={13} />
+        <div
+          key={g.channel}
+          className="rounded-xl border border-border bg-[#333333]/30 px-6 py-5"
+        >
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <g.icon size={14} />
             {g.channel}
           </div>
           <div className="mt-3 flex items-end justify-between gap-4">
             {g.stats.map((s) => (
               <div key={s.label}>
-                <p className="text-[10px] text-muted-foreground">{s.label}</p>
-                <p className="mt-1 font-mono text-lg leading-none tabular-nums text-foreground">
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
                   {s.value}
                 </p>
               </div>
@@ -248,9 +251,12 @@ export function StatCards({
 
   return (
     <>
-      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {items.map((s) => (
-          <div key={s.label} className="group/tile relative px-5 py-4">
+          <div
+            key={s.label}
+            className="group/tile relative flex flex-col rounded-xl border border-border bg-[#333333]/30 px-6 py-5"
+          >
             <button
               type="button"
               aria-label="Enlarge"
@@ -259,15 +265,15 @@ export function StatCards({
             >
               <Maximize2 size={13} />
             </button>
-            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               {s.label}
               {s.hint && <InfoHint>{s.hint}</InfoHint>}
             </div>
-            <div className="mt-1 font-mono text-lg leading-none tabular-nums text-foreground">
+            <div className="mt-2 text-3xl font-semibold leading-tight tracking-tight tabular-nums text-foreground">
               {s.value}
             </div>
             {s.sub && (
-              <div className="mt-2 text-xs text-muted-foreground">{s.sub}</div>
+              <div className="mt-3 text-sm text-muted-foreground">{s.sub}</div>
             )}
           </div>
         ))}

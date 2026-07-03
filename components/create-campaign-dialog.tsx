@@ -93,7 +93,7 @@ export function CreateCampaignDialog({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-white/[0.06] shadow-2xl shadow-black/60"
+        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-white/[0.04] shadow-2xl shadow-black/60"
       >
         <DialogTitle className="sr-only">Create campaign</DialogTitle>
 
@@ -205,7 +205,7 @@ function TypePicker({
                     {opt.tagline}
                   </div>
 
-                  <div className="mt-auto space-y-3 pt-3 border-t border-white/[0.06]">
+                  <div className="mt-auto space-y-3 pt-3 border-t border-white/[0.04]">
                     <div>
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
                         Good for
@@ -489,7 +489,7 @@ export function RealtimeWizard({
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR — title row, then a centered step row below */}
-      <header className="border-b border-white/[0.06]">
+      <header className="border-b border-white/[0.04]">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-medium tracking-tight text-foreground">
             Create realtime campaign
@@ -816,18 +816,18 @@ export function RealtimeWizard({
                       : `Wait ${startAfterVal}${startAfterUnit} after the API trigger before placing the call.`
                   }
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <NumberStepper
                       value={startAfterVal}
                       onChange={setStartAfterVal}
                       min={0}
-                      className="w-24"
+                      className="flex-1"
                     />
                     <Select
                       value={startAfterUnit}
                       onValueChange={(v) => v && setStartAfterUnit(v as Unit)}
                     >
-                      <SelectTrigger className="w-28 h-9">
+                      <SelectTrigger className="flex-1 h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -839,18 +839,18 @@ export function RealtimeWizard({
                 </FieldGroup>
 
                 <FieldGroup label="Task expiry" hint={expirySentence}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <NumberStepper
                       value={endAfterVal}
                       onChange={setEndAfterVal}
                       min={0}
-                      className="w-24"
+                      className="flex-1"
                     />
                     <Select
                       value={endAfterUnit}
                       onValueChange={(v) => v && setEndAfterUnit(v as Unit)}
                     >
-                      <SelectTrigger className="w-28 h-9">
+                      <SelectTrigger className="flex-1 h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -898,7 +898,7 @@ export function RealtimeWizard({
                     value={retries}
                     onChange={(v) => setRetries(Math.max(1, v))}
                     min={1}
-                    className="w-24"
+                    className="w-full"
                   />
                 </FieldGroup>
 
@@ -925,7 +925,7 @@ export function RealtimeWizard({
                           className={cn(
                             "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
                             retryMode === o.v
-                              ? "border border-border bg-background text-foreground"
+                              ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground",
                           )}
                         >
@@ -935,18 +935,18 @@ export function RealtimeWizard({
                     </div>
 
                     {retryMode === "all" ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 w-full">
                         <NumberStepper
                           value={intSameVal}
                           onChange={setIntSameVal}
                           min={0}
-                          className="w-24"
+                          className="flex-1"
                         />
                         <Select
                           value={intSameUnit}
                           onValueChange={(v) => v && setIntSameUnit(v as Unit)}
                         >
-                          <SelectTrigger className="w-28 h-9">
+                          <SelectTrigger className="flex-1 h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -960,13 +960,13 @@ export function RealtimeWizard({
                         {Array.from({ length: intervalGaps }).map((_, i) => {
                           const cur = getAttemptGap(i);
                           return (
-                            <div key={i} className="flex items-center gap-3">
+                            <div key={i} className="flex items-center gap-3 w-full">
                               <span className="w-16 shrink-0 text-sm text-muted-foreground">Retry {i + 1}</span>
                               <NumberStepper
                                 value={cur.val}
                                 onChange={(v) => setAttemptGap(i, { val: v })}
                                 min={0}
-                                className="w-24"
+                                className="flex-1"
                               />
                               <Select
                                 value={cur.unit}
@@ -974,7 +974,7 @@ export function RealtimeWizard({
                                   v && setAttemptGap(i, { unit: v as Unit })
                                 }
                               >
-                                <SelectTrigger className="w-28 h-9">
+                                <SelectTrigger className="flex-1 h-9">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1026,7 +1026,7 @@ export function RealtimeWizard({
                   </FieldGroup>
                 )}
 
-                <div className="border-t border-white/[0.06] pt-5 space-y-5">
+                <div className="border-t border-white/[0.04] pt-5 space-y-5">
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
@@ -1052,7 +1052,7 @@ export function RealtimeWizard({
                       }
                       min={0}
                       max={WORKSPACE_TOTAL}
-                      className="w-24"
+                      className="w-full"
                     />
                     <div className="text-xs text-muted-foreground leading-relaxed">
                       Workspace has{" "}
@@ -1252,7 +1252,7 @@ export function RealtimeWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded bg-[#333333]/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                              className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
                             >
                               {o}
                             </span>
@@ -1322,7 +1322,7 @@ export function RealtimeWizard({
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between border-t border-white/[0.06] px-8 py-3">
+        <div className="flex items-center justify-between border-t border-white/[0.04] px-8 py-3">
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
             className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -1333,7 +1333,7 @@ export function RealtimeWizard({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
               Cancel
             </button>
@@ -1351,7 +1351,7 @@ export function RealtimeWizard({
                 }
               }}
               className={cn(
-                "rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90",
+                "rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90",
               )}
             >
               {step === STEPS.length ? "Create campaign" : "Continue"}
@@ -1413,7 +1413,7 @@ function CampaignSummary({
 
   return (
     <div className="rounded-xl border border-border bg-[#333333]/30 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/[0.06]">
+      <div className="px-4 py-3 border-b border-white/[0.04]">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
@@ -1477,7 +1477,7 @@ function CampaignSummary({
               {outcomes.map((o) => (
                 <span
                   key={o}
-                  className="rounded bg-[#333333]/30 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground"
+                  className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
                 >
                   {o}
                 </span>
@@ -1644,16 +1644,19 @@ function RtReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="rounded-md border border-border overflow-hidden divide-y divide-sidebar-border/30">
+      <div className="overflow-hidden rounded-xl border border-border bg-[#333333]/30">
         {visible.map(([label, value], i) => (
-          <div key={i} className="grid grid-cols-[180px_1fr] text-xs">
-            <div
-              className="border-r border-white/[0.06] px-3 py-2 text-muted-foreground"
-              style={{ backgroundColor: "var(--background)" }}
-            >
+          <div
+            key={i}
+            className={cn(
+              "grid grid-cols-[180px_1fr] text-sm",
+              i < visible.length - 1 && "border-b border-white/[0.04]",
+            )}
+          >
+            <div className="border-r border-white/[0.04] bg-[#333333]/30 px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
-            <div className="px-3 py-2 text-foreground">{value}</div>
+            <div className="px-3 py-2.5 text-foreground">{value}</div>
           </div>
         ))}
       </div>

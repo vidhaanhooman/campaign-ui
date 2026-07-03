@@ -98,7 +98,7 @@ export function LineDetailView({
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/[0.06] text-left text-xs text-muted-foreground">
+            <tr className="border-b border-white/[0.04] text-left text-xs text-muted-foreground">
               <th className="px-4 py-2 font-medium">Period</th>
               {series.map((s) => (
                 <th key={s.key} className="px-4 py-2 text-right font-medium">
@@ -109,7 +109,7 @@ export function LineDetailView({
           </thead>
           <tbody>
             {tableRows.map((d, i) => (
-              <tr key={i} className="border-b border-white/[0.06] last:border-0">
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
                 <td className="px-4 py-2 text-foreground">{String(d.label)}</td>
                 {series.map((s) => (
                   <td

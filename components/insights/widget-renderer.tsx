@@ -222,7 +222,7 @@ function MultiTableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-white/[0.06] bg-[#333333]/30">
+            <tr className="border-y border-white/[0.04] bg-[#333333]/30">
               <th className="py-2.5 pl-1 text-left text-xs font-medium text-muted-foreground">
                 Metric
               </th>
@@ -233,7 +233,7 @@ function MultiTableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
           </thead>
           <tbody>
             {data.map((row, i) => (
-              <tr key={i} className="border-b border-white/[0.06] last:border-0">
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
                 <td className="py-2.5 pl-1 text-xs text-muted-foreground">{row.name}</td>
                 <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-foreground">
                   {row.value}
@@ -260,7 +260,7 @@ function TableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-white/[0.06] bg-[#333333]/30">
+            <tr className="border-y border-white/[0.04] bg-[#333333]/30">
               {["Agent", "Calls", "Connected", "Pickup Rate (%)", "Avg Duration (s)"].map(
                 (h, i) => (
                   <th
@@ -278,7 +278,7 @@ function TableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
           </thead>
           <tbody>
             {agents.data.map((r, i) => (
-              <tr key={i} className="border-b border-white/[0.06] last:border-0">
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
                 <td className="py-2.5 pl-1 text-xs text-muted-foreground">{r.agent}</td>
                 {(["calls", "connected", "pickup", "avgdur"] as const).map((k) => (
                   <td

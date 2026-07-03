@@ -123,15 +123,15 @@ export default function CampaignsPage() {
         label="Campaigns"
         action={
           <div className="flex items-center gap-2">
-            <button className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
               <RefreshCw size={13} /> Refresh
             </button>
-            <button className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
               <PauseCircle size={13} /> Pause all
             </button>
             <button
               onClick={() => setOpen(true)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Plus size={13} /> Create campaign
             </button>
@@ -176,7 +176,7 @@ export default function CampaignsPage() {
             </button>
 
             {statsOpen && (
-              <div className="grid grid-cols-1 gap-4 border-t border-white/[0.06] px-5 py-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 border-t border-white/[0.04] px-5 py-5 md:grid-cols-2">
                 {/* Backlog card */}
                 <div className="rounded-xl border border-border bg-[#333333]/30 px-6 py-5">
                   <div className="text-sm text-muted-foreground">Backlog</div>
@@ -227,7 +227,7 @@ export default function CampaignsPage() {
           {/* tabs + search */}
           <div className="flex items-center gap-3">
             {/* Segmented control */}
-            <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
+            <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-[#333333]/30 p-1">
               {(["batch", "realtime"] as const).map((t) => (
                 <button
                   key={t}
@@ -235,7 +235,7 @@ export default function CampaignsPage() {
                   className={cn(
                     "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium capitalize transition-colors",
                     tab === t
-                      ? "border border-border bg-background text-foreground"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -245,17 +245,17 @@ export default function CampaignsPage() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               {/* Search input */}
-              <div className="flex h-8 w-80 items-center gap-2 rounded-xl border border-border bg-[#333333]/30 px-2.5">
+              <div className="flex h-8 w-80 items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-2.5">
                 <Search size={13} className="shrink-0 text-muted-foreground" />
                 <input
                   placeholder="Search by campaign ID…"
                   className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <button className="flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
+              <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
                 <Filter size={14} /> Filter
               </button>
-              <button className="flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
+              <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground hover:text-foreground">
                 <Calendar size={14} /> Date
               </button>
             </div>
@@ -274,7 +274,7 @@ export default function CampaignsPage() {
                 <col className="w-[6%]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-white/[0.06]">
+                <tr className="border-b border-white/[0.04]">
                   <th className="py-2.5 pl-6 pr-3 text-left text-xs font-medium text-muted-foreground">Campaign</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Agent</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Created at</th>
@@ -288,7 +288,7 @@ export default function CampaignsPage() {
                 {ROWS.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-white/[0.06] transition-colors last:border-0 hover:bg-secondary/40"
+                    className="border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40"
                   >
                     <td className="py-3 pl-6 pr-3">
                       <div className="text-sm font-medium text-foreground">{r.name}</div>

@@ -128,9 +128,9 @@ export function FilterPanel({
 
   return (
     <div className="flex h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-popover">
-      <div className="border-b border-white/[0.06] p-2">
+      <div className="border-b border-white/[0.04] p-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 flex-1 items-center gap-2 rounded-md border border-border bg-transparent px-2.5 dark:bg-secondary">
+          <div className="flex h-8 flex-1 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -244,14 +244,14 @@ function FilterFieldRow({
         className="flex w-[280px] flex-col gap-0 p-0"
       >
         {/* Header — field name */}
-        <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2.5">
+        <div className="flex items-center gap-2 border-b border-white/[0.04] px-3 py-2.5">
           <Icon size={14} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">{item.label}</span>
         </div>
 
         {/* Search */}
-        <div className="border-b border-white/[0.06] p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-transparent px-2.5 dark:bg-secondary">
+        <div className="border-b border-white/[0.04] p-2">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -289,7 +289,7 @@ function FilterFieldRow({
         </div>
 
         {/* Footer — Clear + Apply */}
-        <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] p-2">
+        <div className="flex items-center justify-between gap-2 border-t border-white/[0.04] p-2">
           <Button
             type="button"
             variant="ghost"

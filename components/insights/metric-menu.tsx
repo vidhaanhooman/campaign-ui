@@ -54,8 +54,8 @@ export function MetricMenu({
         className="w-[320px] p-0"
       >
         <div className="flex flex-col">
-          <div className="border-b border-white/[0.06] p-2">
-            <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-transparent px-2.5 dark:bg-secondary">
+          <div className="border-b border-white/[0.04] p-2">
+            <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}

@@ -51,7 +51,7 @@ export function VersionPicker({
             disabled={!enabled}
             title={enabled ? undefined : "Pick an agent first."}
             className={cn(
-              "w-full h-8 flex items-center gap-2 rounded-lg border border-border bg-transparent dark:bg-secondary px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:text-muted-foreground/50",
+              "w-full h-8 flex items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:text-muted-foreground/50",
               className,
             )}
           />
@@ -80,14 +80,14 @@ export function VersionPicker({
         className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
       >
         <div className="flex flex-col">
-          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/[0.06]">
+          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/[0.04]">
             <GitBranch size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Version</span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
               {filtered.length}
             </span>
           </div>
-          <div className="p-2 border-b border-white/[0.06]">
+          <div className="p-2 border-b border-white/[0.04]">
             <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input

@@ -27,7 +27,7 @@ export function CallPerformance() {
           {CALL_PERF_KPIS.map((k) => (
             <tr
               key={k.label}
-              className="border-b border-white/[0.06] transition-colors last:border-0 hover:bg-secondary/40"
+              className="border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40"
             >
               <td className="py-2 pl-5 pr-3">
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">

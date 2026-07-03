@@ -11,9 +11,6 @@ import {
 import { OUTCOME_COLORS, OUTCOME_GROUPS } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
 
-const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
-const CARD = "rounded-lg border border-border shadow-xl shadow-black/40";
-
 const TOTAL = OUTCOME_GROUPS.reduce((s, g) => s + g.outcomes.length, 0);
 
 export function OutcomePicker({
@@ -58,7 +55,7 @@ export function OutcomePicker({
             {outcomes.slice(0, 3).map((o) => (
               <span
                 key={o}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-transparent px-2 py-0.5 text-xs font-mono text-foreground"
               >
                 {o}
                 <span
@@ -101,11 +98,10 @@ export function OutcomePicker({
           align: "shift",
           fallbackAxisSide: "end",
         }}
-        style={SURFACE_BG}
-        className={cn(CARD, "w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0")}
+        className="w-(--anchor-width) max-w-[calc(100vw-2rem)] overflow-hidden p-0"
       >
         <div className="flex flex-col">
-          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/[0.06]">
+          <div className="px-4 h-11 flex items-center gap-2 border-b border-white/[0.04]">
             <Flag size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Retry outcomes</span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
@@ -113,8 +109,8 @@ export function OutcomePicker({
             </span>
           </div>
 
-          <div className="p-2 border-b border-white/[0.06]">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
+          <div className="p-2 border-b border-white/[0.04]">
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}
@@ -145,7 +141,7 @@ export function OutcomePicker({
                   <div
                     className={cn(
                       "flex items-center gap-2 px-4 py-2",
-                      gi > 0 && "border-t border-white/[0.06]",
+                      gi > 0 && "border-t border-white/[0.04]",
                     )}
                   >
                     {group.label === "Connected" ? (
@@ -166,10 +162,10 @@ export function OutcomePicker({
                           type="button"
                           onClick={() => onToggle(o)}
                           className={cn(
-                            "w-full flex items-center gap-3 rounded-md px-3 py-1.5 text-left transition-colors",
+                            "w-full flex items-center gap-3 rounded-lg px-3 py-1.5 text-left transition-colors",
                             checked
-                              ? "bg-[#333333]/30 text-foreground"
-                              : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                              ? "bg-white/[0.06] text-foreground"
+                              : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
                           )}
                         >
                           <Checkbox checked={checked} />
@@ -192,7 +188,7 @@ export function OutcomePicker({
           </div>
 
           {outcomes.length > 0 && (
-            <div className="flex items-center justify-between border-t border-white/[0.06] px-3 py-2">
+            <div className="flex items-center justify-between border-t border-white/[0.04] px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 {outcomes.length} extra outcome{outcomes.length === 1 ? "" : "s"}{" "}
                 will trigger a retry
@@ -217,7 +213,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <span
       className={cn(
         "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked ? "border-white bg-primary text-primary-foreground" : "border-border",
+        checked ? "border-foreground bg-foreground text-background" : "border-white/25",
       )}
     >
       {checked && <Check size={11} strokeWidth={3} />}

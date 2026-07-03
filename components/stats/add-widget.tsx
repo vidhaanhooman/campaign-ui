@@ -168,7 +168,7 @@ function AddWidgetDialog({
           <DialogTitle className="sr-only">Add widget</DialogTitle>
 
           {/* Header */}
-          <div className="flex items-center gap-2 border-b border-white/[0.06] px-5 py-4">
+          <div className="flex items-center gap-2 border-b border-white/[0.04] px-5 py-4">
             <Plus size={16} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Add widget</span>
             <button
@@ -214,7 +214,7 @@ function AddWidgetDialog({
                       className={cn(
                         "inline-flex h-7 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition-colors",
                         active
-                          ? "border border-border bg-background text-foreground"
+                          ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -255,7 +255,7 @@ function AddWidgetDialog({
               </button>
             </div>
 
-            <div className="border-t border-white/[0.06]" />
+            <div className="border-t border-white/[0.04]" />
 
             {/* Range */}
             <div className="space-y-2">
@@ -280,7 +280,7 @@ function AddWidgetDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-3">
+          <div className="flex items-center justify-between gap-3 border-t border-white/[0.04] px-5 py-3">
             <span
               className={cn(
                 "text-xs",
@@ -348,7 +348,7 @@ function FiltersSheet({
         <DialogTitle className="sr-only">Filters</DialogTitle>
 
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-white/[0.06] px-5 py-4">
+        <div className="flex items-center gap-2 border-b border-white/[0.04] px-5 py-4">
           <Filter size={16} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Filters</span>
           <button
@@ -362,7 +362,7 @@ function FiltersSheet({
         </div>
 
         {/* Search */}
-        <div className="border-b border-white/[0.06] px-5 py-3">
+        <div className="border-b border-white/[0.04] px-5 py-3">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
@@ -408,7 +408,7 @@ function FiltersSheet({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] px-5 py-3">
+        <div className="flex items-center justify-between gap-3 border-t border-white/[0.04] px-5 py-3">
           <button
             type="button"
             className="text-xs text-muted-foreground transition-colors hover:text-foreground"

@@ -210,7 +210,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-white/[0.06] px-6 py-3",
+        "flex items-center gap-3 border-b border-white/[0.04] px-6 py-3",
         className,
       )}
     >
