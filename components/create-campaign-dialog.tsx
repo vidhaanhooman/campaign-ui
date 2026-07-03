@@ -417,6 +417,18 @@ export function RealtimeWizard({
     });
   }, [abOn]);
 
+  // Master control — when on, the API can override every field, so the
+  // per-field grid is redundant and collapses. "version" is ineligible under
+  // A/B, so it's excluded from the set-all.
+  const eligibleOverrideKeys = OVERRIDABLE.filter(
+    (f) => !(f.key === "version" && abOn),
+  ).map((f) => f.key);
+  const [overrideAll, setOverrideAll] = useState(false);
+  const applyOverrideAll = (on: boolean) => {
+    setOverrideAll(on);
+    setOverrides(on ? new Set(eligibleOverrideKeys) : new Set());
+  };
+
   const optionalLines = useMemo(() => {
     const L: [string, string][] = [];
     if (overrides.has("from")) L.push(["from", `"${from}"`]);
@@ -762,41 +774,65 @@ export function RealtimeWizard({
                   Locked fields always use the campaign&rsquo;s value.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2">
+                {/* Master control — open (or lock) every field at once. */}
+                <label className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-3">
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Zap size={14} className="text-muted-foreground" />
+                      Let the API override everything
+                    </span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      Unlock every field below so any of them can be set per call.
+                    </span>
+                  </span>
+                  <Switch
+                    checked={overrideAll}
+                    onCheckedChange={(v) => applyOverrideAll(Boolean(v))}
+                  />
+                </label>
+
+                {overrideAll ? (
+                  <p className="rounded-lg border border-dashed border-border px-3.5 py-3 text-xs text-muted-foreground">
+                    Every field is open for per-call override. Turn this off to
+                    lock fields individually.
+                  </p>
+                ) : (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {OVERRIDABLE.map((f) => {
-                    const on = overrides.has(f.key);
+                    const on = overrides.has(f.key) && !(f.key === "version" && abOn);
                     const disabled = f.key === "version" && abOn;
                     return (
                       <button
                         key={f.key}
+                        type="button"
                         onClick={() => toggleOverride(f.key)}
                         disabled={disabled}
+                        aria-pressed={on}
                         className={cn(
-                          "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
+                          "group flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
                           disabled
-                            ? "cursor-not-allowed border-border bg-card text-muted-foreground"
+                            ? "cursor-not-allowed border-border bg-card text-muted-foreground opacity-50"
                             : on
-                              ? "border-border bg-card text-foreground"
-                              : "border-border bg-card hover:bg-secondary text-muted-foreground",
+                              ? "border-foreground bg-primary font-medium text-primary-foreground"
+                              : "border-border bg-card text-muted-foreground hover:border-white/25 hover:text-foreground",
                         )}
                       >
-                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                          {on && !disabled ? (
-                            <Zap size={13} />
-                          ) : (
-                            <Lock size={13} />
+                        <span
+                          className={cn(
+                            "shrink-0 transition-colors",
+                            on
+                              ? "text-primary-foreground"
+                              : "text-muted-foreground group-hover:text-foreground",
                           )}
-                          <span className="truncate">{f.label}</span>
+                        >
+                          {on ? <Zap size={14} /> : <Lock size={14} />}
                         </span>
-                        <Switch
-                          checked={on && !disabled}
-                          disabled={disabled}
-                          className="pointer-events-none"
-                        />
+                        <span className="truncate">{f.label}</span>
                       </button>
                     );
                   })}
                 </div>
+                )}
 
                 <PayloadCard
                   overrides={overrides}
