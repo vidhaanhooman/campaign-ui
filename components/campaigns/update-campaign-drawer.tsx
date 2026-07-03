@@ -9,12 +9,15 @@ import {
   Clock,
   Gauge,
   Globe,
+  Lock,
   Phone,
   RotateCcw,
   SignalHigh,
   Type,
   X,
+  Zap,
 } from "lucide-react";
+import { OVERRIDABLE } from "@/lib/campaign-data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -66,80 +69,43 @@ type FieldKey =
   | "timezone"
   | "retry"
   | "priority"
-  | "schedule"
+  | "schedule" // batch — Start & End dates
+  | "taskWindow" // realtime — task start delay + drop-after window
   | "slots"
+  | "apiOverride" // realtime — fields the API may set per call
   | "name";
 
-const FIELDS: {
+type FieldDef = {
   key: FieldKey;
   label: string;
   desc: string;
   icon: React.ReactNode;
   stateKeys: (keyof CampaignEditState)[];
-}[] = [
-  {
-    key: "agent",
-    label: "Agent",
-    desc: "Select to change current agent or version",
-    icon: <Bot size={14} />,
-    stateKeys: ["agentId", "agentVersion"],
-  },
-  {
-    key: "callingNumber",
-    label: "Calling Number",
-    desc: "Select to change current calling number",
-    icon: <Phone size={14} />,
-    stateKeys: ["callingNumbers"],
-  },
-  {
-    key: "callingHours",
-    label: "Calling Hours",
-    desc: "Change the daily calling window",
-    icon: <Clock size={14} />,
-    stateKeys: ["channelStart", "channelEnd"],
-  },
-  {
-    key: "timezone",
-    label: "Timezone",
-    desc: "Change the campaign timezone",
-    icon: <Globe size={14} />,
-    stateKeys: ["timezone"],
-  },
-  {
-    key: "retry",
-    label: "Retries & Outcomes",
-    desc: "Change retry attempts and the outcomes that trigger them",
-    icon: <RotateCcw size={14} />,
-    stateKeys: ["retries", "retryOutcomes"],
-  },
-  {
-    key: "priority",
-    label: "Priority",
-    desc: "Select to change current priority order",
-    icon: <SignalHigh size={14} />,
-    stateKeys: ["priority", "priorityMode", "attemptPriorities"],
-  },
-  {
-    key: "schedule",
-    label: "Start & End",
-    desc: "Change when the campaign starts and ends",
-    icon: <CalendarClock size={14} />,
-    stateKeys: ["startAfter", "endAfter"],
-  },
-  {
-    key: "slots",
-    label: "Slots",
-    desc: "Change the concurrent slot limit",
-    icon: <Gauge size={14} />,
-    stateKeys: ["slots", "useAllSlots"],
-  },
-  {
-    key: "name",
-    label: "Name",
-    desc: "Rename the campaign",
-    icon: <Type size={14} />,
-    stateKeys: ["name"],
-  },
+};
+
+const DEF: Record<FieldKey, FieldDef> = {
+  agent: { key: "agent", label: "Agent", desc: "Select to change current agent or version", icon: <Bot size={14} />, stateKeys: ["agentId", "agentVersion"] },
+  callingNumber: { key: "callingNumber", label: "Calling Number", desc: "Select to change current calling number", icon: <Phone size={14} />, stateKeys: ["callingNumbers"] },
+  callingHours: { key: "callingHours", label: "Calling Hours", desc: "Change the daily calling window", icon: <Clock size={14} />, stateKeys: ["channelStart", "channelEnd"] },
+  timezone: { key: "timezone", label: "Timezone", desc: "Change the campaign timezone", icon: <Globe size={14} />, stateKeys: ["timezone"] },
+  retry: { key: "retry", label: "Retries & Outcomes", desc: "Change retry attempts and the outcomes that trigger them", icon: <RotateCcw size={14} />, stateKeys: ["retries", "retryIntervalVal", "retryOutcomes"] },
+  priority: { key: "priority", label: "Priority", desc: "Select to change current priority order", icon: <SignalHigh size={14} />, stateKeys: ["priority", "priorityMode", "attemptPriorities"] },
+  schedule: { key: "schedule", label: "Start & End", desc: "Change when the campaign starts and ends", icon: <CalendarClock size={14} />, stateKeys: ["startAfter", "endAfter"] },
+  taskWindow: { key: "taskWindow", label: "Task Start & Expiry", desc: "Change the start delay and the drop-after window", icon: <CalendarClock size={14} />, stateKeys: ["taskStartVal", "taskStartUnit", "taskExpiryVal", "taskExpiryUnit"] },
+  slots: { key: "slots", label: "Slots", desc: "Change the concurrent slot limit", icon: <Gauge size={14} />, stateKeys: ["slots", "useAllSlots"] },
+  apiOverride: { key: "apiOverride", label: "API Override", desc: "Choose which fields the API can set per call", icon: <Zap size={14} />, stateKeys: ["apiOverrides"] },
+  name: { key: "name", label: "Name", desc: "Rename the campaign", icon: <Type size={14} />, stateKeys: ["name"] },
+};
+
+const BATCH_FIELDS: FieldDef[] = [
+  DEF.agent, DEF.callingNumber, DEF.callingHours, DEF.timezone,
+  DEF.retry, DEF.priority, DEF.schedule, DEF.slots, DEF.name,
+];
+
+const REALTIME_FIELDS: FieldDef[] = [
+  DEF.agent, DEF.callingNumber, DEF.callingHours, DEF.timezone,
+  DEF.taskWindow, DEF.retry, DEF.priority,
+  DEF.slots, DEF.apiOverride, DEF.name,
 ];
 
 /** Right-drawer: choose fields to update → edit only those → review + submit. */
@@ -149,13 +115,17 @@ export function UpdateCampaignDrawer({
   current,
   onSubmit,
   campaignStatus = "running",
+  mode = "batch",
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   current: CampaignEditState;
   onSubmit: (next: CampaignEditState) => void;
   campaignStatus?: "running" | "scheduled" | "paused";
+  /** Which field set to expose — realtime swaps dates for durations + API override. */
+  mode?: "batch" | "realtime";
 }) {
+  const FIELDS = mode === "realtime" ? REALTIME_FIELDS : BATCH_FIELDS;
   const [draft, setDraft] = React.useState<CampaignEditState>(current);
   const [selected, setSelected] = React.useState<Set<FieldKey>>(new Set());
 
@@ -224,7 +194,7 @@ export function UpdateCampaignDrawer({
       >
         <DialogHeader className="border-b border-white/[0.04] px-8 py-4">
           <DialogTitle className="text-base font-semibold">
-            Update Campaign
+            Update {mode === "realtime" ? "Realtime" : "Batch"} Campaign
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             Make changes in campaign
@@ -336,6 +306,35 @@ export function UpdateCampaignDrawer({
                       className="w-full"
                     />
                   </div>
+                  {mode === "realtime" && (
+                    <div className="space-y-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Retry interval
+                      </span>
+                      <div className="flex w-full items-center gap-2">
+                        <NumberStepper
+                          value={draft.retryIntervalVal}
+                          onChange={(v) => update("retryIntervalVal", Math.max(0, v))}
+                          min={0}
+                          className="flex-1"
+                        />
+                        <Select
+                          value={draft.retryIntervalUnit}
+                          onValueChange={(v) =>
+                            v && update("retryIntervalUnit", v as "min" | "hr")
+                          }
+                        >
+                          <SelectTrigger className="h-9 flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="min">minutes</SelectItem>
+                            <SelectItem value="hr">hours</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <span className="text-xs font-medium text-muted-foreground">
                       Retry outcomes
@@ -460,6 +459,145 @@ export function UpdateCampaignDrawer({
                   </div>
                 </div>
               )}
+
+              {f.key === "taskWindow" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Task start
+                    </span>
+                    <div className="flex w-full items-center gap-2">
+                      <NumberStepper
+                        value={draft.taskStartVal}
+                        onChange={(v) => update("taskStartVal", Math.max(0, v))}
+                        min={0}
+                        className="flex-1"
+                      />
+                      <Select
+                        value={draft.taskStartUnit}
+                        onValueChange={(v) =>
+                          v && update("taskStartUnit", v as "min" | "hr")
+                        }
+                      >
+                        <SelectTrigger className="h-9 flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="min">minutes</SelectItem>
+                          <SelectItem value="hr">hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Task expiry
+                    </span>
+                    <div className="flex w-full items-center gap-2">
+                      <NumberStepper
+                        value={draft.taskExpiryVal}
+                        onChange={(v) => update("taskExpiryVal", Math.max(0, v))}
+                        min={0}
+                        className="flex-1"
+                      />
+                      <Select
+                        value={draft.taskExpiryUnit}
+                        onValueChange={(v) =>
+                          v && update("taskExpiryUnit", v as "min" | "hr")
+                        }
+                      >
+                        <SelectTrigger className="h-9 flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="min">minutes</SelectItem>
+                          <SelectItem value="hr">hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {f.key === "apiOverride" &&
+                (() => {
+                  const allOverridden = OVERRIDABLE.every((o) =>
+                    draft.apiOverrides.includes(o.key),
+                  );
+                  return (
+                    <div className="space-y-3">
+                      {/* Master — open (or lock) every field at once. */}
+                      <label className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-3">
+                        <span className="min-w-0">
+                          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <Zap size={14} className="text-muted-foreground" />
+                            Let the API override everything
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                            Unlock every field so any of them can be set per call.
+                          </span>
+                        </span>
+                        <Switch
+                          checked={allOverridden}
+                          onCheckedChange={(v) =>
+                            update(
+                              "apiOverrides",
+                              v ? OVERRIDABLE.map((o) => o.key) : [],
+                            )
+                          }
+                        />
+                      </label>
+
+                      {allOverridden ? (
+                        <p className="rounded-lg border border-dashed border-border px-3.5 py-3 text-xs text-muted-foreground">
+                          Every field is open for per-call override. Turn this off
+                          to lock fields individually.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2">
+                          {OVERRIDABLE.map((o) => {
+                            const on = draft.apiOverrides.includes(o.key);
+                            return (
+                              <button
+                                key={o.key}
+                                type="button"
+                                onClick={() =>
+                                  update(
+                                    "apiOverrides",
+                                    on
+                                      ? draft.apiOverrides.filter(
+                                          (x) => x !== o.key,
+                                        )
+                                      : [...draft.apiOverrides, o.key],
+                                  )
+                                }
+                                aria-pressed={on}
+                                className={cn(
+                                  "group flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                                  on
+                                    ? "border-foreground bg-primary font-medium text-primary-foreground"
+                                    : "border-border bg-card text-muted-foreground hover:border-white/25 hover:text-foreground",
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "shrink-0",
+                                    on
+                                      ? "text-primary-foreground"
+                                      : "text-muted-foreground group-hover:text-foreground",
+                                  )}
+                                >
+                                  {on ? <Zap size={14} /> : <Lock size={14} />}
+                                </span>
+                                <span className="truncate">{o.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
               {f.key === "slots" && (
                 <div className="space-y-3">

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
-  Calendar,
+  Archive,
   ChevronDown,
   Copy,
   Eye,
@@ -10,6 +12,8 @@ import {
   MoreHorizontal,
   PanelLeft,
   PauseCircle,
+  Pencil,
+  Play,
   Plus,
   RefreshCw,
   Search,
@@ -18,6 +22,20 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { CreateCampaignDialog } from "@/components/create-campaign-dialog";
+import { UpdateCampaignDrawer } from "@/components/campaigns/update-campaign-drawer";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  SAMPLE_CAMPAIGN,
+  SAMPLE_REALTIME_CAMPAIGN,
+} from "@/lib/campaign-update";
+import {
+  DateRangePicker,
+  type StatsRange,
+} from "@/components/stats/date-range-picker";
 import {
   FilterDropdown,
   type FilterSection,
@@ -182,6 +200,15 @@ export default function CampaignsPage() {
   const [tab, setTab] = useState<"batch" | "realtime">("batch");
   const [statsOpen, setStatsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>({});
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [range, setRange] = useState<StatsRange | undefined>(undefined);
+  const router = useRouter();
+
+  // Realtime campaigns edit durations + API overrides; batch edits dates.
+  const updateCurrent =
+    tab === "realtime" ? SAMPLE_REALTIME_CAMPAIGN : SAMPLE_CAMPAIGN;
+  const viewStats = () =>
+    router.push(tab === "realtime" ? "/realtime-stats" : "/stats");
 
   /* ── Snapshot values (wire to live data later) ─────────────────── */
   const pendingFirst = 0;
@@ -346,9 +373,11 @@ export default function CampaignsPage() {
                 onChange={setFilters}
                 quickFilters={CAMPAIGN_QUICK_FILTERS}
               />
-              <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground hover:text-foreground">
-                <Calendar size={14} /> Date
-              </button>
+              <DateRangePicker
+                value={range}
+                onChange={setRange}
+                defaultPreset="30d"
+              />
             </div>
           </div>
 
@@ -406,12 +435,23 @@ export default function CampaignsPage() {
                     </td>
                     <td className="py-3 pl-3 pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
+                        <button
+                          onClick={viewStats}
+                          aria-label="View stats"
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        >
                           <Eye size={14} />
                         </button>
-                        <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground">
-                          <MoreHorizontal size={14} />
-                        </button>
+                        <RowActions
+                          onViewStats={viewStats}
+                          onUpdate={() => setUpdateOpen(true)}
+                          onArchive={() =>
+                            toast(`Archived “${r.name}”`)
+                          }
+                          onResume={() =>
+                            toast(`Resumed “${r.name}”`)
+                          }
+                        />
                       </div>
                     </td>
                   </tr>
@@ -422,7 +462,66 @@ export default function CampaignsPage() {
       </div>
 
       <CreateCampaignDialog open={open} onOpenChange={setOpen} />
+      <UpdateCampaignDrawer
+        open={updateOpen}
+        onOpenChange={setUpdateOpen}
+        current={updateCurrent}
+        mode={tab}
+        campaignStatus="running"
+        onSubmit={() => toast("Campaign updated")}
+      />
     </AppShell>
+  );
+}
+
+/** Row action menu — design-system dropdown (popover surface + tokenized rows). */
+function RowActions({
+  onViewStats,
+  onUpdate,
+  onArchive,
+  onResume,
+}: {
+  onViewStats: () => void;
+  onUpdate: () => void;
+  onArchive: () => void;
+  onResume: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const items = [
+    { icon: <Eye size={15} />, label: "View Stats", onClick: onViewStats },
+    { icon: <Pencil size={15} />, label: "Update Campaign", onClick: onUpdate },
+    { icon: <Archive size={15} />, label: "Archive Campaign", onClick: onArchive },
+    { icon: <Play size={15} />, label: "Resume Campaign", onClick: onResume },
+  ];
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <button
+            aria-label="Row actions"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <MoreHorizontal size={14} />
+          </button>
+        }
+      />
+      <PopoverContent align="end" sideOffset={4} className="w-52 p-1">
+        {items.map((it) => (
+          <button
+            key={it.label}
+            type="button"
+            onClick={() => {
+              it.onClick();
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground"
+          >
+            <span className="shrink-0">{it.icon}</span>
+            {it.label}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 }
 

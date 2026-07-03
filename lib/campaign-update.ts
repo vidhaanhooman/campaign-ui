@@ -4,18 +4,26 @@
  * dirty-diff so users can update any subset without touching the rest.
  */
 
+export type DurationUnit = "min" | "hr";
+
 export interface CampaignEditState {
   /* Basics */
   name: string;
   agentId: string;
   agentVersion: string;
 
-  /* Schedule */
+  /* Schedule — batch uses absolute dates */
   startAfter: string; // "YYYY-MM-DDTHH:mm"
   endAfter: string;
   channelStart: string; // "HH:mm"
   channelEnd: string;
   timezone: string;
+
+  /* Schedule — realtime uses relative durations after the API trigger */
+  taskStartVal: number;
+  taskStartUnit: DurationUnit;
+  taskExpiryVal: number;
+  taskExpiryUnit: DurationUnit;
 
   /* Slots */
   slots: number;
@@ -23,6 +31,8 @@ export interface CampaignEditState {
 
   /* Retries & priority */
   retries: number;
+  retryIntervalVal: number;
+  retryIntervalUnit: DurationUnit;
   retryOutcomes: string[];
   priority: number;
   /** "all" = one level for every attempt; "perAttempt" = per-attempt ranks. */
@@ -30,11 +40,14 @@ export interface CampaignEditState {
   /** Per-attempt priority ranks — used when priorityMode === "perAttempt". */
   attemptPriorities: number[];
 
+  /* API contract (realtime) — keys the API may set per call. */
+  apiOverrides: string[];
+
   /* Recipients */
   callingNumbers: string[];
 }
 
-/** A sample "currently running" campaign — the drawer opens pre-filled with this. */
+/** A sample "currently running" batch campaign — the drawer opens with this. */
 export const SAMPLE_CAMPAIGN: CampaignEditState = {
   name: "Q3 win-back outbound",
   agentId: "agt_debt_pitch",
@@ -46,16 +59,34 @@ export const SAMPLE_CAMPAIGN: CampaignEditState = {
   channelEnd: "21:00",
   timezone: "Asia/Kolkata",
 
+  taskStartVal: 0,
+  taskStartUnit: "min",
+  taskExpiryVal: 30,
+  taskExpiryUnit: "min",
+
   slots: 4,
   useAllSlots: false,
 
   retries: 2,
+  retryIntervalVal: 6,
+  retryIntervalUnit: "hr",
   retryOutcomes: ["no_answer", "busy"],
   priority: 5,
   priorityMode: "all",
   attemptPriorities: [5, 5, 5],
 
+  apiOverrides: [],
+
   callingNumbers: ["+91-80000-01", "+91-80000-02"],
+};
+
+/** A sample "currently running" realtime campaign. */
+export const SAMPLE_REALTIME_CAMPAIGN: CampaignEditState = {
+  ...SAMPLE_CAMPAIGN,
+  name: "Realtime lead qualifier",
+  slots: 12,
+  callingNumbers: ["+91-80000-01"],
+  apiOverrides: ["from", "endAfter", "priority", "version"],
 };
 
 export const TIMEZONES = [
@@ -76,7 +107,9 @@ export interface Change {
   after: string;
 }
 
-const LABELS: Record<keyof CampaignEditState, string> = {
+// Partial: only fields we want surfaced in the diff. Unit fields fold into
+// their value labels below, so they're intentionally omitted here.
+const LABELS: Partial<Record<keyof CampaignEditState, string>> = {
   name: "Name",
   agentId: "Agent",
   agentVersion: "Agent version",
@@ -85,13 +118,17 @@ const LABELS: Record<keyof CampaignEditState, string> = {
   channelStart: "Calling hours (start)",
   channelEnd: "Calling hours (end)",
   timezone: "Timezone",
+  taskStartVal: "Task start",
+  taskExpiryVal: "Task expiry",
   slots: "Slots",
   useAllSlots: "Use all workspace slots",
   retries: "Retries",
+  retryIntervalVal: "Retry interval",
   retryOutcomes: "Retry outcomes",
   priority: "Priority",
   priorityMode: "Priority mode",
   attemptPriorities: "Per-attempt priorities",
+  apiOverrides: "API can override",
   callingNumbers: "Calling numbers",
 };
 
@@ -117,7 +154,7 @@ export function diffCampaign(
     if (!same) {
       out.push({
         key: k,
-        label: LABELS[k],
+        label: LABELS[k] ?? String(k),
         before: fmt(av),
         after: fmt(bv),
       });
