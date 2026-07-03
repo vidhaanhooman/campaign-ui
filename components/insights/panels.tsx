@@ -136,7 +136,7 @@ export function TablePanel({
   ) : (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-y border-white/[0.04] bg-[#333333]/30">
+        <tr className="border-b border-white/[0.04]">
           {columns.map((c) => (
             <th
               key={c.key}
@@ -152,15 +152,21 @@ export function TablePanel({
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-b border-white/[0.04] last:border-0">
+          <tr
+            key={i}
+            className={cn(
+              "border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40",
+              i === 0 && "[&>td]:pt-3.5",
+            )}
+          >
             {columns.map((c) => (
               <td
                 key={c.key}
                 className={cn(
                   "py-2.5 first:pl-5 last:pr-5",
                   c.numeric
-                    ? "px-3 text-right font-mono text-xs tabular-nums text-foreground"
-                    : "px-3 text-left text-xs text-muted-foreground",
+                    ? "px-3 text-right font-mono text-sm tabular-nums text-foreground"
+                    : "px-3 text-left text-sm text-muted-foreground",
                 )}
               >
                 {row[c.key]}
