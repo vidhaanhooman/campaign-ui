@@ -146,7 +146,7 @@ export function UpdateCampaignDrawer({
         showCloseButton={false}
         className="!max-w-[480px] flex flex-col overflow-hidden p-0"
       >
-        <DialogHeader className="border-b border-border px-6 py-4">
+        <DialogHeader className="border-b border-white/10 px-6 py-4">
           <DialogTitle className="text-base font-semibold">
             Update Campaign
           </DialogTitle>
@@ -253,7 +253,7 @@ export function UpdateCampaignDrawer({
         {/* Changes diff — only once there is something to show */}
         {isDirty && <ChangesSummary changes={changes} />}
 
-        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-border !bg-transparent px-6 !py-3">
+        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-white/10 !bg-transparent px-6 !py-3">
           <Button variant="ghost" onClick={() => attemptClose(false)}>
             Cancel
           </Button>
@@ -328,7 +328,7 @@ function FieldPicker({
         className="w-[432px] overflow-hidden p-0"
       >
         {/* Search */}
-        <div className="border-b border-border p-2">
+        <div className="border-b border-white/10 p-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
@@ -434,7 +434,7 @@ function ChangesSummary({
   changes: ReturnType<typeof diffCampaign>;
 }) {
   return (
-    <div className="border-t border-border bg-[#333333]/30 px-6 py-3">
+    <div className="border-t border-white/10 bg-[#333333]/30 px-6 py-3">
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         Changes · {changes.length}
       </span>

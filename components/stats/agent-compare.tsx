@@ -106,7 +106,7 @@ export function AgentCompare() {
         <table className="w-full border-collapse text-sm">
           {/* Column headers — version names */}
           <thead>
-            <tr className="border-b border-border">
+            <tr className="border-b border-white/10">
               <th className="w-[28%] py-2.5 pl-5 pr-3 text-left text-xs font-medium text-muted-foreground">
                 Metric
               </th>
@@ -180,7 +180,7 @@ function GroupBody({
         <tr
           key={r.key}
           className={cn(
-            "border-b border-border transition-colors last:border-0 hover:bg-secondary/40",
+            "border-b border-white/10 transition-colors last:border-0 hover:bg-secondary/40",
             i === 0 && "[&>td]:pt-4",
           )}
         >

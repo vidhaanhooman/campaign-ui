@@ -65,7 +65,7 @@ export function TaskLifecycle({
 
 function Row({ state, total }: { state: LifecycleState; total: number }) {
   return (
-    <tr className="border-b border-border transition-colors last:border-0 hover:bg-secondary/40">
+    <tr className="border-b border-white/10 transition-colors last:border-0 hover:bg-secondary/40">
       <td className="py-2.5 pl-6 pr-3">
         <span className="truncate text-sm font-medium text-foreground">
           {state.state}

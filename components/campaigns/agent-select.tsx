@@ -94,7 +94,7 @@ export function AgentSelect({
         className="w-[380px] overflow-hidden p-0"
       >
         {/* Header */}
-        <div className="flex h-11 items-center gap-2 border-b border-border px-4">
+        <div className="flex h-11 items-center gap-2 border-b border-white/10 px-4">
           <Bot size={13} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Agent</span>
           <span className="ml-auto font-mono text-[11px] text-muted-foreground">
@@ -102,7 +102,7 @@ export function AgentSelect({
           </span>
         </div>
         {/* Search */}
-        <div className="border-b border-border p-2">
+        <div className="border-b border-white/10 p-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
@@ -217,14 +217,14 @@ export function VersionSelect({
         sideOffset={6}
         className="w-[320px] overflow-hidden p-0"
       >
-        <div className="flex h-11 items-center gap-2 border-b border-border px-4">
+        <div className="flex h-11 items-center gap-2 border-b border-white/10 px-4">
           <GitBranch size={13} className="text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Version</span>
           <span className="ml-auto font-mono text-[11px] text-muted-foreground">
             {filtered.length}
           </span>
         </div>
-        <div className="border-b border-border p-2">
+        <div className="border-b border-white/10 p-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input

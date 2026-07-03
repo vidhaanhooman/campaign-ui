@@ -86,14 +86,14 @@ export function AgentPicker({
         className="w-[380px] overflow-hidden p-0"
       >
         <div className="flex flex-col">
-          <div className="flex h-11 items-center gap-2 border-b border-border px-4">
+          <div className="flex h-11 items-center gap-2 border-b border-white/10 px-4">
             <Bot size={13} className="text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Agent</span>
             <span className="ml-auto font-mono text-[11px] text-muted-foreground">
               {filtered.length}
             </span>
           </div>
-          <div className="border-b border-border p-2">
+          <div className="border-b border-white/10 p-2">
             <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
@@ -149,7 +149,7 @@ export function AgentPicker({
               })
             )}
           </div>
-          <div className="flex items-center justify-between border-t border-border p-2">
+          <div className="flex items-center justify-between border-t border-white/10 p-2">
             <button
               type="button"
               disabled={!agentId}

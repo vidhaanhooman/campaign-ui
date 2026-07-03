@@ -73,7 +73,7 @@ export function ConversionFunnel({ data = FUNNEL }: { data?: FunnelData } = {}) 
 
 function Row({ stage: s }: { stage: Stage }) {
   return (
-    <tr className="border-b border-border transition-colors last:border-0 hover:bg-secondary/40">
+    <tr className="border-b border-white/10 transition-colors last:border-0 hover:bg-secondary/40">
       <td className="py-2.5 pl-6 pr-3">
         <span className="truncate text-sm font-medium text-foreground">{s.stage}</span>
       </td>

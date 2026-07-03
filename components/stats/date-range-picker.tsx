@@ -148,7 +148,7 @@ export function DateRangePicker({
       >
         <div className="flex">
           {/* ── Quick range column ─────────────────────────────────── */}
-          <div className="flex w-40 flex-col gap-0.5 border-r border-border p-3">
+          <div className="flex w-40 flex-col gap-0.5 border-r border-white/10 p-3">
             <div className="mb-2 px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Quick range
             </div>
@@ -206,7 +206,7 @@ export function DateRangePicker({
             </div>
 
             {/* Footer */}
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
               <button
                 type="button"
                 onClick={clear}
