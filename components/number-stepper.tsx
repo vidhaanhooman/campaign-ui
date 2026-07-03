@@ -54,7 +54,7 @@ export function NumberStepper({
   return (
     <div
       className={cn(
-        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-border bg-[#333333]/30 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        "group relative flex h-8 items-stretch overflow-hidden rounded-lg border border-border bg-card transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         className,
       )}
     >
@@ -82,7 +82,7 @@ export function NumberStepper({
       <div
         onPointerDown={startScrub}
         title="Drag to adjust"
-        className="flex cursor-ew-resize select-none flex-col border-l border-white/[0.04] bg-[#333333]/30/40"
+        className="flex cursor-ew-resize select-none flex-col border-l border-white/[0.04] bg-card/40"
         style={{ width: 22 }}
       >
         <button
@@ -100,7 +100,7 @@ export function NumberStepper({
             "flex h-1/2 w-full items-center justify-center transition-colors",
             atMax
               ? "text-muted-foreground/50 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-[#333333]/30",
+              : "text-muted-foreground hover:text-foreground hover:bg-card",
           )}
         >
           <ChevronUp size={11} strokeWidth={2.5} />
@@ -120,7 +120,7 @@ export function NumberStepper({
             "flex h-1/2 w-full items-center justify-center border-t border-white/[0.04] transition-colors",
             atMin
               ? "text-muted-foreground/50 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-[#333333]/30",
+              : "text-muted-foreground hover:text-foreground hover:bg-card",
           )}
         >
           <ChevronDown size={11} strokeWidth={2.5} />

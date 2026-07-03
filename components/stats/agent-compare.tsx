@@ -148,7 +148,7 @@ export function AgentCompare() {
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-secondary"
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-secondary"
         >
           <TableIcon size={13} className="text-foreground" />
           {expanded ? "Show core comparison" : "Full comparison"}
@@ -199,7 +199,7 @@ function GroupBody({
                 className={cn(
                   "px-3 py-2.5 font-mono text-sm tabular-nums",
                   si === stats.length - 1 && "pr-5",
-                  s.live && "bg-[#333333]/30",
+                  s.live && "bg-card",
                   isBest ? "text-foreground" : "text-muted-foreground",
                 )}
               >

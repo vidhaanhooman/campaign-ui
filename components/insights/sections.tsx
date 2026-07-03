@@ -30,7 +30,7 @@ import { MetricBreakdown } from "./widgets/metric-breakdown";
 import { MetricDetail } from "./widgets/metric-detail";
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-lg bg-[#333333]/30", className)} />;
+  return <div className={cn("animate-pulse rounded-lg bg-card", className)} />;
 }
 
 /* ── KPI strip — three channel cards ─────────────────────────────────── */
@@ -85,7 +85,7 @@ export function KpiStrip({
       {groups.map((g) => (
         <div
           key={g.channel}
-          className="rounded-xl border border-border bg-[#333333]/30 px-6 py-5"
+          className="rounded-xl border border-border bg-card px-6 py-5"
         >
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <g.icon size={14} />
@@ -169,7 +169,7 @@ export function ConversationsChart({
   }
 
   return (
-    <section className="group flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30">
+    <section className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card">
       <header className="flex items-center gap-4 px-5 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-foreground">
@@ -255,7 +255,7 @@ export function StatCards({
         {items.map((s) => (
           <div
             key={s.label}
-            className="group/tile relative flex flex-col rounded-xl border border-border bg-[#333333]/30 px-6 py-5"
+            className="group/tile relative flex flex-col rounded-xl border border-border bg-card px-6 py-5"
           >
             <button
               type="button"

@@ -49,7 +49,7 @@ function AttemptsTable() {
             </td>
             <td className="py-3 pl-3 pr-5">
               <div className="flex items-center gap-2">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#333333]/30">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-card">
                   <div
                     className="h-full rounded-full"
                     style={{

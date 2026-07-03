@@ -122,7 +122,7 @@ export default function InsightsPage() {
 
   const emptyState = (
     <div className="flex items-center gap-4 rounded-lg border border-dashed border-border px-5 py-4">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#333333]/30 text-muted-foreground">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-card text-muted-foreground">
         <LayoutDashboard size={18} />
       </div>
       <div className="min-w-0 flex-1">

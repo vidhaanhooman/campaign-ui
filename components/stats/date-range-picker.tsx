@@ -131,7 +131,7 @@ export function DateRangePicker({
           <button
             type="button"
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
+              "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent",
               className,
             )}
           >
@@ -210,7 +210,7 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={clear}
-                className="inline-flex h-7 items-center rounded-lg border border-border bg-[#333333]/30 px-3 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="inline-flex h-7 items-center rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 Clear
               </button>
@@ -486,7 +486,7 @@ function TimeBlock({
         render={
           <button
             type="button"
-            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-2 text-left transition-colors hover:bg-[#333333]/50"
+            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-[#333333]/50"
           >
             <div className="flex flex-col">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">

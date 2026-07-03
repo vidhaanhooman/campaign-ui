@@ -121,7 +121,7 @@ export function AddWidgetButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
       >
         <Plus size={13} />
         Add widget
@@ -202,7 +202,7 @@ function AddWidgetDialog({
             {/* Visualization */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Visualization</div>
-              <div className="grid grid-cols-6 gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
+              <div className="grid grid-cols-6 gap-1 rounded-xl border border-border bg-card p-1">
                 {VIZ.map((v) => {
                   const active = viz === v.key;
                   const Icon = v.icon;
@@ -260,7 +260,7 @@ function AddWidgetDialog({
             {/* Range */}
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Range</div>
-              <div className="flex items-center gap-3 rounded-md border border-border bg-[#333333]/30 px-4 py-3">
+              <div className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3">
                 <Switch
                   checked={useCustomRange}
                   onCheckedChange={setUseCustomRange}
@@ -305,7 +305,7 @@ function AddWidgetDialog({
                   "inline-flex h-8 items-center rounded-md px-3 text-xs transition-colors",
                   canSubmit
                     ? "bg-foreground text-background hover:bg-foreground/90"
-                    : "cursor-not-allowed bg-[#333333]/30 text-muted-foreground",
+                    : "cursor-not-allowed bg-card text-muted-foreground",
                 )}
               >
                 Add widget

@@ -12,7 +12,7 @@ import { AGENT_DETAILS } from "@/lib/campaign-data";
 import { cn } from "@/lib/utils";
 
 const CARD =
-  "rounded-lg border bg-[#333333]/30 shadow-xl shadow-black/40";
+  "rounded-lg border bg-card shadow-xl shadow-black/40";
 const SURFACE_BG = { backgroundColor: "var(--card)" } as const;
 
 export function AgentVersionPicker({
@@ -75,7 +75,7 @@ export function AgentVersionPicker({
         render={
           <button
             type="button"
-            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-border bg-card px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         }
       >
@@ -124,7 +124,7 @@ export function AgentVersionPicker({
           <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/[0.04]">
             <div className="p-2">
               {/* Search input recipe */}
-              <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
+              <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-2.5">
                 <Search size={13} className="shrink-0 text-muted-foreground" />
                 <input
                   value={query}
@@ -150,7 +150,7 @@ export function AgentVersionPicker({
                       className={cn(
                         "flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                         checked
-                          ? "bg-[#333333]/30 text-foreground"
+                          ? "bg-card text-foreground"
                           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                       )}
                     >
@@ -168,7 +168,7 @@ export function AgentVersionPicker({
                           {a.id}
                         </span>
                       </span>
-                      <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-[#333333]/30 px-2 text-[10px] text-muted-foreground">
+                      <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-card px-2 text-[10px] text-muted-foreground">
                         {a.mode}
                       </span>
                     </button>
@@ -196,7 +196,7 @@ export function AgentVersionPicker({
                       className={cn(
                         "flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                         checked
-                          ? "bg-[#333333]/30 text-foreground"
+                          ? "bg-card text-foreground"
                           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                       )}
                     >

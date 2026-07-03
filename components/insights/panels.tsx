@@ -8,7 +8,7 @@ import { PanelCard } from "./panel-card";
 
 /* ── Loading skeleton ────────────────────────────────────────────────── */
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-[#333333]/30", className)} />;
+  return <div className={cn("animate-pulse rounded-md bg-card", className)} />;
 }
 
 /* ── Line panel ──────────────────────────────────────────────────────── */

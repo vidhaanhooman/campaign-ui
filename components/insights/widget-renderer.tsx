@@ -59,7 +59,7 @@ function Shell({
   span,
 }: { title: string; children: React.ReactNode } & EditProps) {
   return (
-    <section className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30">
+    <section className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
       <header className="flex items-center gap-2 px-5 pt-4 pb-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
         <div className="ml-auto flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -222,7 +222,7 @@ function MultiTableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-white/[0.04] bg-[#333333]/30">
+            <tr className="border-y border-white/[0.04] bg-card">
               <th className="py-2.5 pl-1 text-left text-xs font-medium text-muted-foreground">
                 Metric
               </th>
@@ -260,7 +260,7 @@ function TableWidget({ widget, range, refreshKey, edit }: WidgetProps) {
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-y border-white/[0.04] bg-[#333333]/30">
+            <tr className="border-y border-white/[0.04] bg-card">
               {["Agent", "Calls", "Connected", "Pickup Rate (%)", "Avg Duration (s)"].map(
                 (h, i) => (
                   <th

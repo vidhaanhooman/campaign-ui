@@ -42,7 +42,7 @@ export function OutcomePicker({
           <button
             type="button"
             className={cn(
-              "w-full min-h-8 flex items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 py-1.5 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "w-full min-h-8 flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               className,
             )}
           />

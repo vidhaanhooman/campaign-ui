@@ -165,7 +165,7 @@ function TypePicker({
         <div className="w-full max-w-3xl">
           <div className="mb-9">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="flex size-7 items-center justify-center rounded-md bg-[#333333]/30">
+              <span className="flex size-7 items-center justify-center rounded-md bg-card">
                 <Megaphone size={13} className="text-muted-foreground" />
               </span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
@@ -187,11 +187,11 @@ function TypePicker({
                 <button
                   key={opt.type}
                   onClick={() => onPick(opt.type)}
-                  className="group relative flex flex-col gap-4 rounded-xl border border-border bg-[#333333]/30 p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
+                  className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex size-9 items-center justify-center rounded-md bg-[#333333]/30">
+                      <span className="flex size-9 items-center justify-center rounded-md bg-card">
                         <Icon size={15} className="text-foreground" />
                       </span>
                       <span className="text-sm font-medium text-foreground">
@@ -214,7 +214,7 @@ function TypePicker({
                         {opt.goodFor.map((g) => (
                           <span
                             key={g}
-                            className="rounded-md bg-[#333333]/30 px-2 py-0.5 text-xs text-muted-foreground"
+                            className="rounded-md bg-card px-2 py-0.5 text-xs text-muted-foreground"
                           >
                             {g}
                           </span>
@@ -515,7 +515,7 @@ export function RealtimeWizard({
                   }}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
-                    active && "bg-[#333333]/30 text-foreground",
+                    active && "bg-card text-foreground",
                     !active &&
                       "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                   )}
@@ -524,8 +524,8 @@ export function RealtimeWizard({
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
                       active && "bg-primary text-primary-foreground font-medium",
-                      done && !active && "bg-[#333333]/30 text-muted-foreground",
-                      !active && !done && "bg-[#333333]/30 text-muted-foreground",
+                      done && !active && "bg-card text-muted-foreground",
+                      !active && !done && "bg-card text-muted-foreground",
                     )}
                   >
                     {hasError ? "!" : done ? <Check size={10} strokeWidth={3} /> : s.id}
@@ -558,7 +558,7 @@ export function RealtimeWizard({
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Order-confirmation outbound"
                     className={cn(
-                      "h-9 w-full rounded-md border bg-[#333333]/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
+                      "h-9 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
                       showErrors && step1Errors.name
                         ? "border-red-400"
                         : "border-border",
@@ -566,7 +566,7 @@ export function RealtimeWizard({
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
-                <div className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
                   <Switch
                     checked={abOn}
                     onCheckedChange={(v) => {
@@ -646,7 +646,7 @@ export function RealtimeWizard({
                         key={i}
                         className="flex items-center gap-2"
                       >
-                        <div className="flex size-9 items-center justify-center rounded-md bg-[#333333]/30 text-xs font-mono text-muted-foreground shrink-0">
+                        <div className="flex size-9 items-center justify-center rounded-md bg-card text-xs font-mono text-muted-foreground shrink-0">
                           {String.fromCharCode(65 + i)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -774,10 +774,10 @@ export function RealtimeWizard({
                         className={cn(
                           "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
                           disabled
-                            ? "cursor-not-allowed border-border bg-[#333333]/30 text-muted-foreground"
+                            ? "cursor-not-allowed border-border bg-card text-muted-foreground"
                             : on
-                              ? "border-border bg-[#333333]/30 text-foreground"
-                              : "border-border bg-[#333333]/30 hover:bg-secondary text-muted-foreground",
+                              ? "border-border bg-card text-foreground"
+                              : "border-border bg-card hover:bg-secondary text-muted-foreground",
                         )}
                       >
                         <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
@@ -911,7 +911,7 @@ export function RealtimeWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -1003,7 +1003,7 @@ export function RealtimeWizard({
                         {["not_connected", "busy_callback"].map((d) => (
                           <span
                             key={d}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono text-foreground"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono text-foreground"
                             title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
                           >
                             <Lock size={10} className="text-muted-foreground" />
@@ -1064,7 +1064,7 @@ export function RealtimeWizard({
                   </div>
 
                   {/* Use idle workspace slots */}
-                  <div className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                  <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
                     <Switch
                       checked={bursting}
                       onCheckedChange={(v) => setBursting(Boolean(v))}
@@ -1113,7 +1113,7 @@ export function RealtimeWizard({
                                     key={i}
                                     className="flex items-center gap-2"
                                   >
-                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#333333]/30 font-mono text-[10px] text-muted-foreground">
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-[10px] text-muted-foreground">
                                       {String.fromCharCode(65 + i)}
                                     </span>
                                     {ag ? (
@@ -1185,7 +1185,7 @@ export function RealtimeWizard({
                           pool.map((n) => (
                             <span
                               key={n}
-                              className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono"
                             >
                               {n}
                             </span>
@@ -1252,7 +1252,7 @@ export function RealtimeWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
                             >
                               {o}
                             </span>
@@ -1277,7 +1277,7 @@ export function RealtimeWizard({
                           [...overrides].map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center gap-1 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs text-muted-foreground"
+                              className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground"
                             >
                               <Zap size={11} />
                               {OVERRIDABLE.find((o) => o.key === k)?.label}
@@ -1412,7 +1412,7 @@ function CampaignSummary({
       : [];
 
   return (
-    <div className="rounded-xl border border-border bg-[#333333]/30 overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-white/[0.04]">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
@@ -1477,7 +1477,7 @@ function CampaignSummary({
               {outcomes.map((o) => (
                 <span
                   key={o}
-                  className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
+                  className="rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
                 >
                   {o}
                 </span>
@@ -1617,7 +1617,7 @@ function Hint({
   body: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-md border border-border bg-[#333333]/30 px-3 py-2.5">
+    <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3 py-2.5">
       <div className="mt-0.5 text-muted-foreground">{icon}</div>
       <div>
         <div className="text-sm font-medium text-foreground">{title}</div>
@@ -1644,7 +1644,7 @@ function RtReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-[#333333]/30">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {visible.map(([label, value], i) => (
           <div
             key={i}
@@ -1653,7 +1653,7 @@ function RtReviewSection({
               i < visible.length - 1 && "border-b border-white/[0.04]",
             )}
           >
-            <div className="border-r border-white/[0.04] bg-[#333333]/30 px-3 py-2.5 text-muted-foreground">
+            <div className="border-r border-white/[0.04] bg-card px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
             <div className="px-3 py-2.5 text-foreground">{value}</div>
@@ -1667,7 +1667,7 @@ function RtReviewSection({
 function CurlBlock({ curl }: { curl: string }) {
   const lines = curl.split("\n");
   return (
-    <pre className="rounded-md border border-border bg-[#333333]/30 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground overflow-x-auto">
+    <pre className="rounded-md border border-border bg-card p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground overflow-x-auto">
       {lines.map((line, i) => (
         <div key={i}>{renderCurlLine(line)}</div>
       ))}
@@ -1887,7 +1887,7 @@ function PayloadCard({
   const locked = OVERRIDABLE.filter((f) => !overrides.has(f.key));
 
   return (
-    <div className="rounded-xl border border-border bg-[#333333]/30 p-4 space-y-4">
+    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
       <div>
         <div className="text-xs font-medium text-foreground mb-1">Task API payload</div>
         <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1928,7 +1928,7 @@ function PayloadCard({
             {locked.map((f) => (
               <span
                 key={f.key}
-                className="flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono text-muted-foreground"
+                className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono text-muted-foreground"
               >
                 <Lock size={11} /> {f.label}
               </span>

@@ -47,7 +47,7 @@ export default function DevPage() {
           bypass — every screen
         </span>
 
-        <div className="ml-auto inline-flex items-center rounded-md border border-border bg-[#333333]/30 p-0.5">
+        <div className="ml-auto inline-flex items-center rounded-md border border-border bg-card p-0.5">
           {(
             [
               { v: "realtime", label: "Realtime" },
@@ -89,7 +89,7 @@ export default function DevPage() {
                 className={cn(
                   "rounded-md px-3 py-1 text-xs transition-colors",
                   active
-                    ? "bg-[#333333]/30 text-foreground border border-border"
+                    ? "bg-card text-foreground border border-border"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
                 )}
               >
@@ -249,7 +249,7 @@ function Section({
       <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-3">
         {title}
       </div>
-      <div className="rounded-xl border border-border bg-[#333333]/30 p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         {children}
       </div>
     </section>
@@ -276,7 +276,7 @@ function Swatch({
       >
         {textFor ? "Aa" : ""}
       </div>
-      <div className="px-2 py-1.5 bg-[#333333]/30">
+      <div className="px-2 py-1.5 bg-card">
         <div className="font-mono text-foreground">{token}</div>
         <div className="font-mono text-muted-foreground">{value}</div>
       </div>
@@ -286,7 +286,7 @@ function Swatch({
 
 function Pill({ color, label }: { color: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
       <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", color)} />
       {label}
     </span>

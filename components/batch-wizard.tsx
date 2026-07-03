@@ -244,7 +244,7 @@ export function BatchWizard({
                   }}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
-                    active && "bg-[#333333]/30 text-foreground",
+                    active && "bg-card text-foreground",
                     !active &&
                       "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                   )}
@@ -254,8 +254,8 @@ export function BatchWizard({
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
                       hasError && "bg-red-400 text-primary-foreground font-medium",
                       !hasError && active && "bg-primary text-primary-foreground font-medium",
-                      !hasError && done && !active && "bg-[#333333]/30 text-muted-foreground",
-                      !hasError && !active && !done && "bg-[#333333]/30 text-muted-foreground",
+                      !hasError && done && !active && "bg-card text-muted-foreground",
+                      !hasError && !active && !done && "bg-card text-muted-foreground",
                     )}
                   >
                     {hasError ? "!" : done ? <Check size={10} strokeWidth={3} /> : s.id}
@@ -290,7 +290,7 @@ export function BatchWizard({
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Q3 win-back outbound"
                     className={cn(
-                      "h-9 w-full rounded-md border bg-[#333333]/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
+                      "h-9 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
                       showErrors && step1Errors.name
                         ? "border-red-400"
                         : "border-border",
@@ -298,7 +298,7 @@ export function BatchWizard({
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
-                <div className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
                   <Switch
                     checked={abOn}
                     onCheckedChange={(v) => {
@@ -358,7 +358,7 @@ export function BatchWizard({
                     <div className="text-sm font-medium text-foreground">Variants</div>
                     {abArms.map((arm, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <div className="flex size-9 items-center justify-center rounded-md bg-[#333333]/30 text-xs font-mono text-muted-foreground shrink-0">
+                        <div className="flex size-9 items-center justify-center rounded-md bg-card text-xs font-mono text-muted-foreground shrink-0">
                           {String.fromCharCode(65 + i)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -491,7 +491,7 @@ export function BatchWizard({
                         toast.success("CSV parsed · 4,812 rows");
                       }}
                       className={cn(
-                        "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-[#333333]/30 px-6 py-12 text-center transition-colors hover:bg-[#333333]/30",
+                        "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-card px-6 py-12 text-center transition-colors hover:bg-card",
                         showErrors && step2Errors.csv
                           ? "border-red-400"
                           : "border-border",
@@ -563,13 +563,13 @@ export function BatchWizard({
                         className="flex items-center gap-3 border-b border-white/[0.04] px-2 py-1.5"
                         style={{ backgroundColor: "var(--background)" }}
                       >
-                        <div className="flex h-6 w-12 items-center justify-center rounded border border-border bg-[#333333]/30 text-xs font-mono text-foreground">
+                        <div className="flex h-6 w-12 items-center justify-center rounded border border-border bg-card text-xs font-mono text-foreground">
                           A1
                         </div>
                         <span className="italic text-muted-foreground text-xs font-mono">
                           fx
                         </span>
-                        <div className="flex-1 h-6 rounded border border-border bg-[#333333]/30 px-2 flex items-center text-xs font-mono text-foreground">
+                        <div className="flex-1 h-6 rounded border border-border bg-card px-2 flex items-center text-xs font-mono text-foreground">
                           phone
                         </div>
                       </div>
@@ -636,7 +636,7 @@ export function BatchWizard({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 rounded-xl border border-border bg-[#333333]/30 px-3 py-2.5">
+                    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
                       <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                         <FileSpreadsheet size={13} />
                       </div>
@@ -667,8 +667,8 @@ export function BatchWizard({
                     </div>
 
                     {/* preview */}
-                    <div className="rounded-md border border-border bg-[#333333]/30 overflow-hidden">
-                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-white/[0.04] bg-[#333333]/30 px-3 py-2 text-xs font-medium text-muted-foreground">
+                    <div className="rounded-md border border-border bg-card overflow-hidden">
+                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-white/[0.04] bg-card px-3 py-2 text-xs font-medium text-muted-foreground">
                         <div className="font-mono">phone</div>
                         <div className="font-mono">name</div>
                         <div className="font-mono">order</div>
@@ -687,7 +687,7 @@ export function BatchWizard({
                           <div>{r.order}</div>
                         </div>
                       ))}
-                      <div className="bg-[#333333]/30/70 px-3 py-1.5 text-xs text-muted-foreground">
+                      <div className="bg-card/70 px-3 py-1.5 text-xs text-muted-foreground">
                         Showing 5 of 4,812 rows
                       </div>
                     </div>
@@ -702,7 +702,7 @@ export function BatchWizard({
 
                 <FieldGroup label="Campaign start">
                   <div className="flex flex-col items-start gap-3">
-                    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
+                    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
                       {(
                         [
                           { v: "now", label: "Start now" },
@@ -806,7 +806,7 @@ export function BatchWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-[#333333]/30 p-1">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -898,7 +898,7 @@ export function BatchWizard({
                         {["not_connected", "busy_callback"].map((d) => (
                           <span
                             key={d}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono text-foreground"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono text-foreground"
                             title={`Always retried: ${DEFAULT_OUTCOMES.join(", ")}`}
                           >
                             <Lock size={10} className="text-muted-foreground" />
@@ -960,7 +960,7 @@ export function BatchWizard({
                   </div>
 
                   {/* Use idle workspace slots */}
-                  <div className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                  <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
                     <Switch
                       checked={bursting}
                       onCheckedChange={(v) => setBursting(Boolean(v))}
@@ -1010,7 +1010,7 @@ export function BatchWizard({
                                     key={i}
                                     className="flex items-center gap-2"
                                   >
-                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#333333]/30 font-mono text-[10px] text-muted-foreground">
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-[10px] text-muted-foreground">
                                       {String.fromCharCode(65 + i)}
                                     </span>
                                     {ag ? (
@@ -1105,7 +1105,7 @@ export function BatchWizard({
                           pool.map((n) => (
                             <span
                               key={n}
-                              className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-xs font-mono"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono"
                             >
                               {n}
                             </span>
@@ -1170,7 +1170,7 @@ export function BatchWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
                             >
                               {o}
                             </span>
@@ -1226,7 +1226,7 @@ export function BatchWizard({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
             >
               Cancel
             </button>
@@ -1298,7 +1298,7 @@ function ReviewSection({
       <div className="text-xs font-medium text-muted-foreground mb-2">
         {title}
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-[#333333]/30">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {visible.map(([label, value], i) => (
           <div
             key={i}
@@ -1307,7 +1307,7 @@ function ReviewSection({
               i < visible.length - 1 && "border-b border-white/[0.04]",
             )}
           >
-            <div className="border-r border-white/[0.04] bg-[#333333]/30 px-3 py-2.5 text-muted-foreground">
+            <div className="border-r border-white/[0.04] bg-card px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
             <div className="px-3 py-2.5 text-foreground">{value}</div>
@@ -1369,7 +1369,7 @@ function BatchSummary({
       : [];
 
   return (
-    <div className="rounded-xl border border-border bg-[#333333]/30 overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-white/[0.04]">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
@@ -1455,7 +1455,7 @@ function BatchSummary({
               {outcomes.map((o) => (
                 <span
                   key={o}
-                  className="rounded-md border border-border bg-[#333333]/30 px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
+                  className="rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
                 >
                   {o}
                 </span>
@@ -1553,7 +1553,7 @@ function VersionSelect({
 function CsvLogo() {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-[#333333]/30 px-2 py-1"
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1"
       title="Generic CSV"
     >
       <svg

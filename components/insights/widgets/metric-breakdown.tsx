@@ -39,7 +39,7 @@ export function MetricBreakdown({
   if (!available || empty) {
     return (
       <div className="flex h-[360px] flex-col items-center justify-center gap-3 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-[#333333]/30 text-muted-foreground">
+        <div className="flex size-12 items-center justify-center rounded-full bg-card text-muted-foreground">
           <BarChartHorizontal className="size-5" />
         </div>
         <div className="space-y-1">

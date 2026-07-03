@@ -11,7 +11,7 @@ import { Check, ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* Shared recipe strings (kept verbatim from DESIGN_SYSTEM.md) */
-const ELEMENT = "border border-border bg-[#333333]/30";
+const ELEMENT = "border border-border bg-card";
 const SURFACE =
   "bg-[color-mix(in_srgb,#333333_30%,var(--background))] ring-1 ring-foreground/10";
 
@@ -29,8 +29,8 @@ export default function StyleGuidePage() {
 
         <Section title="Semantic layers">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Swatch name="Element fill" cls="bg-[#333333]/30 border border-border" note="#333/30 + border-border" />
-            <Swatch name="Card" cls="rounded-xl border border-border bg-[#333333]/30" note="rounded-xl" />
+            <Swatch name="Element fill" cls="bg-card border border-border" note="#333/30 + border-border" />
+            <Swatch name="Card" cls="rounded-xl border border-border bg-card" note="rounded-xl" />
             <Swatch name="Dropdown surface" cls={cn("rounded-lg", SURFACE)} note="color-mix #333/30" />
             <Swatch name="Internal separator" cls="border-t-2 border-white/[0.04] bg-transparent" note="white/[0.04]" />
           </div>
@@ -86,7 +86,7 @@ export default function StyleGuidePage() {
               { label: "Transfer Rate", value: "19.9%" },
               { label: "CSAT", value: "4.47" },
             ].map((k) => (
-              <div key={k.label} className="flex flex-col rounded-xl border border-border bg-[#333333]/30 px-6 py-5">
+              <div key={k.label} className="flex flex-col rounded-xl border border-border bg-card px-6 py-5">
                 <span className="text-sm text-muted-foreground">{k.label}</span>
                 <span className="mt-2 text-3xl font-semibold leading-tight tracking-tight tabular-nums text-foreground">
                   {k.value}
@@ -97,7 +97,7 @@ export default function StyleGuidePage() {
         </Section>
 
         <Section title="Table — transparent header, row hover">
-          <div className="overflow-hidden rounded-xl border border-border bg-[#333333]/30">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-white/[0.04]">
@@ -140,7 +140,7 @@ export default function StyleGuidePage() {
               ["rounded-xl", "cards"],
               ["rounded-md", "chips"],
             ].map(([r, use]) => (
-              <div key={r} className={cn("flex h-16 w-32 flex-col items-center justify-center border border-border bg-[#333333]/30 text-xs text-muted-foreground", r)}>
+              <div key={r} className={cn("flex h-16 w-32 flex-col items-center justify-center border border-border bg-card text-xs text-muted-foreground", r)}>
                 <span className="font-mono text-foreground">{r}</span>
                 <span>{use}</span>
               </div>

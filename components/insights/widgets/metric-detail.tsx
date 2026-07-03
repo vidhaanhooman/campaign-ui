@@ -43,7 +43,7 @@ function DetailCard({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30",
+        "flex flex-col overflow-hidden rounded-xl border border-border bg-card",
         className,
       )}
     >

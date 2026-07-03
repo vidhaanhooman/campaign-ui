@@ -24,7 +24,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        "flex flex-col rounded-xl border border-border bg-[#333333]/30",
+        "flex flex-col rounded-xl border border-border bg-card",
         className,
       )}
     >
@@ -100,7 +100,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-xl border border-border bg-[#333333]/30 px-6 py-5",
+        "relative flex flex-col rounded-xl border border-border bg-card px-6 py-5",
         className,
       )}
     >
@@ -158,7 +158,7 @@ export function ChartCard({
   return (
     <section
       className={cn(
-        "flex flex-col rounded-xl border border-border bg-[#333333]/30",
+        "flex flex-col rounded-xl border border-border bg-card",
         className,
       )}
     >
@@ -249,7 +249,7 @@ export function MiniBar({
   barClassName?: string;
 }) {
   return (
-    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-[#333333]/30", className)}>
+    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-card", className)}>
       <div
         className={cn("h-full rounded-full bg-foreground/70", barClassName)}
         style={{ width: `${Math.max(2, Math.min(100, pct * 100))}%` }}

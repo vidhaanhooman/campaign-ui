@@ -31,6 +31,7 @@ export default function StatsPage() {
 
   return (
     <AppShell activeNav="Campaigns">
+      <div className="min-h-full bg-background">
       {/* One tidy top bar: campaign identity left, all page-level controls
           right-pinned in the header — no floating toolbar band below. */}
       <PageHeader
@@ -81,6 +82,7 @@ export default function StatsPage() {
           <BandLabel>Agent versions</BandLabel>
           <AgentCompare />
         </section>
+      </div>
       </div>
     </AppShell>
   );

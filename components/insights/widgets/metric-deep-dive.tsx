@@ -42,7 +42,7 @@ function DeepCard({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border bg-[#333333]/30",
+        "flex flex-col overflow-hidden rounded-xl border border-border bg-card",
         className,
       )}
     >
@@ -120,7 +120,7 @@ function CallsDeepDive({
 
   return (
     <div className="h-full space-y-3.5 overflow-y-auto pr-1">
-      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-[#333333]/30 sm:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-card sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="px-5 py-4">
             <p className="truncate text-[10px] font-medium text-muted-foreground">

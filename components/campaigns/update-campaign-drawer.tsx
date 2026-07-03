@@ -2,7 +2,19 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import {
+  Bot,
+  CalendarClock,
+  Check,
+  Clock,
+  Gauge,
+  Globe,
+  Phone,
+  RotateCcw,
+  SignalHigh,
+  Type,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -57,11 +64,9 @@ type FieldKey =
   | "callingNumber"
   | "callingHours"
   | "timezone"
-  | "retryOutcome"
-  | "retries"
+  | "retry"
   | "priority"
-  | "startAfter"
-  | "endAfter"
+  | "schedule"
   | "slots"
   | "name";
 
@@ -69,72 +74,70 @@ const FIELDS: {
   key: FieldKey;
   label: string;
   desc: string;
+  icon: React.ReactNode;
   stateKeys: (keyof CampaignEditState)[];
 }[] = [
   {
     key: "agent",
     label: "Agent",
     desc: "Select to change current agent or version",
+    icon: <Bot size={14} />,
     stateKeys: ["agentId", "agentVersion"],
   },
   {
     key: "callingNumber",
     label: "Calling Number",
     desc: "Select to change current calling number",
+    icon: <Phone size={14} />,
     stateKeys: ["callingNumbers"],
   },
   {
     key: "callingHours",
     label: "Calling Hours",
     desc: "Change the daily calling window",
+    icon: <Clock size={14} />,
     stateKeys: ["channelStart", "channelEnd"],
   },
   {
     key: "timezone",
     label: "Timezone",
     desc: "Change the campaign timezone",
+    icon: <Globe size={14} />,
     stateKeys: ["timezone"],
   },
   {
-    key: "retryOutcome",
-    label: "Retry Outcomes",
-    desc: "Select to change current retry outcomes",
-    stateKeys: ["retryOutcomes"],
-  },
-  {
-    key: "retries",
-    label: "Retries",
-    desc: "Change the total number of attempts",
-    stateKeys: ["retries"],
+    key: "retry",
+    label: "Retries & Outcomes",
+    desc: "Change retry attempts and the outcomes that trigger them",
+    icon: <RotateCcw size={14} />,
+    stateKeys: ["retries", "retryOutcomes"],
   },
   {
     key: "priority",
     label: "Priority",
     desc: "Select to change current priority order",
+    icon: <SignalHigh size={14} />,
     stateKeys: ["priority", "priorityMode", "attemptPriorities"],
   },
   {
-    key: "startAfter",
-    label: "Start After",
-    desc: "Change when the campaign starts",
-    stateKeys: ["startAfter"],
-  },
-  {
-    key: "endAfter",
-    label: "End After",
-    desc: "Change when the campaign ends",
-    stateKeys: ["endAfter"],
+    key: "schedule",
+    label: "Start & End",
+    desc: "Change when the campaign starts and ends",
+    icon: <CalendarClock size={14} />,
+    stateKeys: ["startAfter", "endAfter"],
   },
   {
     key: "slots",
     label: "Slots",
     desc: "Change the concurrent slot limit",
+    icon: <Gauge size={14} />,
     stateKeys: ["slots", "useAllSlots"],
   },
   {
     key: "name",
     label: "Name",
     desc: "Rename the campaign",
+    icon: <Type size={14} />,
     stateKeys: ["name"],
   },
 ];
@@ -216,9 +219,10 @@ export function UpdateCampaignDrawer({
       <DialogContent
         variant="drawer"
         showCloseButton={false}
-        className="!max-w-[480px] flex flex-col overflow-hidden p-0"
+        style={{ backgroundColor: "var(--card)" }}
+        className="!max-w-[960px] flex flex-col overflow-hidden border-l border-white/[0.04] p-0 shadow-2xl shadow-black/60"
       >
-        <DialogHeader className="border-b border-white/[0.04] px-6 py-4">
+        <DialogHeader className="border-b border-white/[0.04] px-8 py-4">
           <DialogTitle className="text-base font-semibold">
             Update Campaign
           </DialogTitle>
@@ -227,18 +231,59 @@ export function UpdateCampaignDrawer({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Body — scrolls independently */}
-        <div className="scroll-thin min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
-          {/* Field picker */}
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium text-foreground">Fields</span>
-            <FieldPicker
-              options={FIELDS}
-              selected={selected}
-              onToggle={toggleField}
-            />
+        {/* Body — scrolls independently, content centered like the wizard */}
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto">
+         <div className="mx-auto w-full max-w-2xl space-y-6 px-8 py-6">
+          {/* Field chips — toggle which fields to update */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">Fields</span>
+              {selected.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelected(new Set());
+                    setDraft(current);
+                  }}
+                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {selected.size} selected · Clear all
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {FIELDS.map((f) => {
+                const on = selected.has(f.key);
+                return (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() => toggleField(f)}
+                    aria-pressed={on}
+                    className={cn(
+                      "group flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                      on
+                        ? "border-foreground bg-primary font-medium text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:border-white/25 hover:text-foreground",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "shrink-0 transition-colors",
+                        on ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground",
+                      )}
+                    >
+                      {on ? <Check size={14} strokeWidth={2.75} /> : f.icon}
+                    </span>
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Choose one or more fields to change.
+              {selected.size === 0
+                ? "Choose one or more fields to change."
+                : "Selected fields appear below to edit."}
             </p>
           </div>
 
@@ -278,19 +323,37 @@ export function UpdateCampaignDrawer({
                 />
               )}
 
-              {f.key === "retryOutcome" && (
-                <OutcomePicker
-                  outcomes={draft.retryOutcomes}
-                  onToggle={(o) =>
-                    update(
-                      "retryOutcomes",
-                      draft.retryOutcomes.includes(o)
-                        ? draft.retryOutcomes.filter((x) => x !== o)
-                        : [...draft.retryOutcomes, o],
-                    )
-                  }
-                  onClear={() => update("retryOutcomes", [])}
-                />
+              {f.key === "retry" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Total attempts
+                    </span>
+                    <NumberStepper
+                      value={draft.retries}
+                      onChange={(v) => update("retries", Math.max(1, v))}
+                      min={1}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Retry outcomes
+                    </span>
+                    <OutcomePicker
+                      outcomes={draft.retryOutcomes}
+                      onToggle={(o) =>
+                        update(
+                          "retryOutcomes",
+                          draft.retryOutcomes.includes(o)
+                            ? draft.retryOutcomes.filter((x) => x !== o)
+                            : [...draft.retryOutcomes, o],
+                        )
+                      }
+                      onClear={() => update("retryOutcomes", [])}
+                    />
+                  </div>
+                </div>
               )}
 
               {f.key === "priority" && (
@@ -348,49 +411,54 @@ export function UpdateCampaignDrawer({
                 </Select>
               )}
 
-              {f.key === "retries" && (
-                <NumberStepper
-                  value={draft.retries}
-                  onChange={(v) => update("retries", Math.max(1, v))}
-                  min={1}
-                  className="w-full"
-                />
-              )}
-
-              {f.key === "startAfter" && (
-                <DatePickerTime
-                  idPrefix="upd-start"
-                  date={draft.startAfter ? new Date(draft.startAfter) : undefined}
-                  time={draft.startAfter.split("T")[1] || "00:00"}
-                  onDateChange={(d) =>
-                    d &&
-                    update(
-                      "startAfter",
-                      `${ymd(d)}T${draft.startAfter.split("T")[1] || "00:00"}`,
-                    )
-                  }
-                  onTimeChange={(t) =>
-                    update("startAfter", `${draft.startAfter.split("T")[0]}T${t}`)
-                  }
-                />
-              )}
-
-              {f.key === "endAfter" && (
-                <DatePickerTime
-                  idPrefix="upd-end"
-                  date={draft.endAfter ? new Date(draft.endAfter) : undefined}
-                  time={draft.endAfter.split("T")[1] || "00:00"}
-                  onDateChange={(d) =>
-                    d &&
-                    update(
-                      "endAfter",
-                      `${ymd(d)}T${draft.endAfter.split("T")[1] || "00:00"}`,
-                    )
-                  }
-                  onTimeChange={(t) =>
-                    update("endAfter", `${draft.endAfter.split("T")[0]}T${t}`)
-                  }
-                />
+              {f.key === "schedule" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Start after
+                    </span>
+                    <DatePickerTime
+                      idPrefix="upd-start"
+                      date={
+                        draft.startAfter ? new Date(draft.startAfter) : undefined
+                      }
+                      time={draft.startAfter.split("T")[1] || "00:00"}
+                      onDateChange={(d) =>
+                        d &&
+                        update(
+                          "startAfter",
+                          `${ymd(d)}T${draft.startAfter.split("T")[1] || "00:00"}`,
+                        )
+                      }
+                      onTimeChange={(t) =>
+                        update(
+                          "startAfter",
+                          `${draft.startAfter.split("T")[0]}T${t}`,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      End after
+                    </span>
+                    <DatePickerTime
+                      idPrefix="upd-end"
+                      date={draft.endAfter ? new Date(draft.endAfter) : undefined}
+                      time={draft.endAfter.split("T")[1] || "00:00"}
+                      onDateChange={(d) =>
+                        d &&
+                        update(
+                          "endAfter",
+                          `${ymd(d)}T${draft.endAfter.split("T")[1] || "00:00"}`,
+                        )
+                      }
+                      onTimeChange={(t) =>
+                        update("endAfter", `${draft.endAfter.split("T")[0]}T${t}`)
+                      }
+                    />
+                  </div>
+                </div>
               )}
 
               {f.key === "slots" && (
@@ -401,7 +469,7 @@ export function UpdateCampaignDrawer({
                     min={0}
                     className="w-full"
                   />
-                  <label className="flex items-start gap-3 rounded-md border border-border bg-[#333333]/30 px-3 py-3">
+                  <label className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
                     <Switch
                       checked={draft.useAllSlots}
                       onCheckedChange={(v) => update("useAllSlots", Boolean(v))}
@@ -429,6 +497,7 @@ export function UpdateCampaignDrawer({
               )}
             </FieldBlock>
           ))}
+         </div>
         </div>
 
         {/* Changes diff — only once there is something to show */}
@@ -450,117 +519,6 @@ export function UpdateCampaignDrawer({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-/* ── Field picker — multi-select popover with search + descriptions ──── */
-
-function FieldPicker({
-  options,
-  selected,
-  onToggle,
-}: {
-  options: typeof FIELDS;
-  selected: Set<FieldKey>;
-  onToggle: (f: (typeof FIELDS)[number]) => void;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
-
-  const filtered = options.filter((o) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return (
-      o.label.toLowerCase().includes(q) || o.desc.toLowerCase().includes(q)
-    );
-  });
-
-  const selectedLabels = options
-    .filter((o) => selected.has(o.key))
-    .map((o) => o.label);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <span
-              className={cn(
-                "flex-1 truncate text-left",
-                selectedLabels.length
-                  ? "text-foreground"
-                  : "text-muted-foreground",
-              )}
-            >
-              {selectedLabels.length
-                ? selectedLabels.join(", ")
-                : "Select fields to update"}
-            </span>
-            <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
-          </button>
-        }
-      />
-      <PopoverContent
-        align="start"
-        sideOffset={6}
-        className="w-[432px] overflow-hidden p-0"
-      >
-        {/* Search */}
-        <div className="border-b border-white/[0.04] p-2">
-          <div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
-            <Search size={13} className="shrink-0 text-muted-foreground" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search"
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              autoFocus
-            />
-          </div>
-        </div>
-        {/* Options */}
-        <div className="scroll-thin max-h-[280px] space-y-1 overflow-y-auto p-1">
-          {filtered.length === 0 ? (
-            <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-              No fields match &ldquo;{query}&rdquo;
-            </div>
-          ) : (
-            filtered.map((o) => {
-              const isOn = selected.has(o.key);
-              return (
-                <button
-                  key={o.key}
-                  type="button"
-                  onClick={() => {
-                    onToggle(o);
-                    // Close so the revealed editor below isn't hidden under
-                    // the open dropdown — reopen to add another field.
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    "flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                    isOn ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
-                  )}
-                >
-                  <Checkbox checked={isOn} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-foreground">
-                      {o.label}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {o.desc}
-                    </span>
-                  </span>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
   );
 }
 
@@ -593,22 +551,6 @@ function FieldBlock({
   );
 }
 
-/** Design-system checkbox — white fill when checked, dimmed-white outline off. */
-function Checkbox({ checked }: { checked: boolean }) {
-  return (
-    <span
-      className={cn(
-        "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-        checked
-          ? "border-foreground bg-foreground text-background"
-          : "border-white/25",
-      )}
-    >
-      {checked && <Check size={11} strokeWidth={3} />}
-    </span>
-  );
-}
-
 function Warning({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-xs text-amber-400">
@@ -626,7 +568,7 @@ function ChangesSummary({
   changes: ReturnType<typeof diffCampaign>;
 }) {
   return (
-    <div className="border-t border-white/[0.04] bg-[#333333]/30 px-6 py-3">
+    <div className="border-t border-white/[0.04] bg-card px-6 py-3">
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         Changes · {changes.length}
       </span>

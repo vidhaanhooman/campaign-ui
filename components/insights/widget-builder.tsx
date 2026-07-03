@@ -403,7 +403,7 @@ export function WidgetBuilder({
 
           {/* Visualization options — Edit mode only; per-viz section, adapts to the selected chart */}
           {isEditing && (
-          <div className="rounded-lg border border-border bg-[#333333]/30 p-4">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="mb-3 text-sm font-medium text-foreground">
               Visualization options
             </div>
@@ -661,7 +661,7 @@ function MetricRow({
           {filters.map((f, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 rounded-md bg-[#333333]/30 px-2 py-1 text-xs text-foreground"
+              className="inline-flex items-center gap-1 rounded-md bg-card px-2 py-1 text-xs text-foreground"
             >
               <span className="text-muted-foreground">
                 {FILTER_FIELDS.find((x) => x.field === f.field)?.label ?? f.field}:

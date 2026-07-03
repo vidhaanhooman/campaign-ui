@@ -130,7 +130,7 @@ export function FilterPanel({
     <div className="flex h-full min-h-0 w-[300px] shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-popover">
       <div className="border-b border-white/[0.04] p-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 flex-1 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
+          <div className="flex h-8 flex-1 items-center gap-2 rounded-md border border-border bg-card px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}
@@ -251,7 +251,7 @@ function FilterFieldRow({
 
         {/* Search */}
         <div className="border-b border-white/[0.04] p-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[#333333]/30 px-2.5">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-2.5">
             <Search size={13} className="shrink-0 text-muted-foreground" />
             <input
               value={query}

@@ -58,7 +58,7 @@ export function AgentPicker({
           <button
             type="button"
             className={cn(
-              "w-full h-8 flex items-center gap-2.5 rounded-lg border border-border bg-[#333333]/30 px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "w-full h-8 flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 text-left text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               className,
             )}
           />
@@ -122,7 +122,7 @@ export function AgentPicker({
                     className={cn(
                       "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
                       selected
-                        ? "bg-[#333333]/30 text-foreground"
+                        ? "bg-card text-foreground"
                         : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                     )}
                   >
@@ -140,7 +140,7 @@ export function AgentPicker({
                         {a.id}
                       </span>
                     </span>
-                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-[#333333]/30 px-2 text-[10px] text-muted-foreground">
+                    <span className="inline-flex h-5 shrink-0 items-center rounded-md border border-border bg-card px-2 text-[10px] text-muted-foreground">
                       {a.mode}
                     </span>
                   </button>

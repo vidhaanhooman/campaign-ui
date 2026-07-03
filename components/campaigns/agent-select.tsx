@@ -37,7 +37,7 @@ function TriggerButton({
       type="button"
       disabled={disabled}
       className={cn(
-        "flex h-8 w-full items-center gap-1.5 rounded-lg border border-border bg-[#333333]/30 px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-8 w-full items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
       )}
       {...props}
     >

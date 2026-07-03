@@ -4,7 +4,7 @@
  * <FilterDropdown /> — campaign-b0 design system
  *
  * Follows DESIGN_SYSTEM.md exactly:
- *  - Element style:       border border-border bg-[#333333]/30
+ *  - Element style:       border border-border bg-card
  *  - Dropdown surface:    bg-[color-mix(in_srgb,#333333_30%,var(--background))]
  *  - Internal separators: border-white/[0.04]
  *  - In-dropdown selected:  bg-white/[0.06]
@@ -132,7 +132,7 @@ export interface FilterDropdownProps {
 const CARD =
   "rounded-xl border border-border bg-[color-mix(in_srgb,#333333_30%,var(--background))]";
 const CONTROL =
-  "flex h-8 items-center gap-2 rounded-lg border border-border bg-[#333333]/30 px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function isActive(v: FilterValue | undefined): boolean {
   if (v == null) return false;
@@ -671,7 +671,7 @@ function NumBox({
   onChange: (n: number | null) => void;
 }) {
   return (
-    <div className="flex h-8 min-w-0 flex-1 items-center gap-1 rounded-lg border border-border bg-[#333333]/30 px-2.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+    <div className="flex h-8 min-w-0 flex-1 items-center gap-1 rounded-lg border border-border bg-card px-2.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
       <input
         type="number"
         inputMode="numeric"
@@ -743,7 +743,7 @@ function PillEditor({
             "inline-flex h-8 min-w-9 items-center justify-center rounded-lg px-3 text-xs font-medium transition-colors",
             p.on
               ? "bg-primary text-primary-foreground shadow-sm"
-              : "border border-border bg-[#333333]/30 text-foreground hover:bg-white/[0.04]",
+              : "border border-border bg-card text-foreground hover:bg-white/[0.04]",
           )}
         >
           {p.label}
@@ -770,7 +770,7 @@ function TextEditor({
       value={value}
       onChange={(e) => onChange(e.target.value || null)}
       placeholder={cat.placeholder ?? "contains…"}
-      className="h-8 w-full rounded-lg border border-border bg-[#333333]/30 px-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
     />
   );
 }
