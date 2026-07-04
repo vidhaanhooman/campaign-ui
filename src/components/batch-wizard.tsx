@@ -34,7 +34,7 @@ import { VersionPicker } from "@/components/version-picker";
 import { NumberPoolPicker } from "@/components/number-pool-picker";
 import { OutcomePicker } from "@/components/outcome-picker";
 import { ErrorSummary } from "@/components/error-summary";
-import { DatePicker } from "@/components/date-time-picker";
+import { DatePickerTime } from "@/components/date-picker-time";
 import { NumberStepper } from "@/components/number-stepper";
 import { PriorityField } from "@/components/priority-field";
 import { TimePicker } from "@/components/time-picker";
@@ -71,6 +71,11 @@ const SAMPLE_ROWS: CsvRow[] = [
   { phone: "+917028593850", name: "Smith", order: "#5524" },
   { phone: "+919876543210", name: "Aarav", order: "#5525" },
 ];
+
+const ymd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 
 export function BatchWizard({
   onBack,
@@ -723,23 +728,20 @@ export function BatchWizard({
                       ))}
                     </div>
                     {startMode === "schedule" && (
-                      <div className="flex items-stretch gap-2">
-                        <DatePicker
-                          value={scheduledAt}
-                          onChange={setScheduledAt}
-                          className="w-44"
-                        />
-                        <TimePicker
-                          label="Time"
-                          value={scheduledAt.split("T")[1] || "00:00"}
-                          onChange={(t) =>
-                            setScheduledAt(
-                              `${scheduledAt.split("T")[0]}T${t}`,
-                            )
-                          }
-                          className="w-40"
-                        />
-                      </div>
+                      <DatePickerTime
+                        idPrefix="camp-start"
+                        date={scheduledAt ? new Date(scheduledAt) : undefined}
+                        time={scheduledAt.split("T")[1] || "00:00"}
+                        onDateChange={(d) =>
+                          d &&
+                          setScheduledAt(
+                            `${ymd(d)}T${scheduledAt.split("T")[1] || "00:00"}`,
+                          )
+                        }
+                        onTimeChange={(t) =>
+                          setScheduledAt(`${scheduledAt.split("T")[0]}T${t}`)
+                        }
+                      />
                     )}
                   </div>
                 </FieldGroup>
@@ -748,42 +750,37 @@ export function BatchWizard({
                   label="Campaign expiry"
                   hint="No new calls are placed after this time."
                 >
-                  <div className="flex items-stretch gap-2">
-                    <DatePicker
-                      value={stopAt}
-                      onChange={setStopAt}
-                      className="w-44"
-                    />
-                    <TimePicker
-                      label="Time"
-                      value={stopAt.split("T")[1] || "00:00"}
-                      onChange={(t) =>
-                        setStopAt(`${stopAt.split("T")[0]}T${t}`)
-                      }
-                      className="w-40"
-                    />
-                  </div>
+                  <DatePickerTime
+                    idPrefix="camp-expiry"
+                    date={stopAt ? new Date(stopAt) : undefined}
+                    time={stopAt.split("T")[1] || "00:00"}
+                    onDateChange={(d) =>
+                      d &&
+                      setStopAt(`${ymd(d)}T${stopAt.split("T")[1] || "00:00"}`)
+                    }
+                    onTimeChange={(t) => setStopAt(`${stopAt.split("T")[0]}T${t}`)}
+                  />
                 </FieldGroup>
 
                 <FieldGroup
                   label="Calling hours"
                   hint="Calls are only placed within this range."
                 >
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-stretch gap-2 w-full">
                     <TimePicker
                       value={chStart}
                       onChange={setChStart}
                       label="Start"
-                      className="w-36"
+                      className="flex-1"
                     />
                     <TimePicker
                       value={chEnd}
                       onChange={setChEnd}
                       label="End"
-                      className="w-36"
+                      className="flex-1"
                     />
                     <Select value={tz} onValueChange={(v) => v && setTz(v)}>
-                      <SelectTrigger className="h-[52px] w-56">
+                      <SelectTrigger className="h-[52px] flex-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -805,7 +802,7 @@ export function BatchWizard({
                     value={retries}
                     onChange={(v) => setRetries(Math.max(1, v))}
                     min={1}
-                    className="w-24"
+                    className="w-full"
                   />
                 </FieldGroup>
 
@@ -842,18 +839,18 @@ export function BatchWizard({
                     </div>
 
                     {retryMode === "all" ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 w-full">
                         <NumberStepper
                           value={intSameVal}
                           onChange={setIntSameVal}
                           min={0}
-                          className="w-24"
+                          className="flex-1"
                         />
                         <Select
                           value={intSameUnit}
                           onValueChange={(v) => v && setIntSameUnit(v as Unit)}
                         >
-                          <SelectTrigger className="w-28 h-9">
+                          <SelectTrigger className="flex-1 h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -867,13 +864,13 @@ export function BatchWizard({
                         {Array.from({ length: intervalGaps }).map((_, i) => {
                           const cur = getAttemptGap(i);
                           return (
-                            <div key={i} className="flex items-center gap-3">
+                            <div key={i} className="flex items-center gap-3 w-full">
                               <span className="w-16 shrink-0 text-sm text-text-muted">Retry {i + 1}</span>
                               <NumberStepper
                                 value={cur.val}
                                 onChange={(v) => setAttemptGap(i, { val: v })}
                                 min={0}
-                                className="w-24"
+                                className="flex-1"
                               />
                               <Select
                                 value={cur.unit}
@@ -881,7 +878,7 @@ export function BatchWizard({
                                   v && setAttemptGap(i, { unit: v as Unit })
                                 }
                               >
-                                <SelectTrigger className="w-28 h-9">
+                                <SelectTrigger className="flex-1 h-9">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -960,7 +957,7 @@ export function BatchWizard({
                       }
                       min={0}
                       max={WORKSPACE_TOTAL}
-                      className="w-24"
+                      className="w-full"
                     />
                     <div className="text-xs text-text-muted leading-relaxed">
                       Workspace has{" "}

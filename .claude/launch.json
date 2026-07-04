@@ -1,0 +1,40 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "campaign-ui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "campaign-b0",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/vidhandubey/Documents/campaign-b0",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3040"
+      ],
+      "port": 3040
+    },
+    {
+      "name": "campaign-b0-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/vidhandubey/Documents/campaign-b0",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3051"
+      ],
+      "port": 3051
+    }
+  ]
+}

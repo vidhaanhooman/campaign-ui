@@ -2,12 +2,9 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const mono = JetBrains_Mono({
   variable: "--font-geist-mono",
@@ -28,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${mono.variable} dark h-full antialiased`}
+      className={cn("dark", "h-full", "antialiased", mono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         {children}

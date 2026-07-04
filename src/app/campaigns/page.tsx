@@ -6,7 +6,9 @@ import {
   BookOpen,
   Bot,
   ChevronsUpDown,
+  CircleArrowUp,
   Copy,
+  MoreVertical,
   Eye,
   FileText,
   FlaskConical,
@@ -141,22 +143,22 @@ export default function CampaignsPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden" style={{ backgroundColor: "var(--bg)" }}>
       {/* sidebar */}
-      <aside className="w-[228px] shrink-0 border-r border-border flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-          <div className="flex size-8 items-center justify-center rounded-md bg-[#3a1c25] text-[#f5b8c5] text-xs font-medium">
-            HO
-          </div>
-          <span className="text-sm font-medium flex-1 text-text">HoomanLabs</span>
-          <ChevronsUpDown size={13} className="text-text-muted" />
-          <button className="flex h-6 w-6 items-center justify-center rounded-md text-text-muted hover:bg-surface-2 hover:text-text">
-            <PanelLeftClose size={13} />
+      <aside className="w-[248px] shrink-0 flex flex-col bg-sidebar text-sidebar-foreground">
+        {/* Workspace header */}
+        <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
+          <CircleArrowUp size={18} strokeWidth={1.75} className="text-sidebar-foreground" />
+          <span className="text-sm font-semibold flex-1 text-sidebar-foreground">HoomanLabs</span>
+          <button className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground">
+            <PanelLeftClose size={14} />
           </button>
         </div>
-        <nav className="scroll-thin flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {SIDEBAR.map((sec) => (
-            <div key={sec.group}>
-              <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium uppercase tracking-wider text-text-muted">
-                {sec.group}
+
+        {/* Primary nav */}
+        <nav className="scroll-thin flex-1 overflow-y-auto px-2 pb-2">
+          {SIDEBAR.map((sec, si) => (
+            <div key={sec.group} className={si === 0 ? "" : "mt-5"}>
+              <div className="px-3 pb-1.5 text-[11px] font-normal text-muted-foreground">
+                {sec.group.charAt(0) + sec.group.slice(1).toLowerCase()}
               </div>
               <ul className="space-y-0.5">
                 {sec.items.map((it) => {
@@ -166,16 +168,16 @@ export default function CampaignsPage() {
                     <li key={it.label}>
                       <button
                         className={cn(
-                          "w-full flex items-center gap-3 px-3 py-1.5 rounded-md text-sm transition-colors",
+                          "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
                           active
-                            ? "bg-surface-2 text-text"
-                            : "text-text-dim hover:bg-surface-2/60 hover:text-text",
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent",
                         )}
                       >
-                        <Icon size={15} className="shrink-0 text-text-muted" />
+                        <Icon size={16} strokeWidth={1.75} className="shrink-0" />
                         <span className="flex-1 truncate text-left">{it.label}</span>
                         {"badge" in it && it.badge && (
-                          <span className="rounded bg-blue-400/15 px-1.5 py-0 text-[10px] text-blue-400">
+                          <span className="rounded bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
                             {it.badge}
                           </span>
                         )}
@@ -186,7 +188,44 @@ export default function CampaignsPage() {
               </ul>
             </div>
           ))}
+
+          {/* Bottom utilities */}
+          <div className="mt-6 px-0">
+            <ul className="space-y-0.5">
+              {[
+                { label: "Settings", icon: Wrench },
+                { label: "Get Help", icon: Info },
+                { label: "Search", icon: Search },
+              ].map((it) => {
+                const Icon = it.icon;
+                return (
+                  <li key={it.label}>
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+                      <Icon size={16} strokeWidth={1.75} className="shrink-0" />
+                      <span className="flex-1 truncate text-left">{it.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </nav>
+
+        {/* User profile card */}
+        <div className="px-2 pb-3 pt-2">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-sidebar-accent">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-medium text-sidebar-foreground">
+              HO
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-sidebar-foreground">shadcn</div>
+              <div className="truncate text-xs text-muted-foreground">m@example.com</div>
+            </div>
+            <button className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-sidebar-foreground">
+              <MoreVertical size={14} />
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* main */}
