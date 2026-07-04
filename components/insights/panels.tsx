@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { SearchX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Bars, Donut, MultiLineChart, type LineSeriesDef } from "./charts";
 import { PanelCard } from "./panel-card";
 
@@ -118,6 +120,7 @@ export function TablePanel({
   rows,
   loading,
   onEdit,
+  empty,
   className,
 }: {
   title: string;
@@ -125,8 +128,33 @@ export function TablePanel({
   rows: Record<string, string | number>[];
   loading?: boolean;
   onEdit?: () => void;
+  /** Empty-state override — e.g. filter/range-aware copy + a "reset" action. */
+  empty?: {
+    icon?: React.ReactNode;
+    title?: string;
+    description?: string;
+    action?: React.ReactNode;
+  };
   className?: string;
 }) {
+  const head = (
+    <thead>
+      <tr className="border-b border-white/[0.04]">
+        {columns.map((c) => (
+          <th
+            key={c.key}
+            className={cn(
+              "py-2.5 text-xs font-medium text-muted-foreground first:pl-5 last:pr-5",
+              c.numeric ? "px-3 text-right" : "px-3 text-left",
+            )}
+          >
+            {c.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+
   const tableNode = loading ? (
     <div className="space-y-2 p-4">
       {Array.from({ length: 4 }).map((_, i) => (
@@ -135,45 +163,48 @@ export function TablePanel({
     </div>
   ) : (
     <table className="w-full border-collapse text-sm">
-      <thead>
-        <tr className="border-b border-white/[0.04]">
-          {columns.map((c) => (
-            <th
-              key={c.key}
+      {head}
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={columns.length} className="p-0">
+              <EmptyState
+                size="inset"
+                icon={empty?.icon ?? <SearchX size={18} />}
+                title={empty?.title ?? "No data to show"}
+                description={
+                  empty?.description ??
+                  "Nothing matches the current filters or selected range."
+                }
+                action={empty?.action}
+              />
+            </td>
+          </tr>
+        ) : (
+          rows.map((row, i) => (
+            <tr
+              key={i}
               className={cn(
-                "py-2.5 text-xs font-medium text-muted-foreground first:pl-5 last:pr-5",
-                c.numeric ? "px-3 text-right" : "px-3 text-left",
+                "border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40",
+                i === 0 && "[&>td]:pt-3.5",
               )}
             >
-              {c.label}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr
-            key={i}
-            className={cn(
-              "border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40",
-              i === 0 && "[&>td]:pt-3.5",
-            )}
-          >
-            {columns.map((c) => (
-              <td
-                key={c.key}
-                className={cn(
-                  "py-2.5 first:pl-5 last:pr-5",
-                  c.numeric
-                    ? "px-3 text-right font-mono text-sm tabular-nums text-foreground"
-                    : "px-3 text-left text-sm text-muted-foreground",
-                )}
-              >
-                {row[c.key]}
-              </td>
-            ))}
-          </tr>
-        ))}
+              {columns.map((c) => (
+                <td
+                  key={c.key}
+                  className={cn(
+                    "py-2.5 first:pl-5 last:pr-5",
+                    c.numeric
+                      ? "px-3 text-right font-mono text-sm tabular-nums text-foreground"
+                      : "px-3 text-left text-sm text-muted-foreground",
+                  )}
+                >
+                  {row[c.key]}
+                </td>
+              ))}
+            </tr>
+          ))
+        )}
       </tbody>
     </table>
   );

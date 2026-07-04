@@ -6,9 +6,10 @@
  */
 
 import * as React from "react";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown, Inbox, Plus, Search, SearchX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
 
 /* Shared recipe strings (kept verbatim from DESIGN_SYSTEM.md) */
 const ELEMENT = "border border-border bg-card";
@@ -124,6 +125,44 @@ export default function StyleGuidePage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </Section>
+
+        <Section title="Empty states — filtered vs no-data">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* A filter/range excludes everything */}
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="border-b border-white/[0.04] px-5 py-3 text-sm font-medium text-foreground">
+                Agent Wise Data
+              </div>
+              <EmptyState
+                icon={<SearchX size={18} />}
+                title="No agent activity in the last 24 hours"
+                description="No calls were placed in this window. Try a wider date range."
+                action={
+                  <>
+                    <EmptyAction>Reset to 7 days</EmptyAction>
+                    <EmptyAction>Clear filters</EmptyAction>
+                  </>
+                }
+              />
+            </div>
+            {/* Never had data — onboarding */}
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="border-b border-white/[0.04] px-5 py-3 text-sm font-medium text-foreground">
+                Campaigns
+              </div>
+              <EmptyState
+                icon={<Inbox size={18} />}
+                title="No campaigns yet"
+                description="Create your first campaign and it will show up here."
+                action={
+                  <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                    <Plus size={14} /> Create campaign
+                  </button>
+                }
+              />
+            </div>
           </div>
         </Section>
 

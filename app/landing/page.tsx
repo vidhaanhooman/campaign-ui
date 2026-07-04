@@ -7,25 +7,27 @@ import {
   Bot,
   Building2,
   Check,
+  ChevronDown,
   ChevronRight,
+  Clock,
   Copy,
   Eye,
   EyeOff,
   FlaskConical,
-  Hash,
+  Gauge,
   KeyRound,
-  MapPin,
   Phone,
+  PhoneCall,
   Plus,
   Radio,
-  Sparkles,
   UserPlus,
+  Users,
   Wallet,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppShell } from "@/components/app-shell";
+import { AppShell, NotificationsButton } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
@@ -34,8 +36,15 @@ import { cn } from "@/lib/utils";
    platform actually has. Swap for real feeds when wiring the API.
    ═══════════════════════════════════════════════════════════════════════ */
 
+const PROFILE = {
+  fullName: "Vidhan Dubey",
+  email: "vidhan@hoomanlabs.com",
+  memberSince: "2026-06-08",
+  signInMethod: "Google" as const,
+};
+
 const ACCOUNT = {
-  user: "Vidhaan",
+  user: PROFILE.fullName.split(" ")[0],
   workspace: "HoomanLabs",
   workspaceId: "ws_9Kd21mALq7",
   accountId: "acc_4820ffce11",
@@ -81,14 +90,26 @@ const ACTIVITY: { h: string; placed: number; connected: number }[] = [
   { h: "6p", placed: 44, connected: 23 },
 ];
 
-// Plan usage this cycle — consumption against Scale-plan limits.
-const USAGE: { label: string; used: number; limit: number; unit?: string }[] = [
-  { label: "Voice minutes", used: 24800, limit: 50000, unit: "min" },
-  { label: "Calls placed", used: 12400, limit: 25000 },
-  { label: "Concurrent slots", used: 43, limit: 50 },
-  { label: "Calling numbers", used: 12, limit: 25 },
-  { label: "Team seats", used: 3, limit: 10 },
-  { label: "Agents", used: 9, limit: 20 },
+type UsageItem = {
+  icon: React.ReactNode;
+  label: string;
+  used: number;
+  limit: number;
+  unit?: string;
+};
+
+// Metered consumption — resets each billing cycle.
+const USAGE_CYCLE: UsageItem[] = [
+  { icon: <Clock size={14} />, label: "Voice minutes", used: 24800, limit: 50000, unit: "min" },
+  { icon: <PhoneCall size={14} />, label: "Calls placed", used: 12400, limit: 25000 },
+];
+
+// Provisioned resources — current allocation against the plan cap.
+const USAGE_RESOURCES: UsageItem[] = [
+  { icon: <Gauge size={14} />, label: "Concurrent slots", used: 43, limit: 50 },
+  { icon: <Phone size={14} />, label: "Calling numbers", used: 12, limit: 25 },
+  { icon: <Users size={14} />, label: "Team seats", used: 3, limit: 10 },
+  { icon: <Bot size={14} />, label: "Agents", used: 9, limit: 20 },
 ];
 
 // New-user activation checklist (empty state).
@@ -109,21 +130,16 @@ const TODAY: { label: string; value: string; delta?: Delta }[] = [
 
 const RECENT: {
   name: string;
+  agent: string;
   type: "Batch" | "Realtime";
   status: "Running" | "Paused" | "Completed";
   done: number;
   total: number;
 }[] = [
-  { name: "Q3 win-back outbound", type: "Batch", status: "Running", done: 3120, total: 5000 },
-  { name: "Realtime lead qualifier", type: "Realtime", status: "Running", done: 210, total: 210 },
-  { name: "New DND", type: "Batch", status: "Paused", done: 2, total: 40 },
-  { name: "Renewal reminders", type: "Batch", status: "Completed", done: 980, total: 980 },
-];
-
-const UPDATES: { date: string; title: string; tag: "New" | "Improved" }[] = [
-  { date: "Jul 3", title: "Realtime campaign updates", tag: "New" },
-  { date: "Jun 28", title: "Per-attempt retry priority", tag: "Improved" },
-  { date: "Jun 21", title: "CSV column auto-mapping", tag: "Improved" },
+  { name: "Q3 win-back outbound", agent: "Debt Collection Pitch Agent", type: "Batch", status: "Running", done: 3120, total: 5000 },
+  { name: "Realtime lead qualifier", agent: "Careers_360 — Tech college predictor", type: "Realtime", status: "Running", done: 210, total: 210 },
+  { name: "New DND", agent: "Website Agent Outbound", type: "Batch", status: "Paused", done: 2, total: 40 },
+  { name: "Renewal reminders", agent: "Debt Collection Outbound Agent", type: "Batch", status: "Completed", done: 980, total: 980 },
 ];
 
 const QUICK_ACTIONS = [
@@ -238,6 +254,7 @@ export default function LandingPage() {
         action={
           <div className="flex items-center gap-2">
             <PreviewToggle mode={mode} onChange={setMode} />
+            <NotificationsButton />
             {mode === "data" && (
               <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
                 <Plus size={14} /> Create campaign
@@ -252,22 +269,22 @@ export default function LandingPage() {
           <EmptyHome />
         ) : (
           <>
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-foreground">
-                Welcome back, {ACCOUNT.user}
-              </h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Here&rsquo;s what&rsquo;s happening across {ACCOUNT.workspace} today.
-              </p>
-            </div>
-
+            {/* Operational alerts — highest priority, first thing seen */}
             <AlertStrip alerts={alerts} />
 
-            {/* Primary — operations (wide) + balance/runway (narrow) */}
+            <Greeting />
+
+            {/* 1. Running & Balance */}
             <section className="grid gap-6 lg:grid-cols-3">
               <LiveOps />
               <BalanceRunway runwayDays={runwayDays} low={lowBalance} />
             </section>
+
+            {/* 2. Workspace & Developer */}
+            <AccountStrip />
+
+            {/* 3. Usage — compact summary that links to /usage */}
+            <UsagePanel />
 
             {/* Today — metrics + activity chart */}
             <section>
@@ -298,15 +315,8 @@ export default function LandingPage() {
               <RecentCampaigns />
               <div className="flex flex-col gap-6">
                 <QuickActions />
-                <WhatsNew />
               </div>
             </section>
-
-            {/* Plan usage */}
-            <UsagePanel />
-
-            {/* Account / developer utility strip */}
-            <AccountStrip />
           </>
         )}
       </div>
@@ -577,9 +587,18 @@ function RecentCampaigns() {
                 className={cn("h-1.5 w-1.5 shrink-0 rounded-full", STATUS_DOT[c.status])}
               />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm text-foreground">{c.name}</div>
-                <div className="mt-0.5 text-xs text-muted-foreground">
-                  {c.type} · {c.status}
+                <div className="flex items-baseline gap-2">
+                  <span className="truncate text-sm text-foreground">
+                    {c.name}
+                  </span>
+                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {c.type}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Bot size={11} className="shrink-0" />
+                  <span className="truncate">{c.agent}</span>
+                  <span className="shrink-0">· {c.status}</span>
                 </div>
               </div>
               <div className="hidden w-32 shrink-0 sm:block">
@@ -623,130 +642,130 @@ function QuickActions() {
   );
 }
 
-/* ── What's new ──────────────────────────────────────────────────────── */
-
-function WhatsNew() {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-foreground">What&rsquo;s new</h2>
-        <a
-          href="#"
-          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Changelog
-        </a>
-      </div>
-      <ul className="flex flex-col gap-3">
-        {UPDATES.map((u) => (
-          <li key={u.title} className="flex items-baseline gap-3">
-            <span className="w-12 shrink-0 font-mono text-xs text-muted-foreground">
-              {u.date}
-            </span>
-            <span className="min-w-0 flex-1 text-sm text-foreground">
-              {u.title}
-            </span>
-            <span
-              className={cn(
-                "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider",
-                u.tag === "New"
-                  ? "border-emerald-400/30 text-emerald-400"
-                  : "border-border text-muted-foreground",
-              )}
-            >
-              {u.tag}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 /* ── Account / developer strip ───────────────────────────────────────── */
 
 function AccountStrip() {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-foreground">Account</h2>
-        <button className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
-          Settings <ArrowUpRight size={13} />
-        </button>
-      </div>
+    <section className="grid gap-6 md:grid-cols-2">
+      <WorkspaceCard />
+      <DeveloperCard />
+    </section>
+  );
+}
 
-      <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
-        {/* Workspace identity */}
-        <div>
-          <ColLabel>Workspace</ColLabel>
-          <div className="flex flex-col gap-3">
-            <AcctRow icon={<Building2 size={14} />} label="Name">
-              <span className="text-sm text-foreground">{ACCOUNT.workspace}</span>
-            </AcctRow>
-            <AcctRow icon={<MapPin size={14} />} label="Region">
-              <span className="font-mono text-sm text-foreground">
-                {ACCOUNT.region}
-              </span>
-            </AcctRow>
-            <AcctRow icon={<Hash size={14} />} label="Workspace ID">
-              <CopyChip value={ACCOUNT.workspaceId} label="Workspace ID" />
-            </AcctRow>
-            <AcctRow icon={<Hash size={14} />} label="Account ID">
-              <CopyChip value={ACCOUNT.accountId} label="Account ID" />
-            </AcctRow>
-          </div>
-        </div>
-
-        {/* Developer */}
-        <div>
-          <ColLabel>Developer</ColLabel>
-          <div className="flex flex-col gap-3">
-            <AcctRow icon={<Sparkles size={14} />} label="Plan">
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-black/25 px-2 py-0.5 text-xs font-medium text-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--chart-1)]" />
-                {ACCOUNT.plan}
-              </span>
-            </AcctRow>
-            <div>
-              <div className="mb-1.5 inline-flex items-center gap-2 text-xs text-muted-foreground">
-                <KeyRound size={14} /> Secret API key
-              </div>
-              <ApiKeyField />
+/** Left card — workspace identity + IDs the ops team copies. */
+function WorkspaceCard() {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground">
+            <Building2 size={15} />
+          </span>
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-foreground">Workspace</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              Identity &amp; region for this environment.
             </div>
           </div>
         </div>
+        <button className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
+          Manage <ArrowUpRight size={13} />
+        </button>
+      </div>
+      <dl className="flex flex-col divide-y divide-white/[0.04]">
+        <AcctLine label="Name" value={ACCOUNT.workspace} />
+        <AcctLine label="Region" value={ACCOUNT.region} mono />
+        <AcctLine label="Workspace ID">
+          <CopyChip value={ACCOUNT.workspaceId} label="Workspace ID" />
+        </AcctLine>
+        <AcctLine label="Account ID">
+          <CopyChip value={ACCOUNT.accountId} label="Account ID" />
+        </AcctLine>
+      </dl>
+    </div>
+  );
+}
+
+/** Right card — plan badge + revealable API key for developers. */
+function DeveloperCard() {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground">
+            <KeyRound size={15} />
+          </span>
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-foreground">Developer</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              Plan, API keys, and integration links.
+            </div>
+          </div>
+        </div>
+        <a
+          href="#"
+          className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Docs <ArrowUpRight size={13} />
+        </a>
+      </div>
+      <div className="flex flex-1 flex-col gap-5 px-6 py-5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">Plan</span>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-black/25 px-2 py-0.5 text-xs font-medium text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--chart-1)]" />
+            {ACCOUNT.plan}
+          </span>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Secret API key</span>
+            <a
+              href="#"
+              className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Rotate
+            </a>
+          </div>
+          <ApiKeyField />
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+            Never expose this key in client-side code. Rotate immediately if
+            leaked.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-function ColLabel({ children }: { children: React.ReactNode }) {
+/** Label / value row — supports `mono` monospace and children override. */
+function AcctLine({
+  label,
+  value,
+  mono = false,
+  children,
+}: {
+  label: string;
+  value?: string;
+  mono?: boolean;
+  children?: React.ReactNode;
+}) {
   return (
-    <div className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-      {children}
+    <div className="flex items-center justify-between gap-4 px-6 py-3">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "min-w-0 truncate text-right text-sm text-foreground",
+          mono && "font-mono",
+        )}
+      >
+        {children ?? value}
+      </dd>
     </div>
   );
 }
 
-function AcctRow({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="text-muted-foreground/70">{icon}</span>
-        {label}
-      </span>
-      {children}
-    </div>
-  );
-}
 
 /** Copyable code token — monospace value in an inset chip with inline copy. */
 function CopyChip({ value, label }: { value: string; label: string }) {
@@ -1044,24 +1063,21 @@ function EmptyHome() {
         })}
       </div>
 
-      {/* Zeroed balance + changelog */}
-      <section className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-6 lg:col-span-2">
-          <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <Wallet size={14} /> Balance
-          </span>
-          <div className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-            $0.00
-          </div>
-          <div className="mt-1.5 text-xs text-muted-foreground">
-            Add credits to place your first call.
-          </div>
-          <button className="mt-5 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            <Plus size={14} /> Add credits
-          </button>
+      {/* Zeroed balance */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <Wallet size={14} /> Balance
+        </span>
+        <div className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
+          $0.00
         </div>
-        <WhatsNew />
-      </section>
+        <div className="mt-1.5 text-xs text-muted-foreground">
+          Add credits to place your first call.
+        </div>
+        <button className="mt-5 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+          <Plus size={14} /> Add credits
+        </button>
+      </div>
     </>
   );
 }
@@ -1075,48 +1091,117 @@ function compact(n: number) {
 }
 
 function UsagePanel() {
+  const all = [...USAGE_CYCLE, ...USAGE_RESOURCES];
+  const nearCount = all.filter(
+    (u) => Math.round((u.used / u.limit) * 100) >= 85,
+  ).length;
+
   return (
     <section>
       <BandLabel>Usage</BandLabel>
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="mb-5 flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Scale plan</span> ·
-            resets Aug 1
-          </div>
-          <button className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
-            Manage plan <ArrowUpRight size={13} />
-          </button>
+      <a
+        href="/usage"
+        className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-xl border border-border bg-card px-6 py-3.5 transition-colors hover:border-white/15"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="truncate text-sm">
+            <span className="font-medium text-foreground">Scale plan</span>
+            <span className="text-muted-foreground"> · resets Aug 1</span>
+          </span>
+          {nearCount > 0 && (
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-amber-400/25 bg-amber-400/[0.06] px-2 py-0.5 text-[11px] font-medium text-amber-400">
+              <AlertTriangle size={11} />
+              {nearCount} near limit
+            </span>
+          )}
         </div>
-        <div className="grid gap-x-12 gap-y-5 sm:grid-cols-2">
-          {USAGE.map((u) => (
-            <UsageRow key={u.label} {...u} />
+
+        {/* Inline mini-meters so the row hints at what's inside */}
+        <div className="flex items-center gap-3">
+          {all.map((u) => (
+            <MiniMeter key={u.label} {...u} />
           ))}
+          <span className="mx-1 h-4 w-px shrink-0 bg-white/[0.06]" />
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+            View details
+            <ArrowUpRight size={13} />
+          </span>
         </div>
-      </div>
+      </a>
     </section>
   );
 }
 
-function UsageRow({
-  label,
-  used,
-  limit,
-  unit,
-}: {
-  label: string;
-  used: number;
-  limit: number;
-  unit?: string;
-}) {
+/** Tiny inline usage meter — icon + a very short bar + tooltip on hover. */
+function MiniMeter({ icon, label, used, limit, unit }: UsageItem) {
   const pct = Math.min(100, Math.round((used / limit) * 100));
   const near = pct >= 85;
   const suffix = unit ? ` ${unit}` : "";
   return (
+    <span
+      className="group relative inline-flex items-center gap-1.5"
+      title={`${label} · ${compact(used)}${suffix} / ${compact(limit)}${suffix} (${pct}%)`}
+    >
+      <span
+        className={cn(
+          "shrink-0",
+          near ? "text-amber-400" : "text-muted-foreground/70",
+        )}
+      >
+        {icon}
+      </span>
+      <span
+        className="h-1.5 w-14 overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]"
+        aria-hidden
+      >
+        <span
+          className={cn(
+            "block h-full rounded-full",
+            near ? "bg-amber-400" : "bg-foreground/60",
+          )}
+          style={{ width: `${pct}%` }}
+        />
+      </span>
+      <span
+        className={cn(
+          "font-mono text-[10px] tabular-nums",
+          near ? "text-amber-400" : "text-muted-foreground",
+        )}
+      >
+        {pct}%
+      </span>
+    </span>
+  );
+}
+
+function UsageGroup({ title, rows }: { title: string; rows: UsageItem[] }) {
+  return (
     <div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span className="font-mono text-xs tabular-nums">
+      <div className="mb-3.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        {title}
+      </div>
+      <div className="flex flex-col gap-4">
+        {rows.map((r) => (
+          <UsageRow key={r.label} {...r} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UsageRow({ icon, label, used, limit, unit }: UsageItem) {
+  const pct = Math.min(100, Math.round((used / limit) * 100));
+  const near = pct >= 85;
+  const left = Math.max(0, limit - used);
+  const suffix = unit ? ` ${unit}` : "";
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex min-w-0 items-center gap-2 text-sm text-foreground">
+          <span className="shrink-0 text-muted-foreground/70">{icon}</span>
+          <span className="truncate">{label}</span>
+        </span>
+        <span className="shrink-0 font-mono text-xs tabular-nums">
           <span className={near ? "text-amber-400" : "text-foreground"}>
             {compact(used)}
             {suffix}
@@ -1128,15 +1213,78 @@ function UsageRow({
           </span>
         </span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
-        <div
+      <div className="mt-2 flex items-center gap-2.5">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
+          <div
+            className={cn(
+              "h-full rounded-full",
+              near ? "bg-amber-400" : "bg-foreground/70",
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span
           className={cn(
-            "h-full rounded-full",
-            near ? "bg-amber-400" : "bg-foreground/70",
+            "w-8 shrink-0 text-right text-[11px] tabular-nums",
+            near ? "text-amber-400" : "text-muted-foreground",
           )}
-          style={{ width: `${pct}%` }}
-        />
+        >
+          {pct}%
+        </span>
+      </div>
+      {near && (
+        <div className="mt-1.5 flex items-center justify-between text-[11px]">
+          <span className="text-amber-400">
+            {compact(left)}
+            {suffix} left
+          </span>
+          <button className="inline-flex items-center gap-0.5 font-medium text-amber-400 transition-opacity hover:opacity-80">
+            Upgrade <ArrowUpRight size={11} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Greeting ────────────────────────────────────────────────────────── */
+
+function useTimeOfDay(): "morning" | "afternoon" | "evening" {
+  const [t, setT] = React.useState<"morning" | "afternoon" | "evening">(
+    "morning",
+  );
+  React.useEffect(() => {
+    const h = new Date().getHours();
+    setT(h < 12 ? "morning" : h < 18 ? "afternoon" : "evening");
+  }, []);
+  return t;
+}
+
+function Greeting() {
+  const tod = useTimeOfDay();
+  const initials = PROFILE.fullName
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  return (
+    <div className="flex items-center gap-4">
+      <span
+        className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-sm font-semibold text-foreground"
+        aria-hidden
+      >
+        {initials}
+      </span>
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          Good {tod}, {ACCOUNT.user}
+        </h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Here&rsquo;s what&rsquo;s happening across {ACCOUNT.workspace} today.
+        </p>
       </div>
     </div>
   );
 }
+

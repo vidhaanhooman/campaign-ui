@@ -81,6 +81,14 @@ export function InboundView({
           { key: "avgDur", label: "Avg Duration (s)", numeric: true },
         ]}
         rows={agents.data}
+        empty={{
+          title:
+            range === "today"
+              ? "No agent activity in the last 24 hours"
+              : "No agent activity in this range",
+          description:
+            "No inbound calls were handled by any agent in this window. Try a wider date range.",
+        }}
       />
     </div>
   );

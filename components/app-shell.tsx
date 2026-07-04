@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import {
+  ArrowUpRight,
   Bell,
   Bot,
   ChevronRight,
@@ -26,7 +27,39 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+/* ── Notifications feed — shown from the sidebar bell popover ────────── */
+const UPDATES: {
+  date: string;
+  title: string;
+  body?: string;
+  tag: "New" | "Improved";
+}[] = [
+  {
+    date: "Jul 3",
+    title: "Realtime campaign updates",
+    body: "Edit task-start/expiry, retry policy, and API overrides on a running realtime campaign without recreating it.",
+    tag: "New",
+  },
+  {
+    date: "Jun 28",
+    title: "Per-attempt retry priority",
+    body: "Assign a different priority to each retry attempt so escalations dial ahead of first attempts.",
+    tag: "Improved",
+  },
+  {
+    date: "Jun 21",
+    title: "CSV column auto-mapping",
+    body: "Batch uploads now detect phone / name / order columns automatically.",
+    tag: "Improved",
+  },
+];
 
 type NavItem = {
   label: string;
@@ -254,5 +287,92 @@ export function AppShell({
         </div>
       </SidebarContext.Provider>
     </div>
+  );
+}
+
+/** Bell button that opens a compact "What's new" popover. Exported so pages can drop it into their PageHeader action slot. */
+export function NotificationsButton() {
+  const [open, setOpen] = React.useState(false);
+  const [seenAt, setSeenAt] = React.useState<string | null>(null);
+  // Anything published after seenAt counts as unread. Persisted across mounts.
+  React.useEffect(() => {
+    setSeenAt(localStorage.getItem("hl_notif_seen"));
+  }, []);
+  const unread = seenAt == null ? UPDATES.length : 0;
+
+  const markSeen = () => {
+    const now = new Date().toISOString();
+    localStorage.setItem("hl_notif_seen", now);
+    setSeenAt(now);
+  };
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (v && unread > 0) markSeen();
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <button
+            aria-label="Notifications"
+            className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-sidebar-foreground transition-colors hover:bg-secondary/60"
+          >
+            <Bell size={15} strokeWidth={1.75} />
+            {unread > 0 && (
+              <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+            )}
+          </button>
+        }
+      />
+      <PopoverContent align="start" sideOffset={8} className="w-[360px] overflow-hidden p-0">
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
+          <span className="text-sm font-medium text-foreground">What&rsquo;s new</span>
+          <a
+            href="#"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Changelog <ArrowUpRight size={12} />
+          </a>
+        </div>
+        <ul className="scroll-thin max-h-[420px] overflow-y-auto p-1">
+          {UPDATES.map((u) => (
+            <li
+              key={u.title}
+              className="flex flex-col gap-1.5 rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex items-baseline gap-2">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                  {u.title}
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                    u.tag === "New"
+                      ? "border-emerald-400/30 text-emerald-400"
+                      : "border-border text-muted-foreground",
+                  )}
+                >
+                  {u.tag}
+                </span>
+              </div>
+              {u.body && (
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {u.body}
+                </p>
+              )}
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {u.date}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }
