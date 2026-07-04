@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Bell,
   Bot,
@@ -15,10 +16,12 @@ import {
   ListChecks,
   MessageSquare,
   Phone,
+  Plus,
   Radio,
   Settings,
   ShieldAlert,
   SpellCheck,
+  Wallet,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -29,13 +32,14 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   badge?: string;
+  href?: string;
 };
 
 const SIDEBAR: { group: string; items: NavItem[] }[] = [
   {
     group: "BUILD",
     items: [
-      { label: "Overview", icon: Globe },
+      { label: "Overview", icon: Globe, href: "/landing" },
       { label: "Agents", icon: Bot },
       { label: "Test Agents", icon: Headphones },
       { label: "Simulation", icon: FlaskConical },
@@ -55,7 +59,7 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
   {
     group: "CALL",
     items: [
-      { label: "Campaigns", icon: Radio },
+      { label: "Campaigns", icon: Radio, href: "/campaigns" },
       { label: "Conversation Logs", icon: MessageSquare },
       { label: "Execution Logs", icon: ListChecks },
     ],
@@ -65,7 +69,7 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
     items: [
       { label: "Alerts", icon: Bell },
       { label: "Reports", icon: ReportIcon },
-      { label: "Insights", icon: LineChart },
+      { label: "Insights", icon: LineChart, href: "/insights" },
     ],
   },
 ];
@@ -131,14 +135,22 @@ export function AppShell({
           collapsed ? "w-0 border-r-0" : "w-[248px]",
         )}
       >
-        {/* Workspace header */}
-        <div className="flex items-center gap-2.5 px-4 pt-4 pb-4">
-          <span className="flex size-7 items-center justify-center rounded-full border border-border text-sidebar-foreground">
-            <CircleArrowUp size={16} strokeWidth={1.75} />
-          </span>
-          <span className="flex-1 text-sm font-semibold text-sidebar-foreground">
-            HoomanLabs
-          </span>
+        {/* Account / workspace switcher */}
+        <div className="p-3">
+          <button className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left transition-colors hover:bg-secondary/60">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-sidebar-foreground">
+              <CircleArrowUp size={16} strokeWidth={1.75} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-sidebar-foreground">
+                HoomanLabs
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                Scale plan
+              </span>
+            </span>
+            <ChevronRight size={15} className="shrink-0 text-muted-foreground" />
+          </button>
         </div>
 
         {/* Primary nav */}
@@ -171,26 +183,34 @@ export function AppShell({
                     {sec.items.map((it) => {
                       const Icon = it.icon;
                       const active = it.label === activeNav;
+                      const cls = cn(
+                        "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active
+                          ? "bg-sidebar-accent text-sidebar-foreground"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/60",
+                      );
+                      const inner = (
+                        <>
+                          <Icon size={16} strokeWidth={1.75} className="shrink-0" />
+                          <span className="flex-1 truncate text-left">
+                            {it.label}
+                          </span>
+                          {it.badge && (
+                            <span className="rounded-md bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
+                              {it.badge}
+                            </span>
+                          )}
+                        </>
+                      );
                       return (
                         <li key={it.label}>
-                          <button
-                            className={cn(
-                              "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-                              active
-                                ? "bg-sidebar-accent text-sidebar-foreground"
-                                : "text-sidebar-foreground hover:bg-sidebar-accent/60",
-                            )}
-                          >
-                            <Icon size={16} strokeWidth={1.75} className="shrink-0" />
-                            <span className="flex-1 truncate text-left">
-                              {it.label}
-                            </span>
-                            {it.badge && (
-                              <span className="rounded-md bg-chart-2/20 px-1.5 py-0 text-[10px] text-chart-2">
-                                {it.badge}
-                              </span>
-                            )}
-                          </button>
+                          {it.href ? (
+                            <Link href={it.href} className={cls}>
+                              {inner}
+                            </Link>
+                          ) : (
+                            <button className={cls}>{inner}</button>
+                          )}
                         </li>
                       );
                     })}
@@ -200,14 +220,31 @@ export function AppShell({
             );
           })}
 
-          {/* Settings */}
-          <div className="mt-3 border-t border-white/[0.04] pt-3">
-            <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
-              <Settings size={16} strokeWidth={1.75} className="shrink-0" />
-              <span className="flex-1 truncate text-left">Settings</span>
+        </nav>
+
+        {/* Pinned footer — balance + settings */}
+        <div className="border-t border-white/[0.04] p-3">
+          <div className="rounded-lg border border-border bg-card p-3">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Wallet size={13} /> Balance
+              </span>
+              <span className="font-mono text-xs tabular-nums text-sidebar-foreground">
+                $1,248.50
+              </span>
+            </div>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              ~4 days left at current burn
+            </div>
+            <button className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              <Plus size={13} /> Add credits
             </button>
           </div>
-        </nav>
+          <button className="mt-1.5 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
+            <Settings size={16} strokeWidth={1.75} className="shrink-0" />
+            <span className="flex-1 truncate text-left">Settings</span>
+          </button>
+        </div>
       </aside>
 
       {/* main */}
