@@ -256,25 +256,9 @@ export function AppShell({
 
         </nav>
 
-        {/* Pinned footer — balance + settings */}
+        {/* Pinned footer — settings */}
         <div className="border-t border-white/[0.04] p-3">
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Wallet size={13} /> Balance
-              </span>
-              <span className="font-mono text-xs tabular-nums text-sidebar-foreground">
-                ₹1,248.50
-              </span>
-            </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              Pay as you go
-            </div>
-            <button className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-              <Plus size={13} /> Add funds
-            </button>
-          </div>
-          <button className="mt-1.5 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
+          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
             <Settings size={16} strokeWidth={1.75} className="shrink-0" />
             <span className="flex-1 truncate text-left">Settings</span>
           </button>
