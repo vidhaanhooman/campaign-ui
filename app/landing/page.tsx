@@ -21,6 +21,8 @@ import {
   PhoneCall,
   Plus,
   Radio,
+  Rocket,
+  ArrowRight,
   UserPlus,
   Users,
   Wallet,
@@ -1024,43 +1026,73 @@ function EmptyHome() {
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
           Welcome to {ACCOUNT.workspace}, {ACCOUNT.user}
         </h1>
-        <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-          Three steps and your first agent starts dialing.
-        </p>
       </div>
 
-      {/* Read-only setup card: static step list + one primary action */}
-      <div className="rounded-xl border border-border bg-card px-6 py-5">
-        <ol className="relative flex flex-col gap-4">
-          {/* Vertical connector line running through the number badges */}
-          <span
-            aria-hidden
-            className="absolute left-[13px] top-3 bottom-3 w-px bg-white/[0.06]"
-          />
-          {SETUP_STEPS.map((s, i) => (
-            <li
-              key={s.title}
-              className="relative flex items-center gap-4"
-            >
-              <span
-                className="relative z-10 flex size-[26px] shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[11px] font-medium tabular-nums text-foreground/80 ring-1 ring-inset ring-white/[0.08]"
-                aria-hidden
-              >
-                {i + 1}
-              </span>
-              <p className="min-w-0 flex-1 text-sm font-medium text-foreground">
-                {s.title}
-              </p>
-            </li>
+      {/* How it works — three tiles + one primary action */}
+      <div className="rounded-xl border border-border bg-card px-8 py-8">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            How it works
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Three steps and your first agent starts dialing.
+          </p>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 items-start gap-x-2 gap-y-8 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+          {[
+            {
+              icon: <Bot size={20} />,
+              title: "Create an Agent",
+              body: "Define its voice, script, and goals",
+            },
+            {
+              icon: <Phone size={20} />,
+              title: "Connect a number",
+              body: "Buy or port a calling number",
+            },
+            {
+              icon: <Rocket size={20} />,
+              title: "Go live with Campaigns",
+              body: "Launch a batch and start dialing",
+            },
+          ].map((s, i, arr) => (
+            <React.Fragment key={s.title}>
+              <div className="flex flex-col items-center text-center">
+                <span
+                  className="flex size-11 items-center justify-center rounded-lg bg-white/[0.06] text-foreground ring-1 ring-inset ring-white/[0.08]"
+                  aria-hidden
+                >
+                  {s.icon}
+                </span>
+                <p className="mt-3 text-sm font-medium text-foreground">
+                  {s.title}
+                </p>
+                <p className="mt-1 max-w-[180px] text-xs leading-relaxed text-muted-foreground">
+                  {s.body}
+                </p>
+              </div>
+              {i < arr.length - 1 && (
+                <ArrowRight
+                  size={16}
+                  className="hidden self-center text-muted-foreground/60 sm:block"
+                  aria-hidden
+                />
+              )}
+            </React.Fragment>
           ))}
-        </ol>
-        <div className="mt-5 flex items-center justify-end">
-          <button
-            onClick={startAgent}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Create your first agent →
-          </button>
+        </div>
+
+        <div className="mt-8 border-t border-white/[0.04] pt-6">
+          <div className="flex justify-center">
+            <button
+              onClick={startAgent}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Create your first agent
+              <ArrowRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
