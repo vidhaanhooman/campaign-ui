@@ -431,12 +431,6 @@ function LiveOps() {
             · <Count n={LIVE.callsInProgress} /> calls in progress
           </span>
         </h2>
-        <a
-          href="/stats"
-          className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Live stats <ArrowUpRight size={13} />
-        </a>
       </div>
 
       {/* Dialing now — the actual story: what's running */}
