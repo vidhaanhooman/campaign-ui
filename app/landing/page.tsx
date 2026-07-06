@@ -136,30 +136,10 @@ const USAGE_RESOURCES: UsageItem[] = [
 
 // New-user activation checklist (empty state).
 // 3-step activation flow: Create agent → Get number → Go live.
-const SETUP_STEPS: {
-  title: string;
-  body: string;
-  cta: string;
-  done: boolean;
-}[] = [
-  {
-    title: "Create an Agent",
-    body: "Configure your agent's behavior, connect it to your tools, and deploy in minutes. Fully customizable — no infrastructure to manage.",
-    cta: "Start",
-    done: false,
-  },
-  {
-    title: "Connect a calling number",
-    body: "Add at least one number to dial from — buy one from our pool or use a sandbox number for testing.",
-    cta: "Get number",
-    done: false,
-  },
-  {
-    title: "Go live with Campaigns",
-    body: "Pick your agent, pick a number, drop in a list. Batch dials in bulk; Realtime waits for an inbound trigger.",
-    cta: "Create campaign",
-    done: false,
-  },
+const SETUP_STEPS: { title: string }[] = [
+  { title: "Create an Agent" },
+  { title: "Connect a calling number" },
+  { title: "Go live with Campaigns" },
 ];
 
 const TEMPLATES: {
