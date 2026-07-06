@@ -1066,14 +1066,9 @@ function EmptyHome() {
               >
                 {i + 1}
               </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">
-                  {s.title}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {s.body}
-                </p>
-              </div>
+              <p className="min-w-0 flex-1 text-sm font-medium text-foreground">
+                {s.title}
+              </p>
             </li>
           ))}
         </ol>
