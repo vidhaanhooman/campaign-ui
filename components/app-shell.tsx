@@ -376,3 +376,107 @@ export function NotificationsButton() {
     </Popover>
   );
 }
+
+/**
+ * Ambient usage chip — Twilio pattern. Click opens a compact popover with
+ * balance, runway, MTD spend, and quick actions. Amber when credits are low.
+ */
+export function UsageChip() {
+  const totalCredits = 90_000_000;
+  const remainingCredits = 13_547_847;
+  const pct = Math.round((remainingCredits / totalCredits) * 100);
+  const low = pct <= 20;
+
+  // Placeholder balance/runway/spend data — real feed drops in here later.
+  const balance = 1248.5;
+  const burnPerDay = 306;
+  const mtdSpend = 612.4;
+  const mtdBudget = 2000;
+  const runway = Math.floor(balance / burnPerDay);
+  const mtdPct = Math.min(100, Math.round((mtdSpend / mtdBudget) * 100));
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <button
+            aria-label={`Credits remaining: ${pct}%`}
+            className={cn(
+              "inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-xs transition-colors",
+              low
+                ? "border-amber-400/30 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.10]"
+                : "border-border bg-card text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Wallet size={13} />
+            <span
+              className={cn(
+                "font-mono tabular-nums",
+                low ? "text-amber-400" : "text-foreground",
+              )}
+            >
+              {pct}%
+            </span>
+            <span className="hidden sm:inline">credits left</span>
+          </button>
+        }
+      />
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="w-[320px] overflow-hidden p-0"
+      >
+        <div className="border-b border-white/[0.04] px-5 py-4">
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <Wallet size={13} /> Balance
+          </span>
+          <div className="mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
+            ${balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+          </div>
+          <div
+            className={cn(
+              "mt-1 text-xs",
+              low ? "text-amber-400" : "text-muted-foreground",
+            )}
+          >
+            ~{runway} days left · ${burnPerDay.toLocaleString()}/day burn
+          </div>
+        </div>
+
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>This month</span>
+            <span className="font-mono tabular-nums text-foreground">
+              ${mtdSpend.toLocaleString()} / ${mtdBudget.toLocaleString()}
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
+            <div
+              className="h-full rounded-full bg-foreground/70"
+              style={{ width: `${mtdPct}%` }}
+            />
+          </div>
+
+          <div className="mt-4 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Credits</span>
+            <span className="font-mono tabular-nums text-foreground">
+              {remainingCredits.toLocaleString()} / {totalCredits.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 border-t border-white/[0.04] p-3">
+          <button className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <Plus size={13} /> Add credits
+          </button>
+          <Link
+            href="/usage"
+            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Details <ArrowUpRight size={12} />
+          </Link>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}

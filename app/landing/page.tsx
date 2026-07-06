@@ -15,6 +15,7 @@ import {
   EyeOff,
   FlaskConical,
   Gauge,
+  ImageOff,
   KeyRound,
   Phone,
   PhoneCall,
@@ -27,7 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppShell, NotificationsButton } from "@/components/app-shell";
+import { AppShell, NotificationsButton, UsageChip } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
@@ -70,9 +71,30 @@ const LIVE = {
 };
 
 // Campaigns currently placing calls — powers the "Dialing now" list.
-const DIALING = [
-  { name: "Q3 win-back outbound", type: "Batch", calls: 9, slots: 20 },
-  { name: "Realtime lead qualifier", type: "Realtime", calls: 5, slots: 10 },
+const DIALING: {
+  name: string;
+  agent: string;
+  type: "Batch" | "Realtime";
+  calls: number;
+  done: number;
+  total: number;
+}[] = [
+  {
+    name: "Q3 win-back outbound",
+    agent: "Debt Collection Pitch Agent",
+    type: "Batch",
+    calls: 9,
+    done: 3120,
+    total: 5000,
+  },
+  {
+    name: "Realtime lead qualifier",
+    agent: "Careers_360 — Tech college predictor",
+    type: "Realtime",
+    calls: 5,
+    done: 210,
+    total: 210,
+  },
 ];
 
 // Calls per hour today — powers the activity chart.
@@ -113,11 +135,48 @@ const USAGE_RESOURCES: UsageItem[] = [
 ];
 
 // New-user activation checklist (empty state).
-const SETUP_STEPS = [
-  { title: "Add credits", body: "Load your balance so calls can be placed.", cta: "Add credits", done: false },
-  { title: "Connect a calling number", body: "Add at least one number to dial from.", cta: "Add number", done: false },
-  { title: "Create an agent", body: "Build a voice agent or start from a template.", cta: "New agent", done: false },
-  { title: "Launch your first campaign", body: "Batch or realtime — pick a list and go.", cta: "Create campaign", done: false },
+// 3-step activation flow: Create agent → Get number → Go live.
+const SETUP_STEPS: {
+  title: string;
+  body: string;
+  cta: string;
+  done: boolean;
+}[] = [
+  {
+    title: "Create an Agent",
+    body: "Configure your agent's behavior, connect it to your tools, and deploy in minutes. Fully customizable — no infrastructure to manage.",
+    cta: "Start",
+    done: false,
+  },
+  {
+    title: "Connect a calling number",
+    body: "Add at least one number to dial from — buy one from our pool or use a sandbox number for testing.",
+    cta: "Get number",
+    done: false,
+  },
+  {
+    title: "Go live with Campaigns",
+    body: "Pick your agent, pick a number, drop in a list. Batch dials in bulk; Realtime waits for an inbound trigger.",
+    cta: "Create campaign",
+    done: false,
+  },
+];
+
+const TEMPLATES: {
+  title: string;
+  body: string;
+  tags: string[];
+}[] = [
+  {
+    title: "Debt collector",
+    body: "Firm but polite agent for collections.",
+    tags: ["Outbound", "Sales"],
+  },
+  {
+    title: "Lead qualifier",
+    body: "Screens inbound leads quickly.",
+    tags: ["Inbound", "Qualify"],
+  },
 ];
 
 type Delta = { pct: number; dir: "up" | "down"; good: boolean };
@@ -254,6 +313,7 @@ export default function LandingPage() {
         action={
           <div className="flex items-center gap-2">
             <PreviewToggle mode={mode} onChange={setMode} />
+            <UsageChip />
             <NotificationsButton />
             {mode === "data" && (
               <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
@@ -274,48 +334,16 @@ export default function LandingPage() {
 
             <Greeting />
 
-            {/* 1. Running & Balance */}
-            <section className="grid gap-6 lg:grid-cols-3">
-              <LiveOps />
-              <BalanceRunway runwayDays={runwayDays} low={lowBalance} />
-            </section>
+            {/* Feature banner — like ElevenLabs' Speech Engine promo */}
+            <FeatureBanner />
 
-            {/* 2. Workspace & Developer */}
+            {/* Workspace + Developer identity — reference data */}
             <AccountStrip />
 
-            {/* 3. Usage — compact summary that links to /usage */}
-            <UsagePanel />
-
-            {/* Today — metrics + activity chart */}
-            <section>
-              <BandLabel>Today</BandLabel>
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="grid grid-cols-2 gap-3 lg:col-span-2">
-                  {TODAY.map((k) => (
-                    <div
-                      key={k.label}
-                      className="flex flex-col rounded-xl border border-border bg-card px-5 py-4"
-                    >
-                      <span className="text-sm text-muted-foreground">{k.label}</span>
-                      <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-                          {k.value}
-                        </span>
-                        {k.delta && <DeltaChip d={k.delta} />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ActivityToday />
-              </div>
-            </section>
-
-            {/* Recent campaigns (wide) + right rail */}
+            {/* Live operations (wide) + Balance (right rail) */}
             <section className="grid gap-6 lg:grid-cols-3">
-              <RecentCampaigns />
-              <div className="flex flex-col gap-6">
-                <QuickActions />
-              </div>
+              <LiveOps />
+              <BalanceSummary />
             </section>
           </>
         )}
@@ -397,13 +425,12 @@ function AlertStrip({
 
 function LiveOps() {
   const running = LIVE.state === "Running";
-  const mounted = useMounted();
-  const slotPct = Math.round((LIVE.slotsUsed / LIVE.slotsTotal) * 100);
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] lg:col-span-2">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-          <span className="relative flex h-2 w-2 shrink-0">
+      {/* One-line status headline */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="inline-flex min-w-0 items-baseline gap-2 truncate text-sm text-foreground">
+          <span className="relative flex h-2 w-2 shrink-0 translate-y-0.5">
             {running && (
               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 motion-safe:animate-ping" />
             )}
@@ -414,71 +441,69 @@ function LiveOps() {
               )}
             />
           </span>
-          {running ? "Running" : "Idle"}
+          <span className="font-medium">
+            {running ? "Running" : "Idle"}
+          </span>
           <span className="text-muted-foreground">
             · {DIALING.length} campaign{DIALING.length === 1 ? "" : "s"} dialing
+            · <Count n={LIVE.callsInProgress} /> calls in progress
           </span>
         </h2>
         <a
           href="/stats"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           Live stats <ArrowUpRight size={13} />
         </a>
       </div>
 
-      {/* Live metrics */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-        <Stat label="Calls in progress" value={<Count n={LIVE.callsInProgress} />} />
-        <Stat label="In queue" value={<Count n={LIVE.queueDepth} />} />
-        <Stat
-          label="Dial rate"
-          value={
-            <>
-              <Count n={LIVE.dialRatePerMin} />
-              /min
-            </>
-          }
-        />
-        <div>
-          <div className="text-xs text-muted-foreground">Slots used</div>
-          <div className="mt-1 font-mono text-xl leading-none tabular-nums text-foreground">
-            <Count n={LIVE.slotsUsed} /> / {LIVE.slotsTotal}
-          </div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
-            <div
-              className="h-full rounded-full bg-foreground/70 transition-[width] duration-700 ease-out"
-              style={{ width: mounted ? `${slotPct}%` : "0%" }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Dialing now */}
-      <div className="mt-6 border-t border-white/[0.04] pt-4">
-        <div className="mb-1 text-xs font-medium text-muted-foreground">
-          Dialing now
-        </div>
-        <div className="-mx-2 flex flex-col">
-          {DIALING.map((c) => (
-            <div
+      {/* Dialing now — the actual story: what's running */}
+      <ul className="flex flex-col">
+        {DIALING.map((c, i) => {
+          const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
+          return (
+            <li
               key={c.name}
-              className="flex items-center gap-3 rounded-lg px-2 py-2"
+              className={cn(
+                "flex items-center gap-4 py-3",
+                i < DIALING.length - 1 && "border-b border-white/[0.04]",
+              )}
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-              <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                {c.name}
-              </span>
-              <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
-                {c.type}
-              </span>
-              <span className="w-40 shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                {c.calls} calls · {c.slots} slots
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="truncate text-sm text-foreground">
+                    {c.name}
+                  </span>
+                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {c.type}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Bot size={11} className="shrink-0" />
+                  <span className="truncate">{c.agent}</span>
+                </div>
+              </div>
+              <div className="hidden w-32 shrink-0 sm:block">
+                <div className="h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-foreground/70"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+              <div className="w-16 shrink-0 text-right">
+                <span className="font-mono text-sm tabular-nums text-foreground">
+                  {c.calls}
+                </span>
+                <span className="ml-1 text-[10px] text-muted-foreground">
+                  now
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -561,7 +586,7 @@ function BalanceRunway({ runwayDays, low }: { runwayDays: number; low: boolean }
 
 function RecentCampaigns() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card lg:col-span-2">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between px-5 pb-3 pt-4">
         <h2 className="text-sm font-medium text-foreground">Recent campaigns</h2>
         <a
@@ -995,90 +1020,146 @@ function ActivityToday() {
 /* ── Empty / onboarding state (new user) ─────────────────────────────── */
 
 function EmptyHome() {
-  const done = SETUP_STEPS.filter((s) => s.done).length;
+  const initial = ACCOUNT.user[0]?.toUpperCase() ?? "?";
+  // Informational only — steps are read, not clicked. One action for the
+  // whole card ("Create your first agent") opens the real config flow.
+  const startAgent = () => {
+    toast("Opening agent builder");
+  };
+
+  const useTemplate = (name: string) => {
+    toast(`Opening agent builder with "${name}" template`);
+  };
+
   return (
-    <>
-      <div className="rounded-xl border border-border bg-card p-8">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Welcome, {ACCOUNT.user}
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+      {/* Centered greeting */}
+      <div className="flex flex-col items-center text-center">
+        <span
+          className="flex size-8 items-center justify-center rounded-full border border-border bg-card text-xs font-medium text-foreground"
+          aria-hidden
+        >
+          {initial}
+        </span>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
+          Welcome to {ACCOUNT.workspace}, {ACCOUNT.user}
         </h1>
-        <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-muted-foreground">
-          Four steps and your first agent starts dialing. Most teams place a call
-          within ten minutes.
+        <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+          Three steps and your first agent starts dialing.
         </p>
-        <div className="mt-4 max-w-lg">
-          <div className="mb-1.5 text-xs text-muted-foreground">
-            {done} of {SETUP_STEPS.length} complete
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
-            <div
-              className="h-full rounded-full bg-foreground/70"
-              style={{ width: `${(done / SETUP_STEPS.length) * 100}%` }}
-            />
-          </div>
-        </div>
       </div>
 
-      {/* Setup checklist — the next step reads as primary */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {SETUP_STEPS.map((s, i) => {
-          const isNext = i === done;
-          return (
-            <div
+      {/* Read-only setup card: static step list + one primary action */}
+      <div className="rounded-xl border border-border bg-card">
+        <ol className="flex flex-col">
+          {SETUP_STEPS.map((s, i) => (
+            <li
               key={s.title}
               className={cn(
-                "flex items-center gap-4 px-6 py-4",
+                "flex items-start gap-4 px-6 py-5",
                 i < SETUP_STEPS.length - 1 && "border-b border-white/[0.04]",
               )}
             >
               <span
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium",
-                  s.done
-                    ? "border-foreground bg-foreground text-background"
-                    : isNext
-                      ? "border-foreground text-foreground"
-                      : "border-border text-muted-foreground",
-                )}
+                className="flex size-7 shrink-0 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground"
+                aria-hidden
               >
-                {s.done ? <Check size={14} /> : i + 1}
+                {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground">{s.title}</div>
-                <div className="mt-0.5 text-xs text-muted-foreground">{s.body}</div>
+                <p className="text-sm font-medium text-foreground">
+                  {s.title}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {s.body}
+                </p>
               </div>
-              <button
-                className={cn(
-                  "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors",
-                  isNext
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "border border-border bg-card text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {s.cta}
-                <ChevronRight size={13} />
-              </button>
-            </div>
-          );
-        })}
+            </li>
+          ))}
+        </ol>
+        <div className="flex items-center justify-between gap-3 border-t border-white/[0.04] px-6 py-4">
+          <span className="text-xs text-muted-foreground">
+            We'll walk you through each step.
+          </span>
+          <button
+            onClick={startAgent}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Create your first agent →
+          </button>
+        </div>
       </div>
 
-      {/* Zeroed balance */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-          <Wallet size={14} /> Balance
-        </span>
-        <div className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-          $0.00
+      {/* Templates — jump straight into the agent builder with a preset */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            Or start from a template
+          </span>
+          <a
+            href="#"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            See all 12 templates →
+          </a>
         </div>
-        <div className="mt-1.5 text-xs text-muted-foreground">
-          Add credits to place your first call.
+        <div className="grid gap-4 sm:grid-cols-2">
+          {TEMPLATES.map((t) => (
+            <TemplateCard
+              key={t.title}
+              {...t}
+              onUse={() => useTemplate(t.title)}
+            />
+          ))}
         </div>
-        <button className="mt-5 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-          <Plus size={14} /> Add credits
+      </section>
+    </div>
+  );
+}
+
+function TemplateCard({
+  title,
+  body,
+  tags,
+  onUse,
+}: {
+  title: string;
+  body: string;
+  tags: string[];
+  onUse: () => void;
+}) {
+  return (
+    <div className="group overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-white/25">
+      {/* Illustration placeholder */}
+      <div
+        aria-hidden
+        className="flex h-32 items-center justify-center border-b border-white/[0.04] bg-white/[0.03] transition-colors group-hover:bg-white/[0.05]"
+      >
+        <ImageOff size={20} className="text-muted-foreground/60" />
+      </div>
+      <div className="flex flex-col gap-3 p-4">
+        <div>
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{body}</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center rounded-md border border-border bg-transparent px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <button
+          onClick={onUse}
+          className="mt-1 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-card text-xs font-medium text-foreground transition-colors hover:bg-white/[0.04]"
+        >
+          Use template
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1288,3 +1369,271 @@ function Greeting() {
   );
 }
 
+
+/* ── Feature banner — Speech Engine-style promo ──────────────────────── */
+
+function FeatureBanner() {
+  return (
+    <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
+      <div
+        className="flex size-14 shrink-0 items-center justify-center rounded-lg border border-border"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(255,255,255,0) 70%)",
+        }}
+      >
+        <Radio size={22} className="text-foreground" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium text-foreground">
+          Update running campaigns without recreating them
+        </div>
+        <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          Edit agent, task-start/expiry, retry policy, and API overrides on live
+          batch and realtime campaigns.
+        </div>
+      </div>
+      <a
+        href="/campaigns-update-preview"
+        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/60"
+      >
+        Try it <ArrowUpRight size={13} />
+      </a>
+    </div>
+  );
+}
+
+/* ── Recent activity — hero line chart (last month) ──────────────────── */
+
+// 30 daily data points — placeholder for real API activity.
+const DAILY_ACTIVITY = Array.from({ length: 30 }, (_, i) => {
+  const base = 380 + Math.sin(i / 3) * 90 + Math.cos(i / 5) * 60;
+  const noise = ((i * 37) % 13) * 6;
+  return Math.max(120, Math.round(base + noise));
+});
+
+function RecentActivity() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [w, setW] = React.useState(0);
+  const [hover, setHover] = React.useState<number | null>(null);
+  const mounted = useMounted();
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setW(el.clientWidth));
+    ro.observe(el);
+    setW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  const H = 160;
+  const padTop = 12;
+  const padBottom = 20;
+  const n = DAILY_ACTIVITY.length;
+  const max = Math.max(...DAILY_ACTIVITY) || 1;
+  const total = DAILY_ACTIVITY.reduce((s, a) => s + a, 0);
+
+  const x = (i: number) => (n > 1 ? (i / (n - 1)) * w : 0);
+  const y = (v: number) =>
+    padTop + (1 - v / max) * (H - padTop - padBottom);
+
+  const path = DAILY_ACTIVITY.map(
+    (v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`,
+  ).join(" ");
+  const area = `${path} L ${x(n - 1).toFixed(1)},${H - padBottom} L 0,${H - padBottom} Z`;
+
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - (n - 1));
+  const fmt = (d: Date) =>
+    d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+  return (
+    <section>
+      <div className="mb-3">
+        <h2 className="text-sm font-medium text-foreground">Recent activity</h2>
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          {total.toLocaleString()} calls · last {n} days
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div
+          ref={ref}
+          className="relative"
+          style={{ height: H }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const frac = Math.max(
+              0,
+              Math.min(1, (e.clientX - rect.left) / rect.width),
+            );
+            setHover(Math.round(frac * (n - 1)));
+          }}
+          onMouseLeave={() => setHover(null)}
+        >
+          {w > 0 && (
+            <svg width={w} height={H} className="block overflow-visible">
+              <defs>
+                <linearGradient id="rec-act" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                </linearGradient>
+              </defs>
+              <path
+                d={area}
+                fill="url(#rec-act)"
+                className="transition-opacity duration-700 motion-reduce:transition-none"
+                style={{ opacity: mounted ? 1 : 0 }}
+              />
+              <path
+                d={path}
+                fill="none"
+                stroke="#fff"
+                strokeWidth={1.5}
+                vectorEffect="non-scaling-stroke"
+                pathLength={1}
+                className="[transition:stroke-dashoffset_900ms_ease-out] motion-reduce:transition-none"
+                style={{ strokeDasharray: 1, strokeDashoffset: mounted ? 0 : 1 }}
+              />
+              {hover != null && (
+                <>
+                  <line
+                    x1={x(hover)}
+                    y1={0}
+                    x2={x(hover)}
+                    y2={H - padBottom}
+                    stroke="rgba(255,255,255,0.14)"
+                    strokeWidth={1}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <circle
+                    cx={x(hover)}
+                    cy={y(DAILY_ACTIVITY[hover])}
+                    r={3}
+                    fill="#fff"
+                  />
+                </>
+              )}
+            </svg>
+          )}
+          {hover != null && w > 0 && (
+            <div
+              className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black/85 px-2 py-1 text-[10px] shadow-md"
+              style={{ left: Math.max(40, Math.min(w - 40, x(hover))) }}
+            >
+              <div className="font-mono text-foreground">
+                {DAILY_ACTIVITY[hover].toLocaleString()} calls
+              </div>
+              <div className="text-muted-foreground">
+                {fmt(
+                  new Date(
+                    startDate.getTime() + hover * 24 * 60 * 60 * 1000,
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+          <span>{fmt(startDate)}</span>
+          <span>{fmt(now)}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Balance summary (Total / Remaining format) ──────────────────────── */
+
+function BalanceSummary() {
+  const runwayDays = Math.floor(BALANCE.amount / BALANCE.burnPerDay);
+  const low = runwayDays <= 3;
+  return (
+    <div className="flex flex-col rounded-xl border border-border bg-card p-6">
+      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+        <Wallet size={14} /> Balance
+      </span>
+      <div className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
+        ${BALANCE.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+      </div>
+      <div
+        className={cn(
+          "mt-1.5 text-xs",
+          low ? "text-amber-400" : "text-muted-foreground",
+        )}
+      >
+        ~{runwayDays} days left · ${BALANCE.burnPerDay.toLocaleString()}/day burn
+      </div>
+      <button className="mt-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 mt-5">
+        <Plus size={15} /> Add credits
+      </button>
+    </div>
+  );
+}
+
+/* ── System status ───────────────────────────────────────────────────── */
+
+const SERVICES: { name: string; state: "ok" | "degraded" }[] = [
+  { name: "Voice API", state: "ok" },
+  { name: "Telephony", state: "ok" },
+  { name: "Dialer", state: "ok" },
+  { name: "Webhooks", state: "ok" },
+];
+
+function SystemStatus() {
+  const allOk = SERVICES.every((s) => s.state === "ok");
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-medium text-foreground">System status</h2>
+        <a
+          href="#"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          View full status <ArrowUpRight size={13} />
+        </a>
+      </div>
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-lg border px-3.5 py-3",
+          allOk
+            ? "border-emerald-400/25 bg-emerald-400/[0.05]"
+            : "border-amber-400/25 bg-amber-400/[0.05]",
+        )}
+      >
+        <Check
+          size={15}
+          className={allOk ? "text-emerald-400" : "text-amber-400"}
+        />
+        <span className="text-sm text-foreground">
+          {allOk ? "All systems operational" : "Some services degraded"}
+        </span>
+      </div>
+      <ul className="mt-4 flex flex-col divide-y divide-white/[0.04]">
+        {SERVICES.map((s) => (
+          <li
+            key={s.name}
+            className="flex items-center justify-between py-2 text-sm"
+          >
+            <span className="text-foreground">{s.name}</span>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs",
+                s.state === "ok" ? "text-emerald-400" : "text-amber-400",
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  s.state === "ok" ? "bg-emerald-400" : "bg-amber-400",
+                )}
+              />
+              {s.state === "ok" ? "Operational" : "Degraded"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

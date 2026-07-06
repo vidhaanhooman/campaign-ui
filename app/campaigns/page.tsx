@@ -19,7 +19,7 @@ import {
   Search,
 } from "lucide-react";
 
-import { AppShell, NotificationsButton } from "@/components/app-shell";
+import { AppShell, NotificationsButton, UsageChip } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { CreateCampaignDialog } from "@/components/create-campaign-dialog";
 import { UpdateCampaignDrawer } from "@/components/campaigns/update-campaign-drawer";
@@ -244,6 +244,7 @@ export default function CampaignsPage() {
             <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
               <PauseCircle size={13} /> Pause all
             </button>
+            <UsageChip />
             <NotificationsButton />
             <button
               onClick={() => setOpen(true)}

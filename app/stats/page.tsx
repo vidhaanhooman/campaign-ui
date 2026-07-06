@@ -10,7 +10,7 @@ import { TaskLifecycle } from "@/components/stats/task-lifecycle";
 import { AgentCompare } from "@/components/stats/agent-compare";
 import { StatsTypeTabs } from "@/components/stats/type-tabs";
 import { AddWidgetButton } from "@/components/stats/add-widget";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, NotificationsButton, UsageChip } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import {
   DateRangePicker,
@@ -57,6 +57,8 @@ export default function StatsPage() {
               onChange={setRange}
               defaultPreset="30d"
             />
+            <UsageChip />
+            <NotificationsButton />
             <AddWidgetButton />
           </div>
         }

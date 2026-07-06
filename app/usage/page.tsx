@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { AppShell } from "@/components/app-shell";
+import { AppShell, NotificationsButton } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
@@ -65,9 +65,12 @@ export default function UsagePage() {
           </span>
         }
         action={
-          <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            Manage plan <ArrowUpRight size={13} />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationsButton />
+            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              Manage plan <ArrowUpRight size={13} />
+            </button>
+          </div>
         }
       />
 
