@@ -11,11 +11,11 @@ import {
   ChevronRight,
   Clock,
   Copy,
-  Eye,
-  EyeOff,
+  CreditCard,
   FlaskConical,
   Gauge,
-  ImageOff,
+  Gift,
+  Infinity as InfinityIcon,
   KeyRound,
   Phone,
   PhoneCall,
@@ -50,17 +50,17 @@ const ACCOUNT = {
   user: PROFILE.fullName.split(" ")[0],
   workspace: "HoomanLabs",
   workspaceId: "ws_9Kd21mALq7",
+  organisationId: "org_31f7a2b9c4",
   accountId: "acc_4820ffce11",
   plan: "Scale",
   region: "ap-south-1",
+  slotsUsed: 43,
+  slotsLimit: 50,
   apiKey: "sk_live_8f2c4a1e9b7d6350af11",
 };
 
 const BALANCE = {
   amount: 1248.5,
-  burnPerDay: 306.0, // → ~4 days runway
-  mtdSpend: 612.4,
-  mtdBudget: 2000,
 };
 
 const LIVE = {
@@ -144,29 +144,12 @@ const SETUP_STEPS: { title: string }[] = [
   { title: "Go live with Campaigns" },
 ];
 
-const TEMPLATES: {
-  title: string;
-  body: string;
-  tags: string[];
-}[] = [
-  {
-    title: "Debt collector",
-    body: "Firm but polite agent for collections.",
-    tags: ["Outbound", "Sales"],
-  },
-  {
-    title: "Lead qualifier",
-    body: "Screens inbound leads quickly.",
-    tags: ["Inbound", "Qualify"],
-  },
-];
-
 type Delta = { pct: number; dir: "up" | "down"; good: boolean };
 const TODAY: { label: string; value: string; delta?: Delta }[] = [
   { label: "Calls placed", value: "1,240", delta: { pct: 8, dir: "up", good: true } },
   { label: "Connect rate", value: "62%", delta: { pct: 2, dir: "down", good: false } },
   { label: "Avg duration", value: "2:14" },
-  { label: "Spend today", value: "$306", delta: { pct: 12, dir: "up", good: false } },
+  { label: "Spend today", value: "₹306", delta: { pct: 12, dir: "up", good: false } },
 ];
 
 const RECENT: {
@@ -258,8 +241,7 @@ function useMounted() {
 export default function LandingPage() {
   // Preview toggle — real app derives this from "has the workspace done anything yet".
   const [mode, setMode] = React.useState<"data" | "new">("data");
-  const runwayDays = Math.floor(BALANCE.amount / BALANCE.burnPerDay);
-  const lowBalance = runwayDays <= 3;
+  const lowBalance = BALANCE.amount < 500;
 
   // Alert feed — leads with balance risk, then operational issues.
   const alerts = [
@@ -267,8 +249,8 @@ export default function LandingPage() {
       ? [
           {
             id: "bal",
-            text: `Balance runs out in ~${runwayDays} day${runwayDays === 1 ? "" : "s"} at the current burn.`,
-            cta: "Add credits",
+            text: `Balance is low — top up to keep calls dialing.`,
+            cta: "Add funds",
           },
         ]
       : []),
@@ -297,11 +279,6 @@ export default function LandingPage() {
             <PreviewToggle mode={mode} onChange={setMode} />
             <UsageChip />
             <NotificationsButton />
-            {mode === "data" && (
-              <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                <Plus size={14} /> Create campaign
-              </button>
-            )}
           </div>
         }
       />
@@ -495,69 +472,6 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-/* ── Balance & runway ────────────────────────────────────────────────── */
-
-function BalanceRunway({ runwayDays, low }: { runwayDays: number; low: boolean }) {
-  const usedPct = Math.min(
-    100,
-    Math.round((BALANCE.mtdSpend / BALANCE.mtdBudget) * 100),
-  );
-  return (
-    <div
-      className={cn(
-        "relative flex flex-col overflow-hidden rounded-xl border bg-card p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-        low ? "border-amber-400/30" : "border-border",
-      )}
-    >
-      {/* Faint glow behind the hero figure */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full opacity-60 blur-2xl"
-        style={{
-          background: low
-            ? "radial-gradient(circle, rgba(251,191,36,0.10), transparent 70%)"
-            : "radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%)",
-        }}
-      />
-
-      <span className="relative inline-flex items-center gap-2 text-sm text-muted-foreground">
-        <Wallet size={14} /> Balance
-      </span>
-
-      <div className="relative mt-2 text-4xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-        $<Count n={BALANCE.amount} decimals={2} />
-      </div>
-      <div
-        className={cn(
-          "mt-1.5 text-xs",
-          low ? "text-amber-400" : "text-muted-foreground",
-        )}
-      >
-        ~{runwayDays} days left · ${BALANCE.burnPerDay.toLocaleString()}/day burn
-      </div>
-
-      <div className="mt-5">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>This month</span>
-          <span className="font-mono tabular-nums text-foreground">
-            ${BALANCE.mtdSpend.toLocaleString()} / ${BALANCE.mtdBudget.toLocaleString()}
-          </span>
-        </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
-          <div
-            className="h-full rounded-full bg-foreground/70"
-            style={{ width: `${usedPct}%` }}
-          />
-        </div>
-      </div>
-
-      <button className="mt-5 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-        <Plus size={14} /> Add credits
-      </button>
-    </div>
-  );
-}
-
 /* ── Recent campaigns ────────────────────────────────────────────────── */
 
 function RecentCampaigns() {
@@ -676,13 +590,17 @@ function WorkspaceCard() {
       </div>
       <dl className="flex flex-col divide-y divide-white/[0.04]">
         <AcctLine label="Name" value={ACCOUNT.workspace} />
-        <AcctLine label="Region" value={ACCOUNT.region} mono />
         <AcctLine label="Workspace ID">
           <CopyChip value={ACCOUNT.workspaceId} label="Workspace ID" />
         </AcctLine>
-        <AcctLine label="Account ID">
-          <CopyChip value={ACCOUNT.accountId} label="Account ID" />
+        <AcctLine label="Organisation ID">
+          <CopyChip value={ACCOUNT.organisationId} label="Organisation ID" />
         </AcctLine>
+        <AcctLine
+          label="Slots"
+          value={`${ACCOUNT.slotsUsed} / ${ACCOUNT.slotsLimit}`}
+          mono
+        />
       </dl>
     </div>
   );
@@ -719,23 +637,131 @@ function DeveloperCard() {
             {ACCOUNT.plan}
           </span>
         </div>
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Secret API key</span>
-            <a
-              href="#"
-              className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Rotate
-            </a>
-          </div>
-          <ApiKeyField />
-          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            Never expose this key in client-side code. Rotate immediately if
-            leaked.
-          </p>
-        </div>
+        <ApiKeySection />
       </div>
+    </div>
+  );
+}
+
+function ApiKeySection() {
+  // 'exists'   — key exists but is never re-shown, only prefix + suffix
+  // 'reveal'   — freshly created; visible once, then goes back to 'exists'
+  // 'none'     — no key generated yet
+  type State = "exists" | "reveal" | "none";
+  // Starts empty so the full lifecycle is reachable in the prototype:
+  // none → Generate → one-time reveal → "I've saved it" → exists → Rotate…
+  const [state, setState] = React.useState<State>("none");
+  const [key, setKey] = React.useState(ACCOUNT.apiKey);
+  const [createdAt, setCreatedAt] = React.useState("12 days ago");
+  const [copied, setCopied] = React.useState(false);
+
+  const generate = () => {
+    const rand = Array.from({ length: 20 }, () =>
+      "abcdefghijklmnopqrstuvwxyz0123456789"[
+        Math.floor(Math.random() * 36)
+      ],
+    ).join("");
+    setKey(`sk_live_${rand}`);
+    setCreatedAt("just now");
+    setState("reveal");
+  };
+
+  const onCopy = () => {
+    navigator.clipboard?.writeText(key);
+    setCopied(true);
+    toast("Copied API key");
+    setTimeout(() => setCopied(false), 1200);
+  };
+
+  if (state === "none") {
+    return (
+      <div className="flex flex-col">
+        <div className="mb-2 text-xs text-muted-foreground">Secret API key</div>
+        <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-white/[0.10] bg-black/25 px-3 py-3">
+          <span className="text-xs text-muted-foreground">
+            No API key generated yet.
+          </span>
+          <button
+            onClick={generate}
+            className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-primary px-3 text-[11px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus size={12} /> Generate key
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+          Keys are shown once at creation. Store it somewhere safe.
+        </p>
+      </div>
+    );
+  }
+
+  if (state === "reveal") {
+    return (
+      <div className="flex flex-col">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs text-foreground">New API key</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400">
+            <AlertTriangle size={11} /> Shown once
+          </span>
+        </div>
+        <div className="flex items-center gap-2 rounded-md border border-amber-400/25 bg-amber-400/[0.06] px-2.5 py-1.5">
+          <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+            {key}
+          </code>
+          <button
+            type="button"
+            onClick={onCopy}
+            aria-label="Copy API key"
+            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {copied ? (
+              <Check size={13} className="text-emerald-400" />
+            ) : (
+              <Copy size={13} />
+            )}
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+          Copy this key now — you won't be able to see it again after leaving
+          this view.
+        </p>
+        <button
+          onClick={() => setState("exists")}
+          className="mt-3 self-start text-[11px] font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+        >
+          I've saved it
+        </button>
+      </div>
+    );
+  }
+
+  // 'exists' — prefix + suffix only, no reveal
+  const prefix = key.slice(0, 8);
+  const suffix = key.slice(-4);
+  return (
+    <div className="flex flex-col">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">Secret API key</span>
+        <button
+          onClick={generate}
+          className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Rotate
+        </button>
+      </div>
+      <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-black/25 px-2.5 py-1.5">
+        <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+          {prefix}
+          {"•".repeat(12)}
+          {suffix}
+        </code>
+        <span className="shrink-0 text-[11px] text-muted-foreground">
+          Created {createdAt}
+        </span>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+        For security, keys can't be viewed again. Rotate to generate a new one.
+      </p>
     </div>
   );
 }
@@ -794,41 +820,6 @@ function CopyChip({ value, label }: { value: string; label: string }) {
         />
       )}
     </button>
-  );
-}
-
-function ApiKeyField() {
-  const [shown, setShown] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
-  const masked = ACCOUNT.apiKey.slice(0, 8) + "•".repeat(16);
-  const onCopy = () => {
-    navigator.clipboard?.writeText(ACCOUNT.apiKey);
-    setCopied(true);
-    toast("Copied API key");
-    setTimeout(() => setCopied(false), 1200);
-  };
-  return (
-    <div className="flex items-center gap-2 rounded-md border border-border bg-black/25 px-2.5 py-1.5">
-      <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-        {shown ? ACCOUNT.apiKey : masked}
-      </code>
-      <button
-        type="button"
-        onClick={() => setShown((s) => !s)}
-        aria-label={shown ? "Hide API key" : "Reveal API key"}
-        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-      >
-        {shown ? <EyeOff size={13} /> : <Eye size={13} />}
-      </button>
-      <button
-        type="button"
-        onClick={onCopy}
-        aria-label="Copy API key"
-        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-      >
-        {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-      </button>
-    </div>
   );
 }
 
@@ -1003,10 +994,6 @@ function EmptyHome() {
     toast("Opening agent builder");
   };
 
-  const useTemplate = (name: string) => {
-    toast(`Opening agent builder with "${name}" template`);
-  };
-
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       {/* Centered greeting */}
@@ -1090,75 +1077,67 @@ function EmptyHome() {
         </div>
       </div>
 
-      {/* Templates — jump straight into the agent builder with a preset */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Or start from a template
-          </span>
-          <a
-            href="#"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      {/* New-user welcome credit — already sitting on the balance */}
+      <section className="relative overflow-hidden rounded-xl border border-border bg-card px-6 py-5">
+        {/* Soft emerald hotspot anchored on the left — the "heat" */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 140% at 100% 50%, rgba(52,211,153,0.10), transparent 55%)",
+          }}
+        />
+        {/* Heatmap dot grid, densest at the hotspot and fading out right */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at center, rgba(255,255,255,0.7) 1px, transparent 1.5px)",
+            backgroundSize: "12px 12px",
+            maskImage:
+              "radial-gradient(90% 120% at 100% 50%, black, transparent 60%)",
+            WebkitMaskImage:
+              "radial-gradient(90% 120% at 100% 50%, black, transparent 60%)",
+            opacity: 0.14,
+          }}
+        />
+
+        <div className="relative flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="font-mono text-2xl font-bold leading-none tracking-tight tabular-nums text-foreground">
+                ₹1,000
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Free credit
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Already on your balance, no card required.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <CreditCard size={12} /> No credit card
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock size={12} /> Enough for ~2,000 call minutes
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <InfinityIcon size={12} /> Never expires
+              </span>
+            </div>
+          </div>
+
+          <span
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground ring-1 ring-inset ring-white/[0.08]"
+            aria-hidden
           >
-            See all 12 templates →
-          </a>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {TEMPLATES.map((t) => (
-            <TemplateCard
-              key={t.title}
-              {...t}
-              onUse={() => useTemplate(t.title)}
-            />
-          ))}
+            <Gift size={20} />
+          </span>
         </div>
       </section>
-    </div>
-  );
-}
-
-function TemplateCard({
-  title,
-  body,
-  tags,
-  onUse,
-}: {
-  title: string;
-  body: string;
-  tags: string[];
-  onUse: () => void;
-}) {
-  return (
-    <div className="group overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-white/25">
-      {/* Illustration placeholder */}
-      <div
-        aria-hidden
-        className="flex h-32 items-center justify-center border-b border-white/[0.04] bg-white/[0.03] transition-colors group-hover:bg-white/[0.05]"
-      >
-        <ImageOff size={20} className="text-muted-foreground/60" />
-      </div>
-      <div className="flex flex-col gap-3 p-4">
-        <div>
-          <div className="text-sm font-semibold text-foreground">{title}</div>
-          <p className="mt-1 text-xs text-muted-foreground">{body}</p>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center rounded-md border border-border bg-transparent px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <button
-          onClick={onUse}
-          className="mt-1 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-card text-xs font-medium text-foreground transition-colors hover:bg-white/[0.04]"
-        >
-          Use template
-        </button>
-      </div>
     </div>
   );
 }
@@ -1547,15 +1526,23 @@ function RecentActivity() {
 /* ── Balance summary (Total / Remaining format) ──────────────────────── */
 
 function BalanceSummary() {
-  const runwayDays = Math.floor(BALANCE.amount / BALANCE.burnPerDay);
-  const low = runwayDays <= 3;
+  const low = BALANCE.amount < 200;
   return (
-    <div className="flex flex-col rounded-xl border border-border bg-card p-6">
-      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-card p-6">
+      {/* Dimmed gradient wash to lift the card off the grid */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,0.05), transparent 55%)",
+        }}
+      />
+      <span className="relative inline-flex items-center gap-2 text-sm text-muted-foreground">
         <Wallet size={14} /> Balance
       </span>
-      <div className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-        ${BALANCE.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+      <div className="relative mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
+        ₹{BALANCE.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
       </div>
       <div
         className={cn(
@@ -1563,10 +1550,10 @@ function BalanceSummary() {
           low ? "text-amber-400" : "text-muted-foreground",
         )}
       >
-        ~{runwayDays} days left · ${BALANCE.burnPerDay.toLocaleString()}/day burn
+        Pay as you go · billed as you dial
       </div>
       <button className="mt-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 mt-5">
-        <Plus size={15} /> Add credits
+        <Plus size={15} /> Add funds
       </button>
     </div>
   );

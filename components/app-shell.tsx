@@ -10,6 +10,7 @@ import {
   CircleArrowUp,
   FileText as ReportIcon,
   FlaskConical,
+  Gauge,
   Globe,
   Headphones,
   Library,
@@ -263,14 +264,14 @@ export function AppShell({
                 <Wallet size={13} /> Balance
               </span>
               <span className="font-mono text-xs tabular-nums text-sidebar-foreground">
-                $1,248.50
+                ₹1,248.50
               </span>
             </div>
             <div className="mt-1 text-[11px] text-muted-foreground">
-              ~4 days left at current burn
+              Pay as you go
             </div>
             <button className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-              <Plus size={13} /> Add credits
+              <Plus size={13} /> Add funds
             </button>
           </div>
           <button className="mt-1.5 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
@@ -379,45 +380,33 @@ export function NotificationsButton() {
 
 /**
  * Ambient usage chip — Twilio pattern. Click opens a compact popover with
- * balance, runway, MTD spend, and quick actions. Amber when credits are low.
+ * balance, runway, MTD spend, and quick actions. Amber when balance runway
+ * is short.
  */
 export function UsageChip() {
-  const totalCredits = 90_000_000;
-  const remainingCredits = 13_547_847;
-  const pct = Math.round((remainingCredits / totalCredits) * 100);
-  const low = pct <= 20;
-
-  // Placeholder balance/runway/spend data — real feed drops in here later.
+  // Placeholder balance + usage data — real feed drops in here later.
   const balance = 1248.5;
-  const burnPerDay = 306;
-  const mtdSpend = 612.4;
-  const mtdBudget = 2000;
-  const runway = Math.floor(balance / burnPerDay);
-  const mtdPct = Math.min(100, Math.round((mtdSpend / mtdBudget) * 100));
+  const low = balance < 200;
+  const usage = [
+    { label: "Spent this month", value: "₹612.40" },
+    { label: "Voice minutes", value: "24.8k" },
+    { label: "Calls placed", value: "12.4k" },
+  ];
 
   return (
     <Popover>
       <PopoverTrigger
         render={
           <button
-            aria-label={`Credits remaining: ${pct}%`}
+            aria-label="Usage & balance"
             className={cn(
-              "inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-xs transition-colors",
+              "inline-flex size-8 items-center justify-center rounded-lg border transition-colors",
               low
                 ? "border-amber-400/30 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.10]"
                 : "border-border bg-card text-muted-foreground hover:text-foreground",
             )}
           >
-            <Wallet size={13} />
-            <span
-              className={cn(
-                "font-mono tabular-nums",
-                low ? "text-amber-400" : "text-foreground",
-              )}
-            >
-              {pct}%
-            </span>
-            <span className="hidden sm:inline">credits left</span>
+            <Gauge size={15} />
           </button>
         }
       />
@@ -430,44 +419,41 @@ export function UsageChip() {
           <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
             <Wallet size={13} /> Balance
           </span>
-          <div className="mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
-            ${balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-          </div>
           <div
             className={cn(
-              "mt-1 text-xs",
-              low ? "text-amber-400" : "text-muted-foreground",
+              "mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums",
+              low ? "text-amber-400" : "text-foreground",
             )}
           >
-            ~{runway} days left · ${burnPerDay.toLocaleString()}/day burn
+            ₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            Pay as you go · billed as you dial
           </div>
         </div>
 
         <div className="px-5 py-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>This month</span>
-            <span className="font-mono tabular-nums text-foreground">
-              ${mtdSpend.toLocaleString()} / ${mtdBudget.toLocaleString()}
-            </span>
-          </div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
-            <div
-              className="h-full rounded-full bg-foreground/70"
-              style={{ width: `${mtdPct}%` }}
-            />
-          </div>
-
-          <div className="mt-4 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Credits</span>
-            <span className="font-mono tabular-nums text-foreground">
-              {remainingCredits.toLocaleString()} / {totalCredits.toLocaleString()}
-            </span>
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <Gauge size={13} /> Usage this month
+          </span>
+          <div className="mt-3 flex flex-col gap-2.5">
+            {usage.map((u) => (
+              <div
+                key={u.label}
+                className="flex items-center justify-between text-xs"
+              >
+                <span className="text-muted-foreground">{u.label}</span>
+                <span className="font-mono tabular-nums text-foreground">
+                  {u.value}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="flex items-center gap-2 border-t border-white/[0.04] p-3">
           <button className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            <Plus size={13} /> Add credits
+            <Plus size={13} /> Add funds
           </button>
           <Link
             href="/usage"
