@@ -1072,10 +1072,7 @@ function EmptyHome() {
             </li>
           ))}
         </ol>
-        <div className="flex items-center justify-between gap-3 border-t border-white/[0.04] px-6 py-4">
-          <span className="text-xs text-muted-foreground">
-            We'll walk you through each step.
-          </span>
+        <div className="flex items-center justify-end gap-3 border-t border-white/[0.04] px-6 py-4">
           <button
             onClick={startAgent}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
