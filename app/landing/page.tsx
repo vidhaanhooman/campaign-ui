@@ -1030,18 +1030,20 @@ function EmptyHome() {
       </div>
 
       {/* Read-only setup card: static step list + one primary action */}
-      <div className="rounded-xl border border-border bg-card">
-        <ol className="flex flex-col">
+      <div className="rounded-xl border border-border bg-card px-6 py-5">
+        <ol className="relative flex flex-col gap-4">
+          {/* Vertical connector line running through the number badges */}
+          <span
+            aria-hidden
+            className="absolute left-[13px] top-3 bottom-3 w-px bg-white/[0.06]"
+          />
           {SETUP_STEPS.map((s, i) => (
             <li
               key={s.title}
-              className={cn(
-                "flex items-start gap-4 px-6 py-5",
-                i < SETUP_STEPS.length - 1 && "border-b border-white/[0.04]",
-              )}
+              className="relative flex items-center gap-4"
             >
               <span
-                className="flex size-7 shrink-0 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground"
+                className="relative z-10 flex size-[26px] shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[11px] font-medium tabular-nums text-foreground/80 ring-1 ring-inset ring-white/[0.08]"
                 aria-hidden
               >
                 {i + 1}
@@ -1052,7 +1054,7 @@ function EmptyHome() {
             </li>
           ))}
         </ol>
-        <div className="flex items-center justify-end gap-3 border-t border-white/[0.04] px-6 py-4">
+        <div className="mt-5 flex items-center justify-end">
           <button
             onClick={startAgent}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
