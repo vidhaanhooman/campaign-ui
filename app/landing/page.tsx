@@ -1078,14 +1078,14 @@ function EmptyHome() {
       </div>
 
       {/* New-user welcome credit — already sitting on the balance */}
-      <section className="relative overflow-hidden rounded-xl border border-border bg-card px-6 py-5">
+      <section className="relative overflow-hidden rounded-xl border border-border bg-card px-7 py-6">
         {/* Soft emerald hotspot anchored on the left — the "heat" */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 140% at 100% 50%, rgba(52,211,153,0.10), transparent 55%)",
+              "radial-gradient(120% 140% at 0% 50%, rgba(52,211,153,0.10), transparent 55%)",
           }}
         />
         {/* Heatmap dot grid, densest at the hotspot and fading out right */}
@@ -1097,45 +1097,62 @@ function EmptyHome() {
               "radial-gradient(circle at center, rgba(255,255,255,0.7) 1px, transparent 1.5px)",
             backgroundSize: "12px 12px",
             maskImage:
-              "radial-gradient(90% 120% at 100% 50%, black, transparent 60%)",
+              "radial-gradient(90% 120% at 0% 50%, black, transparent 60%)",
             WebkitMaskImage:
-              "radial-gradient(90% 120% at 100% 50%, black, transparent 60%)",
+              "radial-gradient(90% 120% at 0% 50%, black, transparent 60%)",
             opacity: 0.14,
           }}
         />
 
-        <div className="relative flex items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-bold leading-none tracking-tight tabular-nums text-foreground">
-                ₹1,000
-              </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Free credit
-              </span>
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Already on your balance, no card required.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <CreditCard size={12} /> No credit card
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Clock size={12} /> Enough for ~2,000 call minutes
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <InfinityIcon size={12} /> Never expires
-              </span>
-            </div>
-          </div>
-
+        {/* Top row — gift, headline, and the two actions */}
+        <div className="relative flex items-center gap-5">
           <span
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground ring-1 ring-inset ring-white/[0.08]"
+            className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-emerald-950 text-emerald-400 ring-1 ring-inset ring-emerald-400/20"
             aria-hidden
           >
             <Gift size={20} />
           </span>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-mono text-2xl font-bold leading-none tracking-tight tabular-nums text-foreground">
+                ₹1,000
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+                Free credit
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Already on your balance. Start dialing, no card required.
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3">
+            <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-4 text-xs font-medium text-foreground transition-colors hover:bg-secondary/60">
+              <Plus size={14} /> Add funds
+            </button>
+            <button
+              onClick={startAgent}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Create your first agent <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Divider + feature row */}
+        <div className="relative mt-6 border-t border-white/[0.04] pt-5">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-1.5 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <CreditCard size={12} /> No credit card
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock size={12} /> ~2,000 call minutes
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <InfinityIcon size={12} /> Never expires
+            </span>
+          </div>
         </div>
       </section>
     </div>
