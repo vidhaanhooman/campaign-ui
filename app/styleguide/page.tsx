@@ -6,7 +6,24 @@
  */
 
 import * as React from "react";
-import { Check, ChevronDown, Inbox, Plus, Search, SearchX } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  CornerDownRight,
+  Inbox,
+  MessageSquare,
+  MoreVertical,
+  Network,
+  Pencil,
+  PlugZap,
+  Plus,
+  Search,
+  SearchX,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
@@ -186,12 +203,153 @@ export default function StyleGuidePage() {
             ))}
           </div>
         </Section>
+
+        <header className="pt-4">
+          <h2 className="text-lg font-semibold tracking-tight">Flow builder</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Node canvas primitives used in the agent builder (<code>/agents/new</code>).
+          </p>
+        </header>
+
+        <Section title="Node card — bare icon · title · description · category footer">
+          <div className="flex flex-wrap gap-6">
+            <FlowNodeCard icon={Sparkles} accent="text-sky-400" name="Greeting" category="LLM" desc="Greets the caller and asks how to help." />
+            <FlowNodeCard icon={Network} accent="text-amber-400" name="Detect intent" category="Condition" desc="Routes the call by what the caller wants." />
+            <FlowNodeCard icon={PlugZap} accent="text-emerald-400" name="Create appointment" category="Endpoint" desc="Calls the scheduling API." invalid />
+          </div>
+        </Section>
+
+        <Section title="Ports — neutral dark knob (input left · output right)">
+          <div className="flex items-center gap-6">
+            <span className={PORT} />
+            <span className="font-mono text-[10px] text-muted-foreground">
+              h-[11px] w-[11px] rounded-full bg-[#0b0b0b] border border-white/25
+            </span>
+          </div>
+        </Section>
+
+        <Section title="Transition label — forward chip vs backward jump chip">
+          <div className="flex flex-wrap items-center gap-6">
+            <button className="inline-flex max-w-[160px] items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm">
+              <span className="truncate">If true</span>
+              <Pencil size={9} className="shrink-0 text-muted-foreground" />
+            </button>
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-[10px] font-medium text-violet-200">
+              <CornerDownRight size={10} className="rotate-180" /> to Greeting
+            </span>
+            <span className="flex h-5 w-4 items-center justify-center rounded-sm border border-violet-500/50 bg-violet-500/[0.14] text-violet-200">
+              <CornerDownRight size={9} className="rotate-180" />
+            </span>
+          </div>
+        </Section>
+
+        <Section title="Transition detail — hover popover">
+          <div className="w-max min-w-[160px] max-w-[260px] rounded-lg border border-border bg-popover px-3 py-2 shadow-xl">
+            <div className="mb-1 text-[9px] font-medium uppercase tracking-[0.1em] text-muted-foreground/60">Transition</div>
+            <div className="text-[11px] leading-relaxed text-foreground">caller intent is booking</div>
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              <Zap size={9} className="text-amber-400" /> check_calendar
+            </div>
+            <div className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[10px] text-muted-foreground/70">
+              Detect intent <span className="text-muted-foreground/40">→</span> Booking
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Add-node chip toolbar">
+          <div className="inline-flex items-center gap-1 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl">
+            <span className="pl-1.5 pr-0.5 text-muted-foreground/70"><Plus size={15} /></span>
+            {[
+              { icon: Sparkles, accent: "text-sky-400", label: "LLM" },
+              { icon: MessageSquare, accent: "text-violet-400", label: "Static" },
+              { icon: Network, accent: "text-amber-400", label: "Condition" },
+              { icon: PlugZap, accent: "text-emerald-400", label: "Endpoint" },
+            ].map(({ icon: Icon, accent, label }) => (
+              <button key={label} className="flex items-center gap-1.5 rounded-xl border border-transparent px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground">
+                <Icon size={14} className={accent} /> {label}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Add-node menu — anchored popover">
+          <div className="w-48 rounded-xl border border-border bg-popover p-1 shadow-2xl">
+            {[
+              { icon: Sparkles, accent: "text-sky-400", label: "LLM", desc: "Understands the caller" },
+              { icon: Network, accent: "text-amber-400", label: "Condition", desc: "Branch the flow" },
+            ].map(({ icon: Icon, accent, label, desc }) => (
+              <button key={label} className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-secondary/60">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-md ring-1 ring-inset ring-white/[0.08]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+                  <Icon size={13} className={accent} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] font-medium text-foreground">{label}</span>
+                  <span className="block truncate text-[10px] text-muted-foreground/70">{desc}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Canvas controls — tidy up · loop toggle · add branch">
+          <div className="flex flex-wrap items-center gap-3">
+            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
+              <Network size={13} /> Tidy up
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
+              <CornerDownRight size={13} className="rotate-180" /> Show loops
+              <span className="rounded bg-white/[0.06] px-1 text-[10px]">3</span>
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 bg-violet-500/[0.14] px-2.5 py-1.5 text-[11px] font-medium text-violet-200 shadow-lg">
+              <CornerDownRight size={13} className="rotate-180" /> Hide loops
+              <span className="rounded bg-violet-500/25 px-1 text-[10px]">3</span>
+            </button>
+            <button className="inline-flex h-6 items-center gap-1 rounded-full border border-border bg-card px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground">
+              <Plus size={11} /> Branch
+            </button>
+          </div>
+        </Section>
       </div>
     </div>
   );
 }
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
+
+const PORT = "block h-[11px] w-[11px] rounded-full border border-white/25 bg-[#0b0b0b]";
+
+function FlowNodeCard({
+  icon: Icon,
+  accent,
+  name,
+  category,
+  desc,
+  invalid,
+}: {
+  icon: LucideIcon;
+  accent: string;
+  name: string;
+  category: string;
+  desc: string;
+  invalid?: boolean;
+}) {
+  return (
+    <div className="relative w-[288px] rounded-2xl border border-white/[0.08] bg-card">
+      <span className={cn(PORT, "absolute left-[-6px] top-8")} />
+      <span className={cn(PORT, "absolute right-[-6px] top-8")} />
+      <div className="flex items-start gap-2.5 px-4 pt-3.5">
+        <Icon size={17} className={cn(accent, "mt-px shrink-0")} />
+        <div className="min-w-0 flex-1 truncate text-[15px] font-medium leading-snug text-foreground">{name}</div>
+        <MoreVertical size={15} className="shrink-0 text-muted-foreground/60" />
+      </div>
+      <p className="line-clamp-2 px-4 pt-1.5 text-[12.5px] leading-relaxed text-muted-foreground/70">{desc}</p>
+      <div className="flex items-center justify-between px-4 pb-3.5 pt-3">
+        <span className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground/45">{category}</span>
+        {invalid && <AlertTriangle size={14} className="text-amber-400" />}
+      </div>
+    </div>
+  );
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

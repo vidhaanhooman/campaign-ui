@@ -67,6 +67,7 @@ import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell, useSidebar } from "@/components/app-shell";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 /* ── Node model ──────────────────────────────────────────────────────── */
@@ -1340,12 +1341,22 @@ function Inspector({
           <InsInput value={node.data.name} onChange={(v) => onData({ name: v })} />
         </InsField>
 
-        {/* LLM & Condition fan out to multiple string transitions;
-            Static/Endpoint have a single next (bare port, no editor). */}
-        {(kind === "llm" || kind === "logic") && (
+        {/* LLM fans out to plain string transitions. */}
+        {kind === "llm" && (
           <TransitionsEditor
             exits={node.data.exits ?? []}
             onChange={(next) => onData({ exits: next })}
+          />
+        )}
+
+        {/* Condition uses a structured rule builder (If / Else if / Else). */}
+        {kind === "logic" && (
+          <ConditionRules
+            value={(cfg.conditionRules as CondClause[]) ?? [{ conds: [emptyRule()] }]}
+            onChange={(clauses) => {
+              onConfig("conditionRules", clauses);
+              onData({ exits: [...clauses.map(clauseLabel), "Else"] });
+            }}
           />
         )}
 
@@ -1570,22 +1581,7 @@ function InsToggle({
         <div className="text-sm text-foreground">{label}</div>
         <div className="mt-0.5 text-[11px] text-muted-foreground">{hint}</div>
       </div>
-      <button
-        onClick={() => onChange(!checked)}
-        role="switch"
-        aria-checked={checked}
-        className={cn(
-          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-          checked ? "bg-primary" : "bg-white/15",
-        )}
-      >
-        <span
-          className={cn(
-            "absolute top-0.5 size-4 rounded-full bg-white transition-transform",
-            checked ? "translate-x-4" : "translate-x-0.5",
-          )}
-        />
-      </button>
+      <Switch checked={checked} onCheckedChange={(v) => onChange(Boolean(v))} />
     </div>
   );
 }
@@ -1662,6 +1658,90 @@ function ConditionEditor({
   );
 }
 
+/* ── Condition rule builder (If / Nested If · Else / Else If) ─────────────
+   A clause = conditions joined by AND ("Nested If" adds one). Each clause is
+   one output branch; a final implicit "Else" catches the rest. Serialized to
+   the node's `exits` (labels → ports) so edges keep working. */
+type CondRule = { variable: string; operator: string; type: string; value: string };
+type CondClause = { conds: CondRule[] };
+const emptyRule = (): CondRule => ({ variable: "", operator: "==", type: "string", value: "" });
+const clauseLabel = (c: CondClause) =>
+  c.conds.map((r) => `${r.variable || "?"} ${r.operator} ${r.value || "?"}`).join(" and ");
+
+function ConditionRules({
+  value,
+  onChange,
+}: {
+  value: CondClause[];
+  onChange: (clauses: CondClause[]) => void;
+}) {
+  const clauses = value.length ? value : [{ conds: [emptyRule()] }];
+  const setClause = (ci: number, next: CondClause) =>
+    onChange(clauses.map((c, i) => (i === ci ? next : c)));
+  const setRule = (ci: number, ri: number, patch: Partial<CondRule>) =>
+    setClause(ci, { conds: clauses[ci].conds.map((r, i) => (i === ri ? { ...r, ...patch } : r)) });
+
+  return (
+    <InsField
+      label="Conditions"
+      hint="Each rule is a branch. The first that matches wins; otherwise the flow takes Else."
+    >
+      <div className="flex flex-col gap-3">
+        {clauses.map((clause, ci) => (
+          <div key={ci} className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-3">
+            <div className="flex items-center gap-3 text-[11px] font-medium">
+              <span className="text-foreground">{ci === 0 ? "If" : "Else if"}</span>
+              <button
+                onClick={() => setClause(ci, { conds: [...clause.conds, emptyRule()] })}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Nested If
+              </button>
+              {ci > 0 && (
+                <button
+                  onClick={() => onChange(clauses.filter((_, i) => i !== ci))}
+                  aria-label="Remove clause"
+                  className="ml-auto text-muted-foreground transition-colors hover:text-rose-400"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
+            {clause.conds.map((r, ri) => (
+              <div key={ri} className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-2">
+                <InsInput value={r.variable} onChange={(v) => setRule(ci, ri, { variable: v })} placeholder="Variable" />
+                <InsSelect value={r.operator} onChange={(v) => setRule(ci, ri, { operator: v })} options={["==", "!=", ">", "<", "contains"]} />
+                <InsSelect value={r.type} onChange={(v) => setRule(ci, ri, { type: v })} options={["string", "number", "boolean"]} />
+                <div className="flex items-center gap-1.5">
+                  <InsInput value={r.value} onChange={(v) => setRule(ci, ri, { value: v })} placeholder="Value" />
+                  {ri > 0 && (
+                    <button
+                      onClick={() => setClause(ci, { conds: clause.conds.filter((_, i) => i !== ri) })}
+                      aria-label="Remove nested condition"
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-rose-400"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+        <div className="flex items-center gap-3 px-1 text-[11px] font-medium">
+          <span className="text-foreground">Else</span>
+          <button
+            onClick={() => onChange([...clauses, { conds: [emptyRule()] }])}
+            className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Plus size={11} /> Else If
+          </button>
+        </div>
+      </div>
+    </InsField>
+  );
+}
+
 function TransitionsEditor({
   exits,
   onChange,
@@ -1731,7 +1811,6 @@ function EndpointBody({
   cfg: Record<string, unknown>;
   onConfig: (key: string, value: unknown) => void;
 }) {
-  const [tab, setTab] = React.useState<"api" | "code">("api");
   const s = (k: string, d = "") => String(cfg[k] ?? d);
   const headers = (cfg.headers as KV[]) ?? [
     { key: "Content-Type", value: "application/json" },
@@ -1740,18 +1819,7 @@ function EndpointBody({
 
   return (
     <div className="space-y-5">
-      <Segmented
-        full
-        value={tab}
-        onChange={(v) => setTab(v as "api" | "code")}
-        options={[
-          { v: "api", l: "API" },
-          { v: "code", l: "Code" },
-        ]}
-      />
-
-      {tab === "api" ? (
-        <>
+      <>
           <SectionCard
             title="API call"
             hint="The HTTP request this node makes."
@@ -1891,22 +1959,22 @@ function EndpointBody({
             </div>
           </SectionCard>
         </>
-      ) : (
-        <SectionCard
-          title="Code"
-          hint="JavaScript that runs with the request context as input. Return any value the agent can use."
-        >
-          <InsTextarea
-            tall
-            mono
-            value={s("code")}
-            onChange={(v) => onConfig("code", v)}
-            placeholder="// The request context is available on the input object. return input;"
-          />
-        </SectionCard>
-      )}
 
-      {/* Behavior — shared by both tabs */}
+      {/* Code — optional post-processing that runs with the request context */}
+      <SectionCard
+        title="Code"
+        hint="Optional JavaScript that runs with the request context as input. Return any value the agent can use."
+      >
+        <InsTextarea
+          tall
+          mono
+          value={s("code")}
+          onChange={(v) => onConfig("code", v)}
+          placeholder="// The request context is available on the input object. return input;"
+        />
+      </SectionCard>
+
+      {/* Behavior */}
       <SectionCard title="Behavior" hint="Timeout and response-summary settings.">
         <InsField label="Timeout (ms)">
           <input
@@ -1942,15 +2010,15 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <div className="flex items-start justify-between gap-3 bg-white/[0.02] px-4 py-3">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-start justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground">{title}</div>
           {hint && <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>
-      <div className="space-y-4 border-t border-white/[0.04] p-4">{children}</div>
+      <div className="space-y-4 p-4">{children}</div>
     </div>
   );
 }
@@ -1985,7 +2053,7 @@ function Segmented({
             full && "flex-1",
             small ? "h-6 px-2.5 text-[11px]" : "h-8 px-3 text-xs",
             value === o.v
-              ? "bg-secondary text-foreground shadow-sm"
+              ? "bg-primary text-primary-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
