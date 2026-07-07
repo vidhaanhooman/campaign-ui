@@ -77,7 +77,7 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
       { label: "Agents", icon: Bot },
       { label: "Test Agents", icon: Headphones },
       { label: "Simulation", icon: FlaskConical },
-      { label: "QA", icon: ShieldAlert },
+      { label: "QA", icon: ShieldAlert, href: "/qa" },
     ],
   },
   {

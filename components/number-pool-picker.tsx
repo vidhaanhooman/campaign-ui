@@ -194,7 +194,7 @@ export function NumberPoolPicker({
                         {n}
                       </span>
                       {checked && (
-                        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
+                        <span className="text-[11px] uppercase tracking-wider font-medium text-muted-foreground">
                           In pool
                         </span>
                       )}

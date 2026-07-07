@@ -8,16 +8,24 @@
 import * as React from "react";
 import {
   AlertTriangle,
+  ArrowLeftRight,
+  Bot,
   Check,
   ChevronDown,
+  Clock,
   CornerDownRight,
+  Flag,
   Inbox,
+  Megaphone,
   MessageSquare,
   MoreVertical,
   Network,
   Pencil,
+  Phone,
+  PhoneOff,
   PlugZap,
   Plus,
+  RotateCw,
   Search,
   SearchX,
   Sparkles,
@@ -27,6 +35,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
+import { FilterDropdown, type FilterValues } from "@/components/filter-dropdown";
 
 /* Shared recipe strings (kept verbatim from DESIGN_SYSTEM.md) */
 const ELEMENT = "border border-border bg-card";
@@ -90,6 +99,10 @@ export default function StyleGuidePage() {
 
         <Section title="Dropdown — one color, white overlays only">
           <DropdownDemo />
+        </Section>
+
+        <Section title="Filter dropdown — search · sections · typed editors">
+          <FilterDropdownDemo />
         </Section>
 
         <Section title="Checkbox">
@@ -432,6 +445,51 @@ function DropdownDemo() {
         })}
       </div>
     </div>
+  );
+}
+
+function FilterDropdownDemo() {
+  const [value, setValue] = React.useState<FilterValues>({});
+  return (
+    <FilterDropdown
+      value={value}
+      onChange={setValue}
+      align="start"
+      schema={[
+        {
+          items: [
+            { id: "type", label: "Type", icon: <Phone size={15} />, type: "multi-select", options: [
+              { value: "phone", label: "Phone" }, { value: "web", label: "Web session" },
+            ] },
+            { id: "direction", label: "Direction", icon: <ArrowLeftRight size={15} />, type: "multi-select", options: [
+              { value: "in", label: "Inbound" }, { value: "out", label: "Outbound" },
+            ] },
+            { id: "agent", label: "Agent", icon: <Bot size={15} />, type: "multi-select", searchable: true, options: [
+              { value: "a1", label: "multi-llm" }, { value: "a2", label: "palmonas" }, { value: "a3", label: "standard" },
+            ] },
+            { id: "campaign", label: "Campaign", icon: <Megaphone size={15} />, type: "text", placeholder: "Campaign name…" },
+          ],
+        },
+        {
+          title: "Outcome & status",
+          items: [
+            { id: "outcome", label: "Outcome", icon: <Flag size={15} />, type: "multi-select", options: [
+              { value: "resolved", label: "Resolved", dot: "bg-emerald-400" },
+              { value: "transferred", label: "Transferred", dot: "bg-amber-400" },
+              { value: "dropped", label: "Dropped", dot: "bg-rose-400" },
+            ] },
+            { id: "endReason", label: "End reason", icon: <PhoneOff size={15} />, type: "text" },
+          ],
+        },
+        {
+          title: "Metrics",
+          items: [
+            { id: "duration", label: "Call duration", icon: <Clock size={15} />, type: "range", min: 0, max: 600, unit: "s" },
+            { id: "attempt", label: "Attempt", icon: <RotateCw size={15} />, type: "pill", maxExact: 4 },
+          ],
+        },
+      ]}
+    />
   );
 }
 

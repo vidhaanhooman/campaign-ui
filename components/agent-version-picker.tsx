@@ -112,7 +112,7 @@ export function AgentVersionPicker({
             Agent
           </div>
           <div className="flex h-12 items-center border-b border-white/[0.04] px-4">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Versions
             </span>
             <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
