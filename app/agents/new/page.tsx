@@ -1124,8 +1124,8 @@ function Canvas() {
           </button>
         )}
 
-        {/* Persistent typed chip toolbar — the default add-node view */}
-        <NodeToolbar onPick={pickNode} />
+        {/* Persistent typed chip toolbar — hidden while the inspector is open */}
+        {!selected && <NodeToolbar onPick={pickNode} />}
 
         {/* Anchored menu when adding from a node's "+" or a dropped port */}
         {picker?.at && (
@@ -1274,8 +1274,35 @@ function Inspector({
   const cfg = node.data.config ?? {};
   const s = (k: string, d = "") => String(cfg[k] ?? d);
 
+  // Drag-resizable width (default ~50% of the window).
+  const [width, setWidth] = React.useState(560);
+  React.useEffect(() => {
+    setWidth(Math.round(window.innerWidth * 0.5));
+  }, []);
+  const startResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const onMove = (ev: PointerEvent) => {
+      const w = window.innerWidth - ev.clientX;
+      setWidth(Math.max(380, Math.min(window.innerWidth * 0.85, w)));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
   return (
-    <div className="absolute inset-y-0 right-0 z-20 flex w-1/2 flex-col border-l border-border bg-popover shadow-2xl">
+    <div
+      style={{ width }}
+      className="absolute inset-y-0 right-0 z-20 flex flex-col border-l border-border bg-popover shadow-2xl"
+    >
+      {/* drag handle to resize width */}
+      <div
+        onPointerDown={startResize}
+        className="absolute inset-y-0 left-[-3px] z-30 w-1.5 cursor-col-resize transition-colors hover:bg-violet-400/40"
+      />
       {/* header */}
       <div className="flex items-start justify-between gap-2 border-b border-white/[0.06] px-5 py-4">
         <div className="min-w-0">
