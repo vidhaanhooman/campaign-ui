@@ -874,12 +874,10 @@ function Canvas() {
     }, 0);
   }, [nodes, edges]);
 
-  // Collapse the app sidebar while editing a node so canvas + inspector get room.
+  // Collapse the app sidebar the moment the user touches the canvas — they can
+  // reopen it manually if needed. Restore it when leaving the builder.
   const { setCollapsed } = useSidebar();
-  React.useEffect(() => {
-    setCollapsed(selectedId != null);
-    return () => setCollapsed(false);
-  }, [selectedId, setCollapsed]);
+  React.useEffect(() => () => setCollapsed(false), [setCollapsed]);
 
   // Merge a patch into a node's data (title/desc/invalid or nested config).
   const updateData = React.useCallback(
@@ -1060,7 +1058,12 @@ function Canvas() {
       </header>
 
       {/* Canvas */}
-      <div ref={wrap} className="relative min-h-0 flex-1" onClick={() => setMenu(null)}>
+      <div
+        ref={wrap}
+        className="relative min-h-0 flex-1"
+        onPointerDown={() => setCollapsed(true)}
+        onClick={() => setMenu(null)}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
