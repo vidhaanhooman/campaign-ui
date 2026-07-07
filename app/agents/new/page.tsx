@@ -70,28 +70,18 @@ import { cn } from "@/lib/utils";
 
 /* ── Node model ──────────────────────────────────────────────────────── */
 
-type NodeKind =
-  | "trigger"
-  | "start"
-  | "conversation"
-  | "preset"
-  | "action"
-  | "condition"
-  | "skill"
-  | "assign"
-  | "businessHour"
-  | "task"
-  | "http"
-  | "end";
+// Aligns to the backend contract (node.type): llm · fixed · logic · endpoint.
+// "Start" is not a type — it's the node with id "start" (type llm or logic).
+type NodeKind = "llm" | "fixed" | "logic" | "endpoint";
 
 type NodeData = {
-  title: string;
+  name: string;
   desc?: string;
   invalid?: boolean;
-  // Branch/transition labels shown on the node face; each is one output port.
-  // Empty → a single bare output port. Undefined on terminal nodes.
+  // Branch labels shown as right-edge ports; each is one output.
+  // ≤1 → single bare output port; >1 → stacked labeled ports.
   exits?: string[];
-  // Per-type config (serialized to JSON for the backend to interpret).
+  // Per-type config (serialized into the backend `data` shape on save).
   config?: Record<string, unknown>;
 };
 
@@ -101,24 +91,13 @@ type Meta = {
   accent: string; // icon text color
   dot: string; // status dot bg
   port: string; // handle border tint
-  badge?: string;
-  terminal?: boolean;
-  entry?: boolean;
 };
 
 const META: Record<NodeKind, Meta> = {
-  trigger: { category: "Trigger", icon: PhoneIncoming, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60", badge: "Trigger", entry: true },
-  start: { category: "Start", icon: Play, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60", entry: true },
-  conversation: { category: "LLM", icon: Sparkles, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
-  preset: { category: "Static", icon: MessageSquare, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
-  action: { category: "AI Actions", icon: Zap, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
-  condition: { category: "Condition", icon: Network, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  skill: { category: "Skills", icon: Sparkles, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
-  assign: { category: "Assign to Human", icon: UserPlus, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  businessHour: { category: "Business Hour", icon: Clock, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  task: { category: "Create Task", icon: ListChecks, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  http: { category: "Endpoint", icon: PlugZap, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60" },
-  end: { category: "End Conversation", icon: Ban, accent: "text-rose-400", dot: "bg-rose-400", port: "!border-rose-400/60", terminal: true },
+  llm: { category: "LLM", icon: Sparkles, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
+  fixed: { category: "Static", icon: MessageSquare, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
+  logic: { category: "Condition", icon: Network, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
+  endpoint: { category: "Endpoint", icon: PlugZap, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60" },
 };
 
 const PORT =
@@ -148,6 +127,7 @@ function makeNode(kind: NodeKind) {
   function FlowNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
     const openMenu = React.useContext(OpenMenu);
     const openPicker = React.useContext(OpenPicker);
+    const isStart = id === "start"; // the entry node — no incoming port
     const exits = data.exits ?? [];
     const multi = exits.length > 1;
 
@@ -184,7 +164,7 @@ function makeNode(kind: NodeKind) {
             minHeight: multi ? 52 + exits.length * 20 : undefined,
           }}
         >
-          {!m.entry && (
+          {!isStart && (
             <Handle
               type="target"
               position={Position.Left}
@@ -197,7 +177,7 @@ function makeNode(kind: NodeKind) {
             <span className="inline-flex min-w-0 items-center gap-2">
               <span className={cn("size-1.5 shrink-0 rounded-full", m.dot)} aria-hidden />
               <Icon size={15} className={cn("shrink-0", m.accent)} />
-              <span className="truncate text-sm font-medium text-foreground">{data.title}</span>
+              <span className="truncate text-sm font-medium text-foreground">{data.name}</span>
             </span>
             <button
               onClick={(e) => {
@@ -226,8 +206,7 @@ function makeNode(kind: NodeKind) {
           </div>
 
           {/* output ports */}
-          {!m.terminal &&
-            (multi ? (
+          {multi ? (
               exits.map((_, i) => {
                 const top = `${((i + 1) / (exits.length + 1)) * 100}%`;
                 return (
@@ -247,11 +226,11 @@ function makeNode(kind: NodeKind) {
                 position={Position.Right}
                 className={cn(PORT, "!right-[-6px]", m.port)}
               />
-            ))}
+            )}
         </div>
 
         {/* "+" add affordance for single-exit nodes */}
-        {!m.terminal && !multi && (
+        {!multi && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -271,27 +250,19 @@ function makeNode(kind: NodeKind) {
 }
 
 const nodeTypes = {
-  trigger: makeNode("trigger"),
-  start: makeNode("start"),
-  conversation: makeNode("conversation"),
-  preset: makeNode("preset"),
-  action: makeNode("action"),
-  condition: makeNode("condition"),
-  skill: makeNode("skill"),
-  assign: makeNode("assign"),
-  businessHour: makeNode("businessHour"),
-  task: makeNode("task"),
-  http: makeNode("http"),
-  end: makeNode("end"),
+  llm: makeNode("llm"),
+  fixed: makeNode("fixed"),
+  logic: makeNode("logic"),
+  endpoint: makeNode("endpoint"),
 };
 
 /* ── Node types — the 4 we support ───────────────────────────────────── */
 
 const NODE_TYPES: { kind: NodeKind; label: string; desc: string; data: NodeData }[] = [
-  { kind: "conversation", label: "LLM", desc: "Understands the caller and decides where to go next", data: { title: "New LLM node", desc: "Understands the caller and decides where to go next." } },
-  { kind: "preset", label: "Static", desc: "Plays a fixed message, then moves on", data: { title: "New static node", desc: "Plays a fixed message, then moves on." } },
-  { kind: "condition", label: "Condition", desc: "Branch the flow on a variable", data: { title: "New condition", desc: "Route on a variable." } },
-  { kind: "http", label: "Endpoint", desc: "Call an external endpoint", data: { title: "New endpoint", desc: "Call an external endpoint.", invalid: true } },
+  { kind: "llm", label: "LLM", desc: "Understands the caller and decides where to go next", data: { name: "new_prompt", desc: "Understands the caller and decides where to go next." } },
+  { kind: "fixed", label: "Static", desc: "Plays a fixed message, then moves on", data: { name: "new_static", desc: "Plays a fixed message, then moves on." } },
+  { kind: "logic", label: "Condition", desc: "Branch the flow on a variable", data: { name: "new_condition", desc: "Route on a variable." } },
+  { kind: "endpoint", label: "Endpoint", desc: "Call an external endpoint", data: { name: "new_endpoint", desc: "Call an external endpoint.", invalid: true } },
 ];
 
 /* ── Floating edge geometry ──────────────────────────────────────────────
@@ -443,15 +414,101 @@ const EDGE_DEFAULTS = {
 const SEED_NODES: Node<NodeData>[] = [
   {
     id: "start",
-    type: "start",
+    type: "llm",
     position: { x: 80, y: 220 },
-    data: { title: "Start", config: { startType: "LLM" }, exits: [""] },
+    data: { name: "Start", config: { startType: "LLM" }, exits: [""] },
   },
 ];
 
 const SEED_EDGES: Edge[] = [];
 
 let idSeq = 100;
+
+/* ── Serialize → backend fNodes/fEdges shape (from AgentFlow.tsx contract) ─
+   Links are projected from the edges: fixed/endpoint → single `child`;
+   llm → keyed `children[]`; logic → a (flat, Phase-C-pending) condition. */
+
+function targetFor(edges: Edge[], nodeId: string, handle?: string) {
+  return (
+    edges.find(
+      (e) => e.source === nodeId && (handle ? e.sourceHandle === handle : true),
+    )?.target ?? ""
+  );
+}
+
+function serialize(nodes: Node<NodeData>[], edges: Edge[]) {
+  const fNodes = nodes.map((n) => {
+    const d = n.data;
+    const cfg = d.config ?? {};
+    const s = (k: string, dflt = "") => String(cfg[k] ?? dflt);
+    const exits = d.exits ?? [];
+
+    // The start node persists as its chosen type (llm | logic).
+    const type =
+      n.id === "start" ? (s("startType", "LLM") === "Condition" ? "logic" : "llm") : n.type;
+
+    let data: Record<string, unknown>;
+    if (type === "fixed") {
+      data = { name: d.name, response: s("message"), child: targetFor(edges, n.id), type: "fixed" };
+    } else if (type === "endpoint") {
+      data = {
+        name: d.name,
+        child: targetFor(edges, n.id),
+        type: "endpoint",
+        endpoint: {
+          address: s("url"),
+          type: s("method", "POST"),
+          timeout: Number(cfg.timeout ?? 15000),
+          headers: "",
+          body: s("body"),
+          outputs: {},
+          conditions: [],
+        },
+        headers: (cfg.headers as unknown[]) ?? [{ key: "Content-Type", value: "application/json" }],
+        outputs: (cfg.responseVars as unknown[]) ?? [],
+      };
+    } else if (type === "logic") {
+      const key = `condition_${n.id}`;
+      data = {
+        name: d.name,
+        type: "logic",
+        condition: {
+          property: s("variable"),
+          operator: s("op", "=="),
+          value: s("value"),
+          type: "string",
+          yes: targetFor(edges, n.id, "t-0") || key,
+          no: targetFor(edges, n.id, "t-1") || key,
+          output: "",
+          key,
+        },
+      };
+    } else {
+      // llm
+      data = {
+        name: d.name,
+        systemPrompt: s("prompt"),
+        functions: [],
+        children: exits.map((label, i) => ({
+          key: `t-${i}`,
+          id: targetFor(edges, n.id, `t-${i}`),
+          transfer: {
+            type: "description",
+            description: label,
+            messages: { start: { type: "fixed", message: "" } },
+            parameters: [],
+            transitionBackToStart: false,
+          },
+        })),
+        type: "llm",
+      };
+    }
+
+    return { id: n.id, type, position: n.position, data };
+  });
+
+  return { fNodes, fEdges: edges };
+}
 
 /* ── Right-click menu ────────────────────────────────────────────────── */
 
@@ -579,8 +636,9 @@ function Canvas() {
   };
 
   const publish = () => {
-    console.log("agent flow", { nodes, edges });
-    toast.success(`Saved — ${nodes.length} nodes, ${edges.length} transitions`);
+    const payload = serialize(nodes as Node<NodeData>[], edges);
+    console.log("agent flow → fNodes/fEdges", payload);
+    toast.success(`Saved — ${payload.fNodes.length} nodes, ${payload.fEdges.length} transitions`);
   };
 
   return (
@@ -881,20 +939,21 @@ function Inspector({
       {/* body */}
       <div className="scroll-thin flex-1 space-y-5 overflow-y-auto px-5 py-5">
         <InsField label="Name" hint="A unique label to identify this node in the flow.">
-          <InsInput value={node.data.title} onChange={(v) => onData({ title: v })} />
+          <InsInput value={node.data.name} onChange={(v) => onData({ name: v })} />
         </InsField>
 
-        {/* Branch editing lives here — each transition = one output port. */}
-        {kind !== "end" && kind !== "trigger" && (
+        {/* Branch editing — LLM & Condition fan out to multiple transitions;
+            Static/Endpoint have a single next (bare port, no editor). */}
+        {(kind === "llm" || kind === "logic") && (
           <TransitionsEditor
             exits={node.data.exits ?? []}
             onChange={(next) => onData({ exits: next })}
           />
         )}
 
-        {/* Start node — how it routes (LLM vs Condition) */}
-        {kind === "start" && (
-          <InsField label="Type" hint="How this start node decides which transition to take.">
+        {/* Start node — routes as LLM or Condition */}
+        {node.id === "start" && (
+          <InsField label="Start type" hint="How the start node decides which transition to take.">
             <InsSelect
               value={s("startType", "LLM")}
               onChange={(v) => onConfig("startType", v)}
@@ -904,7 +963,7 @@ function Inspector({
         )}
 
         {/* LLM node — prompt, tools, LLM/Voice overrides */}
-        {kind === "conversation" && (
+        {kind === "llm" && (
           <>
             <div className="relative">
               <InsTextarea
@@ -958,7 +1017,7 @@ function Inspector({
         )}
 
         {/* Static node — fixed message that plays then moves on */}
-        {kind === "preset" && (
+        {kind === "fixed" && (
           <>
             <InsField
               label="Message"
@@ -980,32 +1039,8 @@ function Inspector({
           </>
         )}
 
-        {kind === "http" && <EndpointBody cfg={cfg} onConfig={onConfig} />}
-
-        {kind === "action" && (
-          <>
-            <div className="grid grid-cols-[100px_1fr] gap-2">
-              <InsField label="Method">
-                <InsSelect
-                  value={s("method", "POST")}
-                  onChange={(v) => onConfig("method", v)}
-                  options={["GET", "POST", "PUT", "PATCH", "DELETE"]}
-                />
-              </InsField>
-              <InsField label="URL" required error={!s("url")}>
-                <InsInput
-                  value={s("url")}
-                  onChange={(v) => onConfig("url", v)}
-                  placeholder="https://api.example.com/orders/${orderId}"
-                  mono
-                />
-              </InsField>
-            </div>
-            <TransitionBackToStart value={s("backToStart", "false")} onChange={(v) => onConfig("backToStart", v)} />
-          </>
-        )}
-
-        {kind === "condition" && (
+        {/* Condition node — variable / operator / value (nested tree: Phase C) */}
+        {kind === "logic" && (
           <InsField label="If" hint="Branch when this expression is true.">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
               <InsInput value={s("variable")} onChange={(v) => onConfig("variable", v)} placeholder="variable" />
@@ -1015,32 +1050,8 @@ function Inspector({
           </InsField>
         )}
 
-        {kind === "skill" && (
-          <>
-            <InsField label="Skill Type">
-              <InsSelect value={s("skillType", "Generate Image")} onChange={(v) => onConfig("skillType", v)} options={["Generate Image", "Summarize", "Classify", "Transcribe"]} />
-            </InsField>
-            <InsField label="Model Provider">
-              <InsSelect value={s("model", "Dall-e-3")} onChange={(v) => onConfig("model", v)} options={["Dall-e-3", "GPT-4o", "Claude-Sonnet-4.6"]} />
-            </InsField>
-            <InsField label="Instructions" required error={!s("instructions")}>
-              <InsTextarea value={s("instructions")} onChange={(v) => onConfig("instructions", v)} placeholder="ex: Generate a product banner with vibrant colors" />
-            </InsField>
-          </>
-        )}
-
-        {kind === "end" && (
-          <InsField label="Reason" hint="Why the conversation ended (for reporting).">
-            <InsInput value={s("reason")} onChange={(v) => onConfig("reason", v)} placeholder="e.g. Resolved" />
-          </InsField>
-        )}
-
-        {kind === "trigger" && (
-          <p className="rounded-lg border border-border bg-card px-3 py-2.5 text-xs text-muted-foreground">
-            Trigger settings (number binding, greeting) live in{" "}
-            <span className="text-foreground">Voice Configuration</span>.
-          </p>
-        )}
+        {/* Endpoint node — full API/Code config */}
+        {kind === "endpoint" && <EndpointBody cfg={cfg} onConfig={onConfig} />}
 
         <InsField label="Description" optional hint="A short internal note.">
           <InsTextarea value={node.data.desc ?? ""} onChange={(v) => onData({ desc: v })} placeholder="A short internal note about this node." />
