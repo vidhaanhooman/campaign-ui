@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -987,11 +988,12 @@ function ActivityToday() {
 /* ── Empty / onboarding state (new user) ─────────────────────────────── */
 
 function EmptyHome() {
+  const router = useRouter();
   const initial = ACCOUNT.user[0]?.toUpperCase() ?? "?";
   // Informational only — steps are read, not clicked. One action for the
   // whole card ("Create your first agent") opens the real config flow.
   const startAgent = () => {
-    toast("Opening agent builder");
+    router.push("/agents/new");
   };
 
   return (
