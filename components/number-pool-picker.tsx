@@ -46,7 +46,7 @@ export function NumberPoolPicker({
   }, [query]);
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
@@ -169,7 +169,7 @@ export function NumberPoolPicker({
                 )}
               </div>
             </div>
-            <div className="scroll-thin max-h-[200px] overflow-y-auto px-2 py-1">
+            <div className="scroll-thin max-h-64 overflow-y-auto px-2 py-1">
               {filtered.length === 0 ? (
                 <div className="px-3 py-8 text-center text-xs text-muted-foreground">
                   No numbers match &ldquo;{query}&rdquo;

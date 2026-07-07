@@ -675,7 +675,7 @@ export function RealtimeWizard({
                             }
                           />
                         </div>
-                        <div className="w-[150px] shrink-0">
+                        <div className="w-40 shrink-0">
                           <VersionPicker
                             agentId={arm.agentId}
                             versionName={arm.versionName}
@@ -1121,7 +1121,7 @@ export function RealtimeWizard({
             )}
 
             {step === 4 && (
-              <div className="space-y-7">
+              <div className="space-y-6">
                 <RtReviewSection
                   title="Identity"
                   rows={[
@@ -1633,7 +1633,7 @@ function FieldGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <div className="text-sm font-medium text-foreground">{label}</div>
       {children}
       {hint && (

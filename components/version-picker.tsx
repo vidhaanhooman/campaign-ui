@@ -88,7 +88,7 @@ export function VersionPicker({
             </span>
           </div>
           <div className="p-2 border-b border-white/[0.04]">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-transparent px-2.5">
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-border bg-transparent px-2.5">
               <Search size={13} className="shrink-0 text-muted-foreground" />
               <input
                 value={query}
@@ -98,7 +98,7 @@ export function VersionPicker({
               />
             </div>
           </div>
-          <div className="scroll-thin max-h-[260px] overflow-y-auto px-2 py-1">
+          <div className="scroll-thin max-h-64 overflow-y-auto px-2 py-1">
             {filtered.length === 0 ? (
               <div className="px-3 py-8 text-center text-xs text-muted-foreground">
                 No versions match &ldquo;{query}&rdquo;

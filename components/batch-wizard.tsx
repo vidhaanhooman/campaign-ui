@@ -377,7 +377,7 @@ export function BatchWizard({
                             }
                           />
                         </div>
-                        <div className="w-[150px] shrink-0">
+                        <div className="w-40 shrink-0">
                           <VersionPicker
                             agentId={arm.agentId}
                             versionName={arm.versionName}
@@ -1002,7 +1002,7 @@ export function BatchWizard({
 
             {/* === STEP 4 — Review === */}
             {step === 4 && (
-              <div className="space-y-7">
+              <div className="space-y-6">
                 <ReviewSection
                   title="Identity"
                   rows={[
@@ -1284,7 +1284,7 @@ function FieldGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <div className="text-sm font-medium text-foreground">{label}</div>
       {children}
       {hint && (
@@ -1592,7 +1592,6 @@ function CsvLogo() {
         <text
           x="16"
           y="24"
-          fontFamily="Arial Black, sans-serif"
           fontSize="7"
           fill="#EDEDED"
           textAnchor="middle"
