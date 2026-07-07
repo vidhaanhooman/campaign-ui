@@ -194,3 +194,9 @@
 .rf-node-in {
   animation: nodein 180ms ease-out;
 }
+
+/* Lift the edge-label layer above nodes so a hovered transition popup floats
+   over any node it overlaps (React Flow renders labels under nodes by default). */
+.react-flow__edgelabel-renderer {
+  z-index: 1001;
+}

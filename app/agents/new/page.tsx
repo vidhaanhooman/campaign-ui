@@ -29,6 +29,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  useUpdateNodeInternals,
   type InternalNode,
   type Node,
   type Edge,
@@ -85,23 +86,63 @@ type NodeData = {
   config?: Record<string, unknown>;
 };
 
+/* ── Condition tree (logic node) — matches backend `condition` shape ──────
+   Each condition has yes/no branches; a branch is a target id (string), an
+   unwired sentinel (= its own key), or a nested Condition (else-if). Each
+   string branch is one output port with handle `${key}#yes|no`. */
+type Condition = {
+  key: string;
+  property: string;
+  operator: string;
+  value: string;
+  type: string;
+  output?: string;
+  yes: string | Condition;
+  no: string | Condition;
+};
+
+let condKeySeq = 1;
+function newCondition(): Condition {
+  const key = `cond_${condKeySeq++}`;
+  return { key, property: "", operator: "==", value: "", type: "string", yes: key, no: key, output: "" };
+}
+
+/** Leaf branches (yes/no that are strings) → one output port each. */
+function conditionLeaves(c: Condition): { handle: string; label: string }[] {
+  const out: { handle: string; label: string }[] = [];
+  (["yes", "no"] as const).forEach((b) => {
+    const v = c[b];
+    if (typeof v === "string") {
+      out.push({
+        handle: `${c.key}#${b}`,
+        label: `${c.property || "?"} ${c.operator} ${c.value || "?"} · ${b}`,
+      });
+    } else {
+      out.push(...conditionLeaves(v));
+    }
+  });
+  return out;
+}
+
 type Meta = {
   category: string;
   icon: LucideIcon;
   accent: string; // icon text color
   dot: string; // status dot bg
   port: string; // handle border tint
+  tint: string; // soft accent gradient (rgba)
 };
 
 const META: Record<NodeKind, Meta> = {
-  llm: { category: "LLM", icon: Sparkles, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
-  fixed: { category: "Static", icon: MessageSquare, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
-  logic: { category: "Condition", icon: Network, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  endpoint: { category: "Endpoint", icon: PlugZap, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60" },
+  llm: { category: "LLM", icon: Sparkles, accent: "text-sky-400", dot: "bg-sky-400", port: "!bg-sky-400", tint: "rgba(56,189,248,0.10)" },
+  fixed: { category: "Static", icon: MessageSquare, accent: "text-violet-400", dot: "bg-violet-400", port: "!bg-violet-400", tint: "rgba(167,139,250,0.10)" },
+  logic: { category: "Condition", icon: Network, accent: "text-amber-400", dot: "bg-amber-400", port: "!bg-amber-400", tint: "rgba(251,191,36,0.10)" },
+  endpoint: { category: "Endpoint", icon: PlugZap, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!bg-emerald-400", tint: "rgba(52,211,153,0.10)" },
 };
 
+// Neutral dark knob with a hairline ring — reads as a connector, not a hole.
 const PORT =
-  "!h-3 !w-3 !rounded-full !border-2 !bg-background transition-all duration-150 hover:!scale-125 hover:!shadow-[0_0_0_4px_rgba(167,139,250,0.18)]";
+  "!h-[11px] !w-[11px] !rounded-full !bg-[#0b0b0b] !border !border-white/25 transition-all duration-150 hover:!border-white/50 hover:!scale-110";
 
 /** Lets an in-node kebab open the Canvas-level context menu at a point. */
 const OpenMenu = React.createContext<(nodeId: string, x: number, y: number) => void>(
@@ -109,10 +150,16 @@ const OpenMenu = React.createContext<(nodeId: string, x: number, y: number) => v
 );
 
 /** Lets an in-node "+" open the Select-Node picker, connecting from that node. */
-const OpenPicker = React.createContext<(fromId?: string) => void>(() => {});
+const OpenPicker = React.createContext<(fromId?: string, fromHandle?: string | null, client?: { x: number; y: number }) => void>(() => {});
+
+/** Appends a new (empty) branch/transition — adds an output hole to the node. */
+const AddExit = React.createContext<(nodeId: string) => void>(() => {});
 
 /** The node currently hovered — used to highlight its in/out edges. */
 const HoverNode = React.createContext<string | null>(null);
+
+/** When false, backward (loop) edges collapse to jump chips instead of long lines. */
+const ShowLoops = React.createContext<boolean>(false);
 
 /**
  * Unified node — one compact card for EVERY type: header (dot + icon + title) →
@@ -124,12 +171,22 @@ const HoverNode = React.createContext<string | null>(null);
 function makeNode(kind: NodeKind) {
   const m = META[kind];
   const Icon = m.icon;
+  const canBranch = kind === "llm" || kind === "logic"; // these can fan out
   function FlowNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
     const openMenu = React.useContext(OpenMenu);
     const openPicker = React.useContext(OpenPicker);
+    const addExit = React.useContext(AddExit);
+    const updateNodeInternals = useUpdateNodeInternals();
     const isStart = id === "start"; // the entry node — no incoming port
-    const exits = data.exits ?? [];
-    const multi = exits.length > 1;
+
+    // Transitions are plain strings — one output port per string (t-i).
+    const ports: string[] = (data.exits ?? []).map((_, i) => `t-${i}`);
+    const multi = ports.length > 1;
+
+    // Re-measure handles when the port set changes (else edges mis-draw).
+    React.useEffect(() => {
+      updateNodeInternals(id);
+    }, [id, ports.length, updateNodeInternals]);
 
     return (
       <div className="group relative">
@@ -147,99 +204,118 @@ function makeNode(kind: NodeKind) {
           }}
         />
 
+        {/* floating role pill over the entry node */}
+        {isStart && (
+          <div className="absolute -top-8 left-1 rounded-full bg-violet-400/[0.14] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-violet-300/85">
+            Trigger
+          </div>
+        )}
+
         <div
           className={cn(
-            "rf-node-in relative w-[240px] rounded-xl border shadow-lg transition-all duration-200",
-            "group-hover:-translate-y-[2px] group-hover:shadow-2xl",
+            "rf-node-in relative w-[288px] rounded-2xl border bg-card transition-colors duration-200",
             data.invalid
-              ? "border-rose-500/40 ring-1 ring-rose-500/25"
+              ? "border-rose-500/40"
               : selected
-                ? "border-violet-400/50 ring-1 ring-violet-400/40"
-                : "border-border hover:border-white/15",
+                ? "border-violet-400/50"
+                : "border-white/[0.08] hover:border-white/[0.16]",
           )}
           style={{
             backgroundColor: "var(--card)",
-            backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0) 42%)",
-            // Give room for stacked output ports on multi-branch nodes.
-            minHeight: multi ? 52 + exits.length * 20 : undefined,
+            minHeight: multi ? 72 + ports.length * 22 : undefined,
           }}
         >
           {!isStart && (
             <Handle
               type="target"
               position={Position.Left}
-              className={cn(PORT, "!left-[-6px] !border-white/40", multi && "!top-6")}
+              className={cn(PORT, "!left-[-6px]", multi && "!top-8")}
             />
           )}
 
-          {/* header — dot + icon + title + kebab */}
-          <div className="flex items-start justify-between gap-2 px-3.5 pt-3">
-            <span className="inline-flex min-w-0 items-center gap-2">
-              <span className={cn("size-1.5 shrink-0 rounded-full", m.dot)} aria-hidden />
-              <Icon size={15} className={cn("shrink-0", m.accent)} />
-              <span className="truncate text-sm font-medium text-foreground">{data.name}</span>
-            </span>
+          {/* header — icon · title · kebab */}
+          <div className="flex items-start gap-2.5 px-4 pt-3.5">
+            <Icon size={17} className={cn(m.accent, "mt-px shrink-0")} />
+            <div className="min-w-0 flex-1 truncate text-[15px] font-medium leading-snug text-foreground">
+              {data.name}
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 const r = e.currentTarget.getBoundingClientRect();
                 openMenu(id, r.right, r.bottom);
               }}
-              className="nodrag shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+              className="nodrag -mr-1 -mt-0.5 shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-white/[0.06] hover:text-foreground"
             >
-              <MoreVertical size={14} />
+              <MoreVertical size={15} />
             </button>
           </div>
 
           {data.desc && (
-            <p className="line-clamp-2 px-3.5 pt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="line-clamp-2 px-4 pt-1.5 text-[12.5px] leading-relaxed text-muted-foreground/70">
               {data.desc}
             </p>
           )}
 
-          {/* footer: category + validation */}
-          <div className="flex items-center justify-between px-3.5 pb-2.5 pt-2.5">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+          {/* footer — category · warning */}
+          <div className="flex items-center justify-between px-4 pb-3.5 pt-3">
+            <span className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground/45">
               {m.category}
             </span>
-            {data.invalid && <AlertTriangle size={13} className="text-amber-400" />}
+            {data.invalid && <AlertTriangle size={14} className="text-amber-400" />}
           </div>
 
-          {/* output ports */}
+          {/* output ports — one per branch (labeled by handle id) */}
           {multi ? (
-              exits.map((_, i) => {
-                const top = `${((i + 1) / (exits.length + 1)) * 100}%`;
-                return (
-                  <Handle
-                    key={i}
-                    id={`t-${i}`}
-                    type="source"
-                    position={Position.Right}
-                    style={{ top }}
-                    className={cn(PORT, "!right-[-6px]", m.port)}
-                  />
-                );
-              })
-            ) : (
-              <Handle
-                type="source"
-                position={Position.Right}
-                className={cn(PORT, "!right-[-6px]", m.port)}
-              />
-            )}
+            ports.map((handle, i) => {
+              const top = `${((i + 1) / (ports.length + 1)) * 100}%`;
+              return (
+                <Handle
+                  key={handle}
+                  id={handle}
+                  type="source"
+                  position={Position.Right}
+                  style={{ top }}
+                  className={cn(PORT, "!right-[-6px]")}
+                />
+              );
+            })
+          ) : (
+            <Handle
+              id={ports[0]}
+              type="source"
+              position={Position.Right}
+              className={cn(PORT, "!right-[-6px]")}
+            />
+          )}
         </div>
 
-        {/* "+" add affordance for single-exit nodes */}
-        {!multi && (
+        {/* "+" add affordance — connect a new node (single-exit, non-branching nodes) */}
+        {!multi && !canBranch && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              openPicker(id);
+              const r = e.currentTarget.getBoundingClientRect();
+              openPicker(id, ports[0], { x: r.right + 6, y: r.top });
             }}
             title="Click to add a new node"
             className="nodrag absolute right-[-30px] top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-0 transition-all hover:border-foreground hover:text-foreground group-hover:opacity-100"
           >
             <Plus size={12} />
+          </button>
+        )}
+
+        {/* "Add branch" — branch-capable nodes (LLM / Condition) can fan out to many outputs */}
+        {canBranch && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addExit(id);
+            }}
+            title="Add a branch"
+            className="nodrag absolute -bottom-3 left-1/2 flex h-6 -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-card px-2 text-[10px] font-medium text-muted-foreground opacity-0 transition-all hover:border-foreground/40 hover:text-foreground group-hover:opacity-100"
+          >
+            <Plus size={11} /> Branch
           </button>
         )}
       </div>
@@ -261,7 +337,7 @@ const nodeTypes = {
 const NODE_TYPES: { kind: NodeKind; label: string; desc: string; data: NodeData }[] = [
   { kind: "llm", label: "LLM", desc: "Understands the caller and decides where to go next", data: { name: "new_prompt", desc: "Understands the caller and decides where to go next." } },
   { kind: "fixed", label: "Static", desc: "Plays a fixed message, then moves on", data: { name: "new_static", desc: "Plays a fixed message, then moves on." } },
-  { kind: "logic", label: "Condition", desc: "Branch the flow on a variable", data: { name: "new_condition", desc: "Route on a variable." } },
+  { kind: "logic", label: "Condition", desc: "Branch the flow on conditions", data: { name: "new_condition", desc: "Route the call by condition.", exits: ["If true", "Else"] } },
   { kind: "endpoint", label: "Endpoint", desc: "Call an external endpoint", data: { name: "new_endpoint", desc: "Call an external endpoint.", invalid: true } },
 ];
 
@@ -314,6 +390,26 @@ function edgeParams(source: InternalNode, target: InternalNode) {
   };
 }
 
+/** Absolute center of a specific handle (hole) so edges land hole-to-hole. */
+function handlePoint(
+  node: InternalNode,
+  type: "source" | "target",
+  handleId?: string | null,
+): { x: number; y: number } {
+  const p = node.internals.positionAbsolute;
+  const bounds = node.internals.handleBounds?.[type];
+  const h = (handleId ? bounds?.find((b) => b.id === handleId) : undefined) ?? bounds?.[0];
+  if (!h) {
+    // Fallback before handles are measured: side-center (right for out, left for in).
+    const w = node.measured.width ?? 0;
+    const ht = node.measured.height ?? 0;
+    return type === "source"
+      ? { x: p.x + w, y: p.y + ht / 2 }
+      : { x: p.x, y: p.y + ht / 2 };
+  }
+  return { x: p.x + h.x + h.width / 2, y: p.y + h.y + h.height / 2 };
+}
+
 /* ── Floating edge with an editable condition label ──────────────────── */
 
 function ConditionEdge({
@@ -321,27 +417,57 @@ function ConditionEdge({
   source,
   target,
   sourceHandleId,
+  targetHandleId,
   markerEnd,
   data,
 }: EdgeProps) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
   const hovered = React.useContext(HoverNode);
+  const showLoops = React.useContext(ShowLoops);
+  const { setCenter, getZoom } = useReactFlow();
   if (!sourceNode || !targetNode) return null;
 
-  const { sx, sy, tx, ty, sourcePos, targetPos } = edgeParams(sourceNode, targetNode);
-  const [path, labelX, labelY] = getSmoothStepPath({
-    sourceX: sx,
-    sourceY: sy,
-    targetX: tx,
-    targetY: ty,
-    sourcePosition: sourcePos,
-    targetPosition: targetPos,
-    borderRadius: 12,
-  });
+  const focusNode = (n: InternalNode) => {
+    const w = n.measured.width ?? 0;
+    const h = n.measured.height ?? 0;
+    const p = n.internals.positionAbsolute;
+    setCenter(p.x + w / 2, p.y + h / 2, { zoom: getZoom(), duration: 450 });
+  };
 
-  // A back-edge (target sits left of source) reads as a loop — tint it violet.
-  const isBack = tx < sx - 4;
+  // Forward geometry: source's right (output) → target's left (input).
+  const out = handlePoint(sourceNode, "source", sourceHandleId);
+  const tin = handlePoint(targetNode, "target", targetHandleId);
+
+  // A back-edge (target sits left of its source) reads as a loop.
+  const isBack = tin.x < out.x - 4;
+
+  // Every transition leaves the source's OUTPUT (right) hole and enters the
+  // target's INPUT (left) hole.
+  const sx = out.x, sy = out.y, tx = tin.x, ty = tin.y;
+
+  let path: string, labelX: number, labelY: number;
+  if (isBack) {
+    // Backward edges route through a dedicated lane BELOW the nodes: out-right,
+    // down into the lane, left across, up into the target's input. A per-edge
+    // lane offset keeps multiple loops from stacking on top of each other.
+    const R = 24;
+    const jitter = ([...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 5) * 40;
+    const laneY = Math.max(sy, ty) + 130 + jitter;
+    path = `M${sx},${sy} L${sx + R},${sy} L${sx + R},${laneY} L${tx - R},${laneY} L${tx - R},${ty} L${tx},${ty}`;
+    labelX = (sx + tx) / 2;
+    labelY = laneY;
+  } else {
+    [path, labelX, labelY] = getSmoothStepPath({
+      sourceX: sx,
+      sourceY: sy,
+      targetX: tx,
+      targetY: ty,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+      borderRadius: 12,
+    });
+  }
 
   // Label = the branch label from the source node's exits (fallback to edge data).
   const exits = (sourceNode.data as NodeData).exits;
@@ -349,6 +475,10 @@ function ConditionEdge({
     ? parseInt(sourceHandleId.slice(2), 10)
     : null;
   const label = (idx != null ? exits?.[idx] : undefined) ?? (data as { label?: string })?.label;
+  const sName = (sourceNode.data as NodeData).name;
+  const tName = (targetNode.data as NodeData).name;
+  const tool = (data as { tool?: string })?.tool;
+  const desc = (data as { desc?: string })?.desc;
 
   // Hover focus: connected edges light up, the rest dim.
   const connected = hovered === source || hovered === target;
@@ -362,6 +492,58 @@ function ConditionEdge({
       ? "rgba(255,255,255,0.6)"
       : "rgba(255,255,255,0.18)";
 
+  // B · jump chips — a backward edge collapses to a "↩ to X" tag at the source
+  // and a small inbound tab at the target, instead of a long crossing line.
+  if (isBack && !showLoops) {
+    return (
+      <>
+        {/* faint ghost line — hints the backward link without full spaghetti */}
+        <BaseEdge
+          id={id}
+          path={path}
+          style={{
+            stroke: "rgba(167,139,250,0.95)",
+            strokeWidth: 1.5,
+            strokeDasharray: "4 4",
+            strokeLinecap: "round",
+            opacity: dim ? 0.25 : connected ? 0.9 : 0.55,
+            transition: "opacity 150ms",
+          }}
+        />
+        <EdgeLabelRenderer>
+        {/* source tag → jump to target */}
+        <button
+          className="nodrag nopan absolute inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-[10px] font-medium text-violet-200 shadow-sm transition-colors hover:bg-violet-500/25"
+          style={{
+            transform: `translate(0,-50%) translate(${sx + 8}px,${sy}px)`,
+            pointerEvents: "all",
+            opacity: dim ? 0.35 : 1,
+          }}
+          onClick={() => focusNode(targetNode)}
+          title={`Loops back to ${tName}${label ? ` · ${label}` : ""}`}
+        >
+          <CornerDownRight size={10} className="shrink-0 rotate-180" />
+          <span className="max-w-[120px] truncate">to {tName}</span>
+        </button>
+
+        {/* target inbound tab → jump back to source */}
+        <button
+          className="nodrag nopan absolute flex h-5 w-4 items-center justify-center rounded-sm border border-violet-500/50 bg-violet-500/[0.14] text-violet-200 transition-colors hover:bg-violet-500/25"
+          style={{
+            transform: `translate(-100%,-50%) translate(${tx - 8}px,${ty}px)`,
+            pointerEvents: "all",
+            opacity: dim ? 0.35 : 1,
+          }}
+          onClick={() => focusNode(sourceNode)}
+          title={`Return from ${sName}${label ? ` · ${label}` : ""}`}
+        >
+          <CornerDownRight size={9} className="rotate-180" />
+        </button>
+        </EdgeLabelRenderer>
+      </>
+    );
+  }
+
   return (
     <>
       <BaseEdge
@@ -372,7 +554,7 @@ function ConditionEdge({
         style={{
           stroke,
           strokeWidth: connected ? 2 : 1.5,
-          strokeDasharray: "5 5",
+          strokeDasharray: isBack ? "6 5" : connected ? "5 5" : "none",
           strokeLinecap: "round",
           opacity: dim ? 0.25 : 1,
           transition: "opacity 150ms, stroke 150ms, stroke-width 150ms",
@@ -380,22 +562,49 @@ function ConditionEdge({
       />
       {label && (
         <EdgeLabelRenderer>
-          <button
-            onClick={() => toast(`Edit condition: ${label}`)}
+          <div
+            className="group nodrag nopan absolute"
             style={{
-              position: "absolute",
               transform: `translate(-50%,-50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: "all",
               opacity: dim ? 0.25 : 1,
             }}
-            className={cn(
-              "nodrag nopan inline-flex items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
-              isBack ? "border-violet-500/40" : "border-border",
-            )}
           >
-            {label}
-            <Pencil size={9} className="text-muted-foreground" />
-          </button>
+            <button
+              onClick={() => toast(`Edit transition: ${label}`)}
+              className={cn(
+                "inline-flex max-w-[160px] items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
+                isBack ? "border-violet-500/40" : "border-border",
+              )}
+            >
+              <span className="truncate">{label}</span>
+              <Pencil size={9} className="shrink-0 text-muted-foreground" />
+            </button>
+
+            {/* Hover details — full transition (condition · tool · description · route) */}
+            <div className="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 w-max min-w-[160px] max-w-[260px] -translate-x-1/2 -translate-y-0.5 rounded-lg border border-border bg-popover px-3 py-2 text-left opacity-0 shadow-xl transition-all duration-150 group-hover:-translate-y-0 group-hover:opacity-100">
+              <div className="mb-1 text-[9px] font-medium uppercase tracking-[0.1em] text-muted-foreground/60">
+                Transition
+              </div>
+              <div className="whitespace-pre-wrap break-words text-[11px] leading-relaxed text-foreground">
+                {label || "No condition set"}
+              </div>
+              {tool && (
+                <div className="mt-1.5 inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                  <Zap size={9} className="text-amber-400" />
+                  {tool}
+                </div>
+              )}
+              {desc && (
+                <div className="mt-1.5 whitespace-pre-wrap break-words text-[10px] leading-relaxed text-muted-foreground/80">
+                  {desc}
+                </div>
+              )}
+              <div className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[10px] text-muted-foreground/70">
+                {sName} <span className="text-muted-foreground/40">→</span> {tName}
+              </div>
+            </div>
+          </div>
         </EdgeLabelRenderer>
       )}
     </>
@@ -409,18 +618,56 @@ const EDGE_DEFAULTS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(255,255,255,0.3)", width: 16, height: 16 },
 };
 
-/* ── Seed graph — a single Start node on a blank canvas ──────────────── */
+/* ── Seed graph — a sample voice-agent flow with room for loops ───────────
+   Forward path is wired; three natural BACKWARD spots are left for you to draw
+   (see the note in chat). Backward = target sits left of its source. */
 
 const SEED_NODES: Node<NodeData>[] = [
   {
     id: "start",
     type: "llm",
-    position: { x: 80, y: 220 },
-    data: { name: "Start", config: { startType: "LLM" }, exits: [""] },
+    position: { x: 40, y: 280 },
+    data: { name: "Greeting", desc: "Greets the caller and asks how to help.", config: { startType: "LLM" }, exits: ["ready"] },
+  },
+  {
+    id: "intent",
+    type: "logic",
+    position: { x: 360, y: 260 },
+    data: { name: "Detect intent", desc: "Routes the call by what the caller wants.", exits: ["Booking", "Support", "Unclear"] },
+  },
+  {
+    id: "booking",
+    type: "llm",
+    position: { x: 720, y: 120 },
+    data: { name: "Booking", desc: "Collects date, time and details.", exits: ["confirmed"] },
+  },
+  {
+    id: "create",
+    type: "endpoint",
+    position: { x: 1060, y: 120 },
+    data: { name: "Create appointment", desc: "Calls the scheduling API.", exits: ["done"] },
+  },
+  {
+    id: "support",
+    type: "fixed",
+    position: { x: 720, y: 300 },
+    data: { name: "Support message", desc: "Plays support hours and options.", exits: ["next"] },
+  },
+  {
+    id: "reprompt",
+    type: "fixed",
+    position: { x: 720, y: 470 },
+    data: { name: "Reprompt", desc: "Asks the caller to rephrase.", exits: ["retry"] },
   },
 ];
 
-const SEED_EDGES: Edge[] = [];
+const SEED_EDGES: Edge[] = [
+  { id: "e1", source: "start", sourceHandle: "t-0", target: "intent", ...EDGE_DEFAULTS },
+  { id: "e2", source: "intent", sourceHandle: "t-0", target: "booking", ...EDGE_DEFAULTS },
+  { id: "e3", source: "intent", sourceHandle: "t-1", target: "support", ...EDGE_DEFAULTS },
+  { id: "e4", source: "intent", sourceHandle: "t-2", target: "reprompt", ...EDGE_DEFAULTS },
+  { id: "e5", source: "booking", sourceHandle: "t-0", target: "create", ...EDGE_DEFAULTS },
+];
 
 let idSeq = 100;
 
@@ -434,6 +681,17 @@ function targetFor(edges: Edge[], nodeId: string, handle?: string) {
       (e) => e.source === nodeId && (handle ? e.sourceHandle === handle : true),
     )?.target ?? ""
   );
+}
+
+// Resolve each string branch to its wired target id (or unwired sentinel = key);
+// recurse into nested conditions.
+function resolveCondition(c: Condition, nodeId: string, edges: Edge[]): Condition {
+  const branch = (b: "yes" | "no"): string | Condition => {
+    const v = c[b];
+    if (typeof v !== "string") return resolveCondition(v, nodeId, edges);
+    return targetFor(edges, nodeId, `${c.key}#${b}`) || c.key;
+  };
+  return { ...c, yes: branch("yes"), no: branch("no") };
 }
 
 function serialize(nodes: Node<NodeData>[], edges: Edge[]) {
@@ -468,20 +726,15 @@ function serialize(nodes: Node<NodeData>[], edges: Edge[]) {
         outputs: (cfg.responseVars as unknown[]) ?? [],
       };
     } else if (type === "logic") {
-      const key = `condition_${n.id}`;
+      // String transitions: each condition is a plain-language string.
       data = {
         name: d.name,
         type: "logic",
-        condition: {
-          property: s("variable"),
-          operator: s("op", "=="),
-          value: s("value"),
-          type: "string",
-          yes: targetFor(edges, n.id, "t-0") || key,
-          no: targetFor(edges, n.id, "t-1") || key,
-          output: "",
-          key,
-        },
+        conditions: exits.map((label, i) => ({
+          key: `t-${i}`,
+          condition: label,
+          id: targetFor(edges, n.id, `t-${i}`),
+        })),
       };
     } else {
       // llm
@@ -519,14 +772,107 @@ function Canvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState(SEED_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState(SEED_EDGES);
   const [menu, setMenu] = React.useState<Menu>(null);
-  // Select-Node picker: null = closed; { fromId } connects the new node.
-  const [picker, setPicker] = React.useState<{ fromId?: string } | null>(null);
+  // Connect-from-node menu: null = closed; { fromId, fromHandle, at } picks + connects.
+  const [picker, setPicker] = React.useState<{ fromId?: string; fromHandle?: string | null; at?: { x: number; y: number } } | null>(null);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
-  const connectingFrom = React.useRef<string | null>(null);
+  const [showLoops, setShowLoops] = React.useState(false);
+  const connectingFrom = React.useRef<{ nodeId: string; handleId: string | null } | null>(null);
   const wrap = React.useRef<HTMLDivElement>(null);
+  const { fitView } = useReactFlow();
 
   const selected = nodes.find((n) => n.id === selectedId) ?? null;
+
+  // Tidy up — Sugiyama-style layered layout so every path reads clearly with no
+  // overlaps: (1) drop backward edges so the rest is a DAG, (2) longest-path
+  // layering into columns, (3) barycenter ordering within columns to minimise
+  // edge crossings, (4) wide, centered spacing.
+  const tidyUp = React.useCallback(() => {
+    const COL = 460, ROW = 260, X0 = 80, Y0 = 120;
+    const ids = nodes.map((n) => n.id);
+    const succ = new Map<string, string[]>(ids.map((id) => [id, []]));
+    const pred = new Map<string, string[]>(ids.map((id) => [id, []]));
+    edges.forEach((e) => {
+      if (succ.has(e.source) && succ.has(e.target)) {
+        succ.get(e.source)!.push(e.target);
+        pred.get(e.target)!.push(e.source);
+      }
+    });
+
+    // (1) Classify back edges via DFS (edge into a node on the recursion stack).
+    const roots = ids.includes("start") ? ["start"] : ids.slice(0, 1);
+    const state = new Map<string, number>(); // 0 seen-in-stack, 1 done
+    const back = new Set<string>();
+    const dfs = (u: string) => {
+      state.set(u, 0);
+      for (const v of succ.get(u) ?? []) {
+        const st = state.get(v);
+        if (st === 0) back.add(`${u} ${v}`);
+        else if (st === undefined) dfs(v);
+      }
+      state.set(u, 1);
+    };
+    roots.forEach((r) => state.get(r) === undefined && dfs(r));
+    ids.forEach((id) => state.get(id) === undefined && dfs(id));
+    const dagEdges = edges.filter(
+      (e) => succ.has(e.source) && succ.has(e.target) && !back.has(`${e.source} ${e.target}`),
+    );
+
+    // (2) Longest-path layering over the DAG.
+    const layer = new Map<string, number>(ids.map((id) => [id, 0]));
+    for (let i = 0; i < ids.length; i++) {
+      let changed = false;
+      for (const e of dagEdges) {
+        const nl = layer.get(e.source)! + 1;
+        if (nl > layer.get(e.target)!) { layer.set(e.target, nl); changed = true; }
+      }
+      if (!changed) break;
+    }
+
+    // (3) Order within each layer by barycenter of neighbours (a few sweeps).
+    const cols: string[][] = [];
+    ids.forEach((id) => (cols[layer.get(id)!] ??= []).push(id));
+    const dagPred = new Map<string, string[]>(ids.map((id) => [id, []]));
+    const dagSucc = new Map<string, string[]>(ids.map((id) => [id, []]));
+    dagEdges.forEach((e) => { dagSucc.get(e.source)!.push(e.target); dagPred.get(e.target)!.push(e.source); });
+    const order = new Map<string, number>();
+    cols.forEach((col) => col.forEach((id, i) => order.set(id, i)));
+    const bary = (id: string, side: Map<string, string[]>) => {
+      const ns = side.get(id) ?? [];
+      if (!ns.length) return order.get(id)!;
+      return ns.reduce((a, n) => a + order.get(n)!, 0) / ns.length;
+    };
+    for (let sweep = 0; sweep < 5; sweep++) {
+      const side = sweep % 2 === 0 ? dagPred : dagSucc;
+      cols.forEach((col) => {
+        col.sort((a, b) => bary(a, side) - bary(b, side));
+        col.forEach((id, i) => order.set(id, i));
+      });
+    }
+
+    // (4) Wide, vertically-centered placement.
+    const tallest = Math.max(1, ...cols.map((c) => c?.length ?? 0));
+    const pos = new Map<string, { x: number; y: number }>();
+    cols.forEach((col, c) => {
+      if (!col) return;
+      const offset = (tallest - col.length) / 2;
+      col.forEach((id, row) => pos.set(id, { x: X0 + c * COL, y: Y0 + (row + offset) * ROW }));
+    });
+
+    setNodes((ns) => ns.map((n) => ({ ...n, position: pos.get(n.id) ?? n.position })));
+    setShowLoops(true); // draw the loop lines so the whole flow is visible
+    setTimeout(() => fitView({ duration: 500, padding: 0.25 }), 60);
+  }, [nodes, edges, setNodes, fitView]);
+
+  // Count backward (loop) edges — target positioned left of its source.
+  const loopCount = React.useMemo(() => {
+    const pos = new Map(nodes.map((n) => [n.id, n.position.x]));
+    return edges.reduce((acc, e) => {
+      const sx = pos.get(e.source);
+      const tx = pos.get(e.target);
+      return acc + (sx != null && tx != null && tx < sx - 4 ? 1 : 0);
+    }, 0);
+  }, [nodes, edges]);
 
   // Collapse the app sidebar while editing a node so canvas + inspector get room.
   const { setCollapsed } = useSidebar();
@@ -546,6 +892,18 @@ function Canvas() {
     },
     [setNodes],
   );
+  const addExit = React.useCallback(
+    (id: string) => {
+      setNodes((ns) =>
+        ns.map((n) => {
+          if (n.id !== id) return n;
+          const d = n.data as NodeData;
+          return { ...n, data: { ...d, exits: [...(d.exits ?? []), ""] } };
+        }),
+      );
+    },
+    [setNodes],
+  );
   const updateConfig = React.useCallback(
     (id: string, key: string, value: unknown) => {
       setNodes((ns) =>
@@ -561,23 +919,43 @@ function Canvas() {
 
   const onConnect = React.useCallback((c: Connection) => {
     connectingFrom.current = null; // a real connection was made
-    setEdges((eds) => addEdge({ ...c, data: { label: "new" }, ...EDGE_DEFAULTS }, eds));
+    setEdges((eds) => {
+      // One outgoing edge per hole: drop any existing edge from this same handle.
+      const pruned = eds.filter(
+        (e) => !(e.source === c.source && e.sourceHandle === c.sourceHandle),
+      );
+      return addEdge({ ...c, data: { label: "new" }, ...EDGE_DEFAULTS }, pruned);
+    });
   }, [setEdges]);
 
-  const spawn = (kind: NodeKind, data: NodeData, at: { x: number; y: number }, from?: string) => {
+  const spawn = (
+    kind: NodeKind,
+    data: NodeData,
+    at: { x: number; y: number },
+    from?: string,
+    fromHandle?: string | null,
+  ) => {
     const id = `${kind}-${idSeq++}`;
     setNodes((ns) => [...ns, { id, type: kind, position: at, data }]);
     if (from) {
       setEdges((es) => [
-        ...es,
-        { id: `e-${id}`, source: from, target: id, data: { label: "new" }, ...EDGE_DEFAULTS },
+        // One edge per hole: drop any existing edge from this handle first.
+        ...es.filter((e) => !(e.source === from && e.sourceHandle === (fromHandle ?? null))),
+        { id: `e-${id}`, source: from, sourceHandle: fromHandle ?? undefined, target: id, data: { label: "new" }, ...EDGE_DEFAULTS },
       ]);
     }
   };
 
-  const openPicker = React.useCallback((fromId?: string) => {
-    setPicker({ fromId });
-  }, []);
+  const openPicker = React.useCallback(
+    (fromId?: string, fromHandle?: string | null, client?: { x: number; y: number }) => {
+      const r = wrap.current?.getBoundingClientRect();
+      const at = client
+        ? { x: client.x - (r?.left ?? 0), y: client.y - (r?.top ?? 0) }
+        : undefined;
+      setPicker({ fromId, fromHandle, at });
+    },
+    [],
+  );
 
   // Place the new node to the right of its source (or center-ish), then connect.
   const pickNode = (kind: NodeKind, data: NodeData) => {
@@ -586,14 +964,14 @@ function Canvas() {
     const at = src
       ? { x: src.position.x + 320, y: src.position.y + (Math.random() * 80 - 40) }
       : { x: 420 + Math.random() * 120, y: 320 + Math.random() * 80 };
-    spawn(kind, { ...data }, at, from);
+    spawn(kind, { ...data }, at, from, picker?.fromHandle);
     setPicker(null);
   };
 
   // Drag off a port and drop on empty canvas → open the picker to add + connect.
   const onConnectStart = React.useCallback(
-    (_: unknown, p: { nodeId: string | null }) => {
-      connectingFrom.current = p.nodeId ?? null;
+    (_: unknown, p: { nodeId: string | null; handleId: string | null }) => {
+      connectingFrom.current = p.nodeId ? { nodeId: p.nodeId, handleId: p.handleId } : null;
     },
     [],
   );
@@ -601,7 +979,9 @@ function Canvas() {
     (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
       const onPane = target?.classList?.contains("react-flow__pane");
-      if (onPane && connectingFrom.current) openPicker(connectingFrom.current);
+      const from = connectingFrom.current;
+      const m = e as MouseEvent;
+      if (onPane && from) openPicker(from.nodeId, from.handleId, { x: m.clientX, y: m.clientY });
       connectingFrom.current = null;
     },
     [openPicker],
@@ -644,7 +1024,9 @@ function Canvas() {
   return (
     <OpenMenu.Provider value={openMenu}>
     <OpenPicker.Provider value={openPicker}>
+    <AddExit.Provider value={addExit}>
     <HoverNode.Provider value={hoveredNode}>
+    <ShowLoops.Provider value={showLoops}>
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-white/[0.04] px-6 py-3">
@@ -679,15 +1061,6 @@ function Canvas() {
 
       {/* Canvas */}
       <div ref={wrap} className="relative min-h-0 flex-1" onClick={() => setMenu(null)}>
-        {/* ambient depth — faint radial vignette behind the graph */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(70% 55% at 50% 42%, rgba(255,255,255,0.03), transparent 70%)",
-          }}
-        />
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -711,23 +1084,49 @@ function Canvas() {
           fitView
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="rgba(255,255,255,0.10)" />
+          <Background variant={BackgroundVariant.Dots} gap={16} size={1.3} color="rgba(255,255,255,0.18)" />
           <Controls
             showInteractive={false}
             className="!rounded-lg !border !border-border !bg-card/80 !shadow-lg backdrop-blur [&_button]:!border-white/[0.06] [&_button]:!bg-transparent [&_button]:!text-foreground [&_button:hover]:!bg-secondary"
           />
         </ReactFlow>
 
-        {/* Add-node button → opens the Select Node picker */}
+        {/* Tidy up — auto-arrange nodes into clean columns with no overlaps */}
         <button
-          onClick={() => openPicker()}
-          className="absolute bottom-6 left-1/2 inline-flex h-10 -translate-x-1/2 items-center gap-2 rounded-xl border border-border bg-card/95 px-4 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-colors hover:bg-secondary/60"
+          onClick={tidyUp}
+          className="absolute left-4 top-4 z-30 inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground"
+          title="Auto-arrange the flow"
         >
-          <Plus size={15} /> Add node
+          <Network size={13} />
+          Tidy up
         </button>
 
-        {picker && (
-          <NodePicker onPick={pickNode} onClose={() => setPicker(null)} />
+        {/* Loop-layer toggle — reveal backward edges as lines (else they show as jump chips) */}
+        {loopCount > 0 && (
+          <button
+            onClick={() => setShowLoops((v) => !v)}
+            className={cn(
+              "absolute right-4 top-4 z-30 inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium shadow-lg backdrop-blur transition-colors",
+              showLoops
+                ? "border-violet-500/50 bg-violet-500/[0.14] text-violet-200"
+                : "border-border bg-card/90 text-muted-foreground hover:text-foreground",
+            )}
+            title="Toggle backward (loop) transitions"
+          >
+            <CornerDownRight size={13} className="rotate-180" />
+            {showLoops ? "Hide loops" : "Show loops"}
+            <span className={cn("rounded px-1 text-[10px]", showLoops ? "bg-violet-500/25" : "bg-white/[0.06]")}>
+              {loopCount}
+            </span>
+          </button>
+        )}
+
+        {/* Persistent typed chip toolbar — the default add-node view */}
+        <NodeToolbar onPick={pickNode} />
+
+        {/* Anchored menu when adding from a node's "+" or a dropped port */}
+        {picker?.at && (
+          <NodeMenu at={picker.at} onPick={pickNode} onClose={() => setPicker(null)} />
         )}
 
         {selected && (
@@ -767,118 +1166,87 @@ function Canvas() {
         )}
       </div>
     </div>
+    </ShowLoops.Provider>
     </HoverNode.Provider>
+    </AddExit.Provider>
     </OpenPicker.Provider>
     </OpenMenu.Provider>
   );
 }
 
-/* ── Node picker (compact command-palette) ───────────────────────────── */
+/* ── Node menu — small popover anchored at a node's "+" to add + connect ── */
 
-function NodePicker({
+function NodeMenu({
+  at,
   onPick,
   onClose,
 }: {
+  at: { x: number; y: number };
   onPick: (kind: NodeKind, data: NodeData) => void;
   onClose: () => void;
 }) {
-  const [q, setQ] = React.useState("");
-  const [active, setActive] = React.useState(0);
-  const query = q.trim().toLowerCase();
-  const items = NODE_TYPES.filter(
-    (it) =>
-      !query ||
-      it.label.toLowerCase().includes(query) ||
-      it.desc.toLowerCase().includes(query),
-  );
-
-  React.useEffect(() => setActive(0), [q]);
-
-  const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActive((a) => Math.min(a + 1, items.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActive((a) => Math.max(a - 1, 0));
-    } else if (e.key === "Enter" && items[active]) {
-      e.preventDefault();
-      onPick(items[active].kind, items[active].data);
-    } else if (e.key === "Escape") {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[16vh] backdrop-blur-[2px]"
-      onClick={onClose}
-    >
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
-        className="w-[380px] overflow-hidden rounded-xl border border-border bg-popover shadow-2xl"
+        className="rf-node-in absolute z-50 w-48 rounded-xl border border-border bg-popover p-1 shadow-2xl"
+        style={{ left: at.x, top: at.y }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* search */}
-        <div className="flex h-11 items-center gap-2.5 border-b border-white/[0.06] px-3.5">
-          <Search size={15} className="shrink-0 text-muted-foreground" />
-          <input
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={onKey}
-            placeholder="Add a node…"
-            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </div>
-
-        {/* single-column list */}
-        <div className="p-1.5">
-          {items.map((it, i) => {
-            const Icon = META[it.kind].icon;
-            const on = i === active;
-            return (
-              <button
-                key={it.kind}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => onPick(it.kind, it.data)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors",
-                  on ? "bg-secondary/70" : "hover:bg-secondary/40",
-                )}
+        {NODE_TYPES.map((it) => {
+          const m = META[it.kind];
+          const Icon = m.icon;
+          return (
+            <button
+              key={it.kind}
+              onClick={() => onPick(it.kind, it.data)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-secondary/60"
+            >
+              <span
+                className="flex size-7 shrink-0 items-center justify-center rounded-md ring-1 ring-inset ring-white/[0.08]"
+                style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] ring-1 ring-inset ring-white/[0.08]">
-                  <Icon size={15} className={META[it.kind].accent} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-foreground">
-                    {it.label}
-                  </span>
-                  <span className="block truncate text-[11px] text-muted-foreground">
-                    {it.desc}
-                  </span>
-                </span>
-                {on && (
-                  <span className="shrink-0 rounded border border-border px-1 text-[10px] text-muted-foreground">
-                    ↵
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          {items.length === 0 && (
-            <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">
-              No matches
-            </div>
-          )}
-        </div>
-
-        {/* footer hint */}
-        <div className="flex items-center gap-3 border-t border-white/[0.06] px-3.5 py-2 text-[10px] text-muted-foreground">
-          <span>↑↓ navigate</span>
-          <span>↵ add</span>
-          <span>esc close</span>
-        </div>
+                <Icon size={13} className={m.accent} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12px] font-medium text-foreground">{it.label}</span>
+                <span className="block truncate text-[10px] text-muted-foreground/70">{it.desc}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
+    </>
+  );
+}
+
+/* ── Node toolbar — persistent typed chip row at the bottom of the canvas ── */
+
+function NodeToolbar({
+  onPick,
+}: {
+  onPick: (kind: NodeKind, data: NodeData) => void;
+}) {
+  return (
+    <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur">
+      <span className="pl-1.5 pr-0.5 text-muted-foreground/70">
+        <Plus size={15} />
+      </span>
+      {NODE_TYPES.map((it) => {
+        const m = META[it.kind];
+        const Icon = m.icon;
+        return (
+          <button
+            key={it.kind}
+            title={it.desc}
+            onClick={() => onPick(it.kind, it.data)}
+            className="flex items-center gap-1.5 rounded-xl border border-transparent px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground"
+          >
+            <Icon size={14} className={m.accent} />
+            {it.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -942,7 +1310,7 @@ function Inspector({
           <InsInput value={node.data.name} onChange={(v) => onData({ name: v })} />
         </InsField>
 
-        {/* Branch editing — LLM & Condition fan out to multiple transitions;
+        {/* LLM & Condition fan out to multiple string transitions;
             Static/Endpoint have a single next (bare port, no editor). */}
         {(kind === "llm" || kind === "logic") && (
           <TransitionsEditor
@@ -1037,17 +1405,6 @@ function Inspector({
               onChange={(v) => onConfig("voiceOverride", v)}
             />
           </>
-        )}
-
-        {/* Condition node — variable / operator / value (nested tree: Phase C) */}
-        {kind === "logic" && (
-          <InsField label="If" hint="Branch when this expression is true.">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <InsInput value={s("variable")} onChange={(v) => onConfig("variable", v)} placeholder="variable" />
-              <InsSelect value={s("op", "==")} onChange={(v) => onConfig("op", v)} options={["==", "!=", ">", "<", "contains"]} />
-              <InsInput value={s("value")} onChange={(v) => onConfig("value", v)} placeholder="value" />
-            </div>
-          </InsField>
         )}
 
         {/* Endpoint node — full API/Code config */}
@@ -1199,6 +1556,78 @@ function InsToggle({
           )}
         />
       </button>
+    </div>
+  );
+}
+
+/** Recursive if/else editor. A string branch is a leaf (wired via a port);
+    "Nested if" replaces it with a sub-condition (its own leaves = more ports). */
+function ConditionEditor({
+  cond,
+  onChange,
+  depth = 0,
+}: {
+  cond: Condition;
+  onChange: (c: Condition) => void;
+  depth?: number;
+}) {
+  const set = (patch: Partial<Condition>) => onChange({ ...cond, ...patch });
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-2.5 rounded-lg border border-border p-3",
+        depth > 0 && "bg-white/[0.02]",
+      )}
+    >
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <InsInput value={cond.property} onChange={(v) => set({ property: v })} placeholder="variable" />
+        <InsSelect
+          value={cond.operator}
+          onChange={(v) => set({ operator: v })}
+          options={["==", "!=", ">", "<", "contains"]}
+        />
+        <InsInput value={cond.value} onChange={(v) => set({ value: v })} placeholder="value" />
+      </div>
+
+      {(["yes", "no"] as const).map((branch) => {
+        const v = cond[branch];
+        const nested = typeof v !== "string";
+        return (
+          <div key={branch} className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {branch === "yes" ? "If true →" : "If false →"}
+              </span>
+              {nested ? (
+                <button
+                  onClick={() => set({ [branch]: cond.key } as Partial<Condition>)}
+                  className="text-[11px] text-muted-foreground transition-colors hover:text-rose-400"
+                >
+                  Remove nested
+                </button>
+              ) : (
+                <button
+                  onClick={() => set({ [branch]: newCondition() } as Partial<Condition>)}
+                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Plus size={11} /> Nested if
+                </button>
+              )}
+            </div>
+            {nested ? (
+              <ConditionEditor
+                cond={v as Condition}
+                onChange={(c) => set({ [branch]: c } as Partial<Condition>)}
+                depth={depth + 1}
+              />
+            ) : (
+              <div className="rounded-lg border border-dashed border-white/10 bg-black/20 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+                Leaf — wire this branch from its port on the node.
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
