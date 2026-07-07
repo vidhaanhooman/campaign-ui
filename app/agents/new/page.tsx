@@ -1275,7 +1275,7 @@ function Inspector({
   const s = (k: string, d = "") => String(cfg[k] ?? d);
 
   return (
-    <div className="absolute inset-y-0 right-0 z-20 flex w-[460px] flex-col border-l border-border bg-popover shadow-2xl">
+    <div className="absolute inset-y-0 right-0 z-20 flex w-1/2 flex-col border-l border-border bg-popover shadow-2xl">
       {/* header */}
       <div className="flex items-start justify-between gap-2 border-b border-white/[0.06] px-5 py-4">
         <div className="min-w-0">
@@ -1445,12 +1445,12 @@ function InsField({
     <div className="flex flex-col gap-1.5">
       <label className="flex items-center gap-1.5 text-xs font-medium text-foreground">
         {label}
-        {required && <span className="text-rose-400">*</span>}
+        {required && <span className="text-amber-400">*</span>}
         {optional && <span className="text-[10px] font-normal text-muted-foreground/60">Optional</span>}
       </label>
       {hint && <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
       {children}
-      {error && <span className="text-[11px] text-rose-400">This field is required.</span>}
+      {error && <span className="text-[11px] text-amber-400">This field is required.</span>}
     </div>
   );
 }
