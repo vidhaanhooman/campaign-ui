@@ -115,10 +115,15 @@ const COLLAPSED_BY_DEFAULT = new Set(["TOOLING", "MONITOR"]);
  * App chrome shared across pages: the HoomanLabs sidebar + a scrollable main
  * content area. `activeNav` highlights the matching sidebar item.
  */
-type SidebarCtx = { collapsed: boolean; toggle: () => void };
+type SidebarCtx = {
+  collapsed: boolean;
+  toggle: () => void;
+  setCollapsed: (v: boolean) => void;
+};
 const SidebarContext = React.createContext<SidebarCtx>({
   collapsed: false,
   toggle: () => {},
+  setCollapsed: () => {},
 });
 
 /** Toggle the sidebar from anywhere inside AppShell. */
@@ -135,7 +140,7 @@ export function AppShell({
 }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const sidebar = React.useMemo<SidebarCtx>(
-    () => ({ collapsed, toggle: () => setCollapsed((c) => !c) }),
+    () => ({ collapsed, toggle: () => setCollapsed((c) => !c), setCollapsed }),
     [collapsed],
   );
   const [openGroups, setOpenGroups] = React.useState<Set<string>>(() => {

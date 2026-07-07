@@ -177,3 +177,20 @@
     color-scheme: dark;
   }
 }
+
+/* ── Agent flow builder polish ─────────────────────────────────────────── */
+@keyframes flowdash {
+  to { stroke-dashoffset: -20; }
+}
+/* Marching-ants flow along a highlighted edge (source → target). */
+.rf-flow-anim {
+  animation: flowdash 0.6s linear infinite;
+}
+
+@keyframes nodein {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.rf-node-in {
+  animation: nodein 180ms ease-out;
+}

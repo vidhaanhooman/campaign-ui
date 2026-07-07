@@ -28,6 +28,7 @@ import {
   useInternalNode,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type InternalNode,
   type Node,
   type Edge,
@@ -39,34 +40,39 @@ import "@xyflow/react/dist/style.css";
 import {
   AlertTriangle,
   Ban,
+  ChevronDown,
   ClipboardPaste,
   Clock,
   Copy,
-  Globe,
+  CornerDownRight,
   ListChecks,
-  MessageCircle,
+  Maximize2,
   MessageSquare,
   MoreVertical,
+  Network,
   Pencil,
   PhoneIncoming,
+  Play,
+  PlugZap,
   Plus,
   Search,
-  Split,
   Sparkles,
   Trash2,
   UserPlus,
+  X,
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppShell } from "@/components/app-shell";
+import { AppShell, useSidebar } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 
 /* ── Node model ──────────────────────────────────────────────────────── */
 
 type NodeKind =
   | "trigger"
+  | "start"
   | "conversation"
   | "preset"
   | "action"
@@ -78,7 +84,16 @@ type NodeKind =
   | "http"
   | "end";
 
-type NodeData = { title: string; desc?: string; invalid?: boolean };
+type NodeData = {
+  title: string;
+  desc?: string;
+  invalid?: boolean;
+  // Branch/transition labels shown on the node face; each is one output port.
+  // Empty → a single bare output port. Undefined on terminal nodes.
+  exits?: string[];
+  // Per-type config (serialized to JSON for the backend to interpret).
+  config?: Record<string, unknown>;
+};
 
 type Meta = {
   category: string;
@@ -93,20 +108,21 @@ type Meta = {
 
 const META: Record<NodeKind, Meta> = {
   trigger: { category: "Trigger", icon: PhoneIncoming, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60", badge: "Trigger", entry: true },
-  conversation: { category: "AI Conversation", icon: MessageSquare, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60" },
-  preset: { category: "Preset Message", icon: MessageCircle, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
+  start: { category: "Start", icon: Play, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60", entry: true },
+  conversation: { category: "LLM", icon: Sparkles, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
+  preset: { category: "Static", icon: MessageSquare, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
   action: { category: "AI Actions", icon: Zap, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
-  condition: { category: "Logic", icon: Split, accent: "text-sky-400", dot: "bg-sky-400", port: "!border-sky-400/60" },
+  condition: { category: "Condition", icon: Network, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
   skill: { category: "Skills", icon: Sparkles, accent: "text-violet-400", dot: "bg-violet-400", port: "!border-violet-400/60" },
   assign: { category: "Assign to Human", icon: UserPlus, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
   businessHour: { category: "Business Hour", icon: Clock, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
   task: { category: "Create Task", icon: ListChecks, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
-  http: { category: "HTTP Request", icon: Globe, accent: "text-amber-400", dot: "bg-amber-400", port: "!border-amber-400/60" },
+  http: { category: "Endpoint", icon: PlugZap, accent: "text-emerald-400", dot: "bg-emerald-400", port: "!border-emerald-400/60" },
   end: { category: "End Conversation", icon: Ban, accent: "text-rose-400", dot: "bg-rose-400", port: "!border-rose-400/60", terminal: true },
 };
 
 const PORT =
-  "!h-2.5 !w-2.5 !rounded-full !border-2 !bg-background transition-colors";
+  "!h-3 !w-3 !rounded-full !border-2 !bg-background transition-all duration-150 hover:!scale-125 hover:!shadow-[0_0_0_4px_rgba(167,139,250,0.18)]";
 
 /** Lets an in-node kebab open the Canvas-level context menu at a point. */
 const OpenMenu = React.createContext<(nodeId: string, x: number, y: number) => void>(
@@ -116,22 +132,28 @@ const OpenMenu = React.createContext<(nodeId: string, x: number, y: number) => v
 /** Lets an in-node "+" open the Select-Node picker, connecting from that node. */
 const OpenPicker = React.createContext<(fromId?: string) => void>(() => {});
 
-/** Clean card: icon + title + description, category footer, node "+" add. */
+/** The node currently hovered — used to highlight its in/out edges. */
+const HoverNode = React.createContext<string | null>(null);
+
+/**
+ * Unified node — one compact card for EVERY type: header (dot + icon + title) →
+ * summary → footer. Branch/transition structure is expressed as OUTPUT PORTS on
+ * the right edge, each with a tiny label (multi-branch nodes) — not an in-node
+ * list. Condition labels also live on the edges; branch editing is in the
+ * inspector. Selecting never resizes the node.
+ */
 function makeNode(kind: NodeKind) {
   const m = META[kind];
   const Icon = m.icon;
   function FlowNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
     const openMenu = React.useContext(OpenMenu);
     const openPicker = React.useContext(OpenPicker);
+    const exits = data.exits ?? [];
+    const multi = exits.length > 1;
+
     return (
       <div className="group relative">
-        {m.badge && (
-          <div className="mb-1.5 inline-flex items-center rounded-md bg-violet-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300">
-            {m.badge}
-          </div>
-        )}
-
-        {/* ambient glow — appears on select (and error), doubles as run cue */}
+        {/* ambient glow — appears on select (and error) */}
         <div
           aria-hidden
           className={cn(
@@ -147,7 +169,8 @@ function makeNode(kind: NodeKind) {
 
         <div
           className={cn(
-            "relative w-[236px] rounded-xl border shadow-lg transition-all duration-200",
+            "rf-node-in relative w-[240px] rounded-xl border shadow-lg transition-all duration-200",
+            "group-hover:-translate-y-[2px] group-hover:shadow-2xl",
             data.invalid
               ? "border-rose-500/40 ring-1 ring-rose-500/25"
               : selected
@@ -156,29 +179,25 @@ function makeNode(kind: NodeKind) {
           )}
           style={{
             backgroundColor: "var(--card)",
-            backgroundImage:
-              "linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0) 42%)",
+            backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0) 42%)",
+            // Give room for stacked output ports on multi-branch nodes.
+            minHeight: multi ? 52 + exits.length * 20 : undefined,
           }}
         >
           {!m.entry && (
             <Handle
               type="target"
               position={Position.Left}
-              className={cn(PORT, "!left-[-6px] !border-white/40")}
+              className={cn(PORT, "!left-[-6px] !border-white/40", multi && "!top-6")}
             />
           )}
 
-          {/* header — colored status dot + icon + title */}
+          {/* header — dot + icon + title + kebab */}
           <div className="flex items-start justify-between gap-2 px-3.5 pt-3">
             <span className="inline-flex min-w-0 items-center gap-2">
-              <span
-                className={cn("size-1.5 shrink-0 rounded-full", m.dot)}
-                aria-hidden
-              />
+              <span className={cn("size-1.5 shrink-0 rounded-full", m.dot)} aria-hidden />
               <Icon size={15} className={cn("shrink-0", m.accent)} />
-              <span className="truncate text-sm font-medium text-foreground">
-                {data.title}
-              </span>
+              <span className="truncate text-sm font-medium text-foreground">{data.title}</span>
             </span>
             <button
               onClick={(e) => {
@@ -203,22 +222,36 @@ function makeNode(kind: NodeKind) {
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
               {m.category}
             </span>
-            {data.invalid && (
-              <AlertTriangle size={13} className="text-amber-400" />
-            )}
+            {data.invalid && <AlertTriangle size={13} className="text-amber-400" />}
           </div>
 
-          {!m.terminal && (
-            <Handle
-              type="source"
-              position={Position.Right}
-              className={cn(PORT, "!right-[-6px]", m.port)}
-            />
-          )}
+          {/* output ports */}
+          {!m.terminal &&
+            (multi ? (
+              exits.map((_, i) => {
+                const top = `${((i + 1) / (exits.length + 1)) * 100}%`;
+                return (
+                  <Handle
+                    key={i}
+                    id={`t-${i}`}
+                    type="source"
+                    position={Position.Right}
+                    style={{ top }}
+                    className={cn(PORT, "!right-[-6px]", m.port)}
+                  />
+                );
+              })
+            ) : (
+              <Handle
+                type="source"
+                position={Position.Right}
+                className={cn(PORT, "!right-[-6px]", m.port)}
+              />
+            ))}
         </div>
 
-        {/* "+" add affordance (right-center) → opens Select Node picker */}
-        {!m.terminal && (
+        {/* "+" add affordance for single-exit nodes */}
+        {!m.terminal && !multi && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -239,6 +272,7 @@ function makeNode(kind: NodeKind) {
 
 const nodeTypes = {
   trigger: makeNode("trigger"),
+  start: makeNode("start"),
   conversation: makeNode("conversation"),
   preset: makeNode("preset"),
   action: makeNode("action"),
@@ -254,10 +288,10 @@ const nodeTypes = {
 /* ── Node types — the 4 we support ───────────────────────────────────── */
 
 const NODE_TYPES: { kind: NodeKind; label: string; desc: string; data: NodeData }[] = [
-  { kind: "conversation", label: "Conversation", desc: "Understand the caller and decide where to go next", data: { title: "New conversation", desc: "Understands the caller and decides where to go next." } },
-  { kind: "action", label: "Action", desc: "Call an API or run an action based on intent", data: { title: "New action", desc: "Execute an action or call an endpoint.", invalid: true } },
-  { kind: "condition", label: "Logic", desc: "Branch the flow on a variable", data: { title: "New condition", desc: "Route on a variable." } },
-  { kind: "end", label: "End", desc: "End the current conversation", data: { title: "End Conversation", desc: "Ends the current conversation." } },
+  { kind: "conversation", label: "LLM", desc: "Understands the caller and decides where to go next", data: { title: "New LLM node", desc: "Understands the caller and decides where to go next." } },
+  { kind: "preset", label: "Static", desc: "Plays a fixed message, then moves on", data: { title: "New static node", desc: "Plays a fixed message, then moves on." } },
+  { kind: "condition", label: "Condition", desc: "Branch the flow on a variable", data: { title: "New condition", desc: "Route on a variable." } },
+  { kind: "http", label: "Endpoint", desc: "Call an external endpoint", data: { title: "New endpoint", desc: "Call an external endpoint.", invalid: true } },
 ];
 
 /* ── Floating edge geometry ──────────────────────────────────────────────
@@ -311,15 +345,20 @@ function edgeParams(source: InternalNode, target: InternalNode) {
 
 /* ── Floating edge with an editable condition label ──────────────────── */
 
-function ConditionEdge({ id, source, target, markerEnd, data }: EdgeProps) {
+function ConditionEdge({
+  id,
+  source,
+  target,
+  sourceHandleId,
+  markerEnd,
+  data,
+}: EdgeProps) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
+  const hovered = React.useContext(HoverNode);
   if (!sourceNode || !targetNode) return null;
 
-  const { sx, sy, tx, ty, sourcePos, targetPos } = edgeParams(
-    sourceNode,
-    targetNode,
-  );
+  const { sx, sy, tx, ty, sourcePos, targetPos } = edgeParams(sourceNode, targetNode);
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX: sx,
     sourceY: sy,
@@ -329,19 +368,43 @@ function ConditionEdge({ id, source, target, markerEnd, data }: EdgeProps) {
     targetPosition: targetPos,
     borderRadius: 12,
   });
-  // A back-edge (target sits left of source) reads as a loop — tint it.
+
+  // A back-edge (target sits left of source) reads as a loop — tint it violet.
   const isBack = tx < sx - 4;
-  const label = (data as { label?: string })?.label;
+
+  // Label = the branch label from the source node's exits (fallback to edge data).
+  const exits = (sourceNode.data as NodeData).exits;
+  const idx = sourceHandleId?.startsWith("t-")
+    ? parseInt(sourceHandleId.slice(2), 10)
+    : null;
+  const label = (idx != null ? exits?.[idx] : undefined) ?? (data as { label?: string })?.label;
+
+  // Hover focus: connected edges light up, the rest dim.
+  const connected = hovered === source || hovered === target;
+  const dim = hovered != null && !connected;
+
+  const stroke = isBack
+    ? connected
+      ? "rgba(167,139,250,0.95)"
+      : "rgba(167,139,250,0.5)"
+    : connected
+      ? "rgba(255,255,255,0.6)"
+      : "rgba(255,255,255,0.18)";
+
   return (
     <>
       <BaseEdge
         id={id}
         path={path}
         markerEnd={markerEnd}
+        className={connected ? "rf-flow-anim" : undefined}
         style={{
-          stroke: isBack ? "rgba(167,139,250,0.5)" : "rgba(255,255,255,0.18)",
-          strokeWidth: 1.5,
+          stroke,
+          strokeWidth: connected ? 2 : 1.5,
           strokeDasharray: "5 5",
+          strokeLinecap: "round",
+          opacity: dim ? 0.25 : 1,
+          transition: "opacity 150ms, stroke 150ms, stroke-width 150ms",
         }}
       />
       {label && (
@@ -352,6 +415,7 @@ function ConditionEdge({ id, source, target, markerEnd, data }: EdgeProps) {
               position: "absolute",
               transform: `translate(-50%,-50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: "all",
+              opacity: dim ? 0.25 : 1,
             }}
             className={cn(
               "nodrag nopan inline-flex items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
@@ -374,28 +438,18 @@ const EDGE_DEFAULTS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(255,255,255,0.3)", width: 16, height: 16 },
 };
 
-/* ── Seed graph (horizontal, real-estate example) ────────────────────── */
+/* ── Seed graph — a single Start node on a blank canvas ──────────────── */
 
 const SEED_NODES: Node<NodeData>[] = [
-  { id: "trigger", type: "trigger", position: { x: 40, y: 260 }, data: { title: "Voice Call", desc: "Triggers when an incoming call is received on your number." } },
-  { id: "conv", type: "conversation", position: { x: 360, y: 240 }, data: { title: "Real Estate Enquiry", desc: "Understands customer queries and extracts key details." } },
-  { id: "end-oos", type: "end", position: { x: 720, y: 40 }, data: { title: "Out Of Scope Close", desc: "Ends the current conversation." } },
-  { id: "end-dnc", type: "end", position: { x: 720, y: 200 }, data: { title: "DNC / Wrong Number", desc: "Ends the current conversation." } },
-  { id: "action", type: "action", position: { x: 720, y: 360 }, data: { title: "AI actions", desc: "Executes actions based on the user's intent.", invalid: true } },
-  { id: "end-followup", type: "end", position: { x: 720, y: 520 }, data: { title: "Followup Arranged", desc: "Ends the current conversation." } },
-  { id: "skill", type: "skill", position: { x: 1060, y: 360 }, data: { title: "Skills", desc: "Applies AI to analyze and generate insights.", invalid: true } },
+  {
+    id: "start",
+    type: "start",
+    position: { x: 80, y: 220 },
+    data: { title: "Start", config: { startType: "LLM" }, exits: [""] },
+  },
 ];
 
-const SEED_EDGES: Edge[] = [
-  { id: "e0", source: "trigger", target: "conv", ...EDGE_DEFAULTS },
-  { id: "e1", source: "conv", target: "end-oos", data: { label: "Out Of Scope" }, ...EDGE_DEFAULTS },
-  { id: "e2", source: "conv", target: "end-dnc", data: { label: "Hostile / DNC / Wrong Number" }, ...EDGE_DEFAULTS },
-  { id: "e3", source: "conv", target: "action", data: { label: "Enquiry Complete Followup" }, ...EDGE_DEFAULTS },
-  { id: "e4", source: "conv", target: "end-followup", data: { label: "Caller Declines Followup" }, ...EDGE_DEFAULTS },
-  { id: "e5", source: "action", target: "skill", data: { label: "Action executed" }, ...EDGE_DEFAULTS },
-  // Backward/loop transition — flow returns to the conversation node.
-  { id: "e6", source: "action", target: "conv", data: { label: "Needs clarification" }, ...EDGE_DEFAULTS },
-];
+const SEED_EDGES: Edge[] = [];
 
 let idSeq = 100;
 
@@ -410,8 +464,43 @@ function Canvas() {
   const [menu, setMenu] = React.useState<Menu>(null);
   // Select-Node picker: null = closed; { fromId } connects the new node.
   const [picker, setPicker] = React.useState<{ fromId?: string } | null>(null);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
   const connectingFrom = React.useRef<string | null>(null);
   const wrap = React.useRef<HTMLDivElement>(null);
+
+  const selected = nodes.find((n) => n.id === selectedId) ?? null;
+
+  // Collapse the app sidebar while editing a node so canvas + inspector get room.
+  const { setCollapsed } = useSidebar();
+  React.useEffect(() => {
+    setCollapsed(selectedId != null);
+    return () => setCollapsed(false);
+  }, [selectedId, setCollapsed]);
+
+  // Merge a patch into a node's data (title/desc/invalid or nested config).
+  const updateData = React.useCallback(
+    (id: string, patch: Partial<NodeData>) => {
+      setNodes((ns) =>
+        ns.map((n) =>
+          n.id === id ? { ...n, data: { ...(n.data as NodeData), ...patch } } : n,
+        ),
+      );
+    },
+    [setNodes],
+  );
+  const updateConfig = React.useCallback(
+    (id: string, key: string, value: unknown) => {
+      setNodes((ns) =>
+        ns.map((n) => {
+          if (n.id !== id) return n;
+          const d = n.data as NodeData;
+          return { ...n, data: { ...d, config: { ...(d.config ?? {}), [key]: value } } };
+        }),
+      );
+    },
+    [setNodes],
+  );
 
   const onConnect = React.useCallback((c: Connection) => {
     connectingFrom.current = null; // a real connection was made
@@ -497,6 +586,7 @@ function Canvas() {
   return (
     <OpenMenu.Provider value={openMenu}>
     <OpenPicker.Provider value={openPicker}>
+    <HoverNode.Provider value={hoveredNode}>
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-white/[0.04] px-6 py-3">
@@ -531,15 +621,33 @@ function Canvas() {
 
       {/* Canvas */}
       <div ref={wrap} className="relative min-h-0 flex-1" onClick={() => setMenu(null)}>
+        {/* ambient depth — faint radial vignette behind the graph */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(70% 55% at 50% 42%, rgba(255,255,255,0.03), transparent 70%)",
+          }}
+        />
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          connectionLineStyle={{
+            stroke: "rgba(167,139,250,0.6)",
+            strokeWidth: 2,
+            strokeDasharray: "5 5",
+          }}
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
           onNodeContextMenu={onNodeContextMenu}
+          onNodeClick={(_, n) => setSelectedId(n.id)}
+          onNodeMouseEnter={(_, n) => setHoveredNode(n.id)}
+          onNodeMouseLeave={() => setHoveredNode(null)}
+          onPaneClick={() => setSelectedId(null)}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
@@ -548,7 +656,7 @@ function Canvas() {
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="rgba(255,255,255,0.10)" />
           <Controls
             showInteractive={false}
-            className="!rounded-lg !border !border-border !bg-card [&_button]:!border-white/[0.06] [&_button]:!bg-card [&_button]:!text-foreground [&_button:hover]:!bg-secondary"
+            className="!rounded-lg !border !border-border !bg-card/80 !shadow-lg backdrop-blur [&_button]:!border-white/[0.06] [&_button]:!bg-transparent [&_button]:!text-foreground [&_button:hover]:!bg-secondary"
           />
         </ReactFlow>
 
@@ -562,6 +670,20 @@ function Canvas() {
 
         {picker && (
           <NodePicker onPick={pickNode} onClose={() => setPicker(null)} />
+        )}
+
+        {selected && (
+          <Inspector
+            key={selected.id}
+            node={selected as Node<NodeData>}
+            onData={(patch) => updateData(selected.id, patch)}
+            onConfig={(k, v) => updateConfig(selected.id, k, v)}
+            onDelete={() => {
+              del(selected.id);
+              setSelectedId(null);
+            }}
+            onClose={() => setSelectedId(null)}
+          />
         )}
 
         {/* Right-click context menu */}
@@ -587,6 +709,7 @@ function Canvas() {
         )}
       </div>
     </div>
+    </HoverNode.Provider>
     </OpenPicker.Provider>
     </OpenMenu.Provider>
   );
@@ -699,6 +822,718 @@ function NodePicker({
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inspector (right drawer, per-type config) ───────────────────────── */
+
+function Inspector({
+  node,
+  onData,
+  onConfig,
+  onDelete,
+  onClose,
+}: {
+  node: Node<NodeData>;
+  onData: (patch: Partial<NodeData>) => void;
+  onConfig: (key: string, value: unknown) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const kind = node.type as NodeKind;
+  const m = META[kind];
+  const cfg = node.data.config ?? {};
+  const s = (k: string, d = "") => String(cfg[k] ?? d);
+
+  return (
+    <div className="absolute inset-y-0 right-0 z-20 flex w-[460px] flex-col border-l border-border bg-popover shadow-2xl">
+      {/* header */}
+      <div className="flex items-start justify-between gap-2 border-b border-white/[0.06] px-5 py-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <m.icon size={15} className={m.accent} />
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
+              {m.category}
+            </span>
+          </div>
+          <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground/70">
+            id: {node.id}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={onDelete}
+            aria-label="Delete node"
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-rose-400"
+          >
+            <Trash2 size={14} />
+          </button>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* body */}
+      <div className="scroll-thin flex-1 space-y-5 overflow-y-auto px-5 py-5">
+        <InsField label="Name" hint="A unique label to identify this node in the flow.">
+          <InsInput value={node.data.title} onChange={(v) => onData({ title: v })} />
+        </InsField>
+
+        {/* Branch editing lives here — each transition = one output port. */}
+        {kind !== "end" && kind !== "trigger" && (
+          <TransitionsEditor
+            exits={node.data.exits ?? []}
+            onChange={(next) => onData({ exits: next })}
+          />
+        )}
+
+        {/* Start node — how it routes (LLM vs Condition) */}
+        {kind === "start" && (
+          <InsField label="Type" hint="How this start node decides which transition to take.">
+            <InsSelect
+              value={s("startType", "LLM")}
+              onChange={(v) => onConfig("startType", v)}
+              options={["LLM", "Condition"]}
+            />
+          </InsField>
+        )}
+
+        {/* LLM node — prompt, tools, LLM/Voice overrides */}
+        {kind === "conversation" && (
+          <>
+            <div className="relative">
+              <InsTextarea
+                value={s("prompt")}
+                onChange={(v) => onConfig("prompt", v)}
+                placeholder="Type your prompt here… use ${ to insert a variable."
+                tall
+              />
+              <button
+                onClick={() => toast("Expand editor")}
+                aria-label="Expand"
+                className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Maximize2 size={13} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-foreground">Tools</label>
+                <button
+                  onClick={() => toast("Create new tool")}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-[11px] font-medium text-foreground transition-colors hover:bg-secondary/60"
+                >
+                  <Plus size={12} /> Create new tool
+                </button>
+              </div>
+              <p className="-mt-0.5 text-[11px] text-muted-foreground">
+                Additional tools available to the agent at this step.
+              </p>
+              <InsSelect
+                value={s("tools", "None")}
+                onChange={(v) => onConfig("tools", v)}
+                options={["None", "get_availability", "book_appointment", "transfer_to_human"]}
+              />
+            </div>
+
+            <InsToggle
+              label="LLM"
+              hint="Override the agent's LLM settings for this step."
+              checked={Boolean(cfg.llmOverride)}
+              onChange={(v) => onConfig("llmOverride", v)}
+            />
+            <InsToggle
+              label="Voice"
+              hint="Override the agent's voice settings for this step."
+              checked={Boolean(cfg.voiceOverride)}
+              onChange={(v) => onConfig("voiceOverride", v)}
+            />
+          </>
+        )}
+
+        {/* Static node — fixed message that plays then moves on */}
+        {kind === "preset" && (
+          <>
+            <InsField
+              label="Message"
+              hint="Agent plays this message and immediately moves to the next node."
+            >
+              <InsTextarea
+                value={s("message")}
+                onChange={(v) => onConfig("message", v)}
+                placeholder="Hello, how are you?"
+              />
+            </InsField>
+            <TransitionBackToStart value={s("backToStart", "false")} onChange={(v) => onConfig("backToStart", v)} />
+            <InsToggle
+              label="Voice"
+              hint="Override the agent's voice settings for this step."
+              checked={Boolean(cfg.voiceOverride)}
+              onChange={(v) => onConfig("voiceOverride", v)}
+            />
+          </>
+        )}
+
+        {kind === "http" && <EndpointBody cfg={cfg} onConfig={onConfig} />}
+
+        {kind === "action" && (
+          <>
+            <div className="grid grid-cols-[100px_1fr] gap-2">
+              <InsField label="Method">
+                <InsSelect
+                  value={s("method", "POST")}
+                  onChange={(v) => onConfig("method", v)}
+                  options={["GET", "POST", "PUT", "PATCH", "DELETE"]}
+                />
+              </InsField>
+              <InsField label="URL" required error={!s("url")}>
+                <InsInput
+                  value={s("url")}
+                  onChange={(v) => onConfig("url", v)}
+                  placeholder="https://api.example.com/orders/${orderId}"
+                  mono
+                />
+              </InsField>
+            </div>
+            <TransitionBackToStart value={s("backToStart", "false")} onChange={(v) => onConfig("backToStart", v)} />
+          </>
+        )}
+
+        {kind === "condition" && (
+          <InsField label="If" hint="Branch when this expression is true.">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <InsInput value={s("variable")} onChange={(v) => onConfig("variable", v)} placeholder="variable" />
+              <InsSelect value={s("op", "==")} onChange={(v) => onConfig("op", v)} options={["==", "!=", ">", "<", "contains"]} />
+              <InsInput value={s("value")} onChange={(v) => onConfig("value", v)} placeholder="value" />
+            </div>
+          </InsField>
+        )}
+
+        {kind === "skill" && (
+          <>
+            <InsField label="Skill Type">
+              <InsSelect value={s("skillType", "Generate Image")} onChange={(v) => onConfig("skillType", v)} options={["Generate Image", "Summarize", "Classify", "Transcribe"]} />
+            </InsField>
+            <InsField label="Model Provider">
+              <InsSelect value={s("model", "Dall-e-3")} onChange={(v) => onConfig("model", v)} options={["Dall-e-3", "GPT-4o", "Claude-Sonnet-4.6"]} />
+            </InsField>
+            <InsField label="Instructions" required error={!s("instructions")}>
+              <InsTextarea value={s("instructions")} onChange={(v) => onConfig("instructions", v)} placeholder="ex: Generate a product banner with vibrant colors" />
+            </InsField>
+          </>
+        )}
+
+        {kind === "end" && (
+          <InsField label="Reason" hint="Why the conversation ended (for reporting).">
+            <InsInput value={s("reason")} onChange={(v) => onConfig("reason", v)} placeholder="e.g. Resolved" />
+          </InsField>
+        )}
+
+        {kind === "trigger" && (
+          <p className="rounded-lg border border-border bg-card px-3 py-2.5 text-xs text-muted-foreground">
+            Trigger settings (number binding, greeting) live in{" "}
+            <span className="text-foreground">Voice Configuration</span>.
+          </p>
+        )}
+
+        <InsField label="Description" optional hint="A short internal note.">
+          <InsTextarea value={node.data.desc ?? ""} onChange={(v) => onData({ desc: v })} placeholder="A short internal note about this node." />
+        </InsField>
+      </div>
+    </div>
+  );
+}
+
+/* ── Inspector field primitives ──────────────────────────────────────── */
+
+const INS_INPUT =
+  "w-full rounded-lg border border-border bg-card px-2.5 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40";
+
+function InsField({
+  label,
+  hint,
+  optional,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  optional?: boolean;
+  required?: boolean;
+  error?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+        {label}
+        {required && <span className="text-rose-400">*</span>}
+        {optional && <span className="text-[10px] font-normal text-muted-foreground/60">Optional</span>}
+      </label>
+      {hint && <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
+      {children}
+      {error && <span className="text-[11px] text-rose-400">This field is required.</span>}
+    </div>
+  );
+}
+
+function InsInput({
+  value,
+  onChange,
+  placeholder,
+  mono,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  mono?: boolean;
+}) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(INS_INPUT, "h-9", mono && "font-mono text-xs")}
+    />
+  );
+}
+
+function InsTextarea({
+  value,
+  onChange,
+  placeholder,
+  mono,
+  tall,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  mono?: boolean;
+  tall?: boolean;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(INS_INPUT, "resize-none", tall ? "h-64" : "h-20", mono && "font-mono text-xs")}
+    />
+  );
+}
+
+function InsSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(INS_INPUT, "h-9 cursor-pointer appearance-none pr-8")}
+      >
+        {options.map((o) => (
+          <option key={o} value={o} className="bg-popover">
+            {o}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+    </div>
+  );
+}
+
+function InsToggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-3.5 py-3">
+      <div className="min-w-0">
+        <div className="text-sm text-foreground">{label}</div>
+        <div className="mt-0.5 text-[11px] text-muted-foreground">{hint}</div>
+      </div>
+      <button
+        onClick={() => onChange(!checked)}
+        role="switch"
+        aria-checked={checked}
+        className={cn(
+          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+          checked ? "bg-primary" : "bg-white/15",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 size-4 rounded-full bg-white transition-transform",
+            checked ? "translate-x-4" : "translate-x-0.5",
+          )}
+        />
+      </button>
+    </div>
+  );
+}
+
+function TransitionsEditor({
+  exits,
+  onChange,
+}: {
+  exits: string[];
+  onChange: (next: string[]) => void;
+}) {
+  return (
+    <InsField
+      label="Transitions"
+      hint="Where this node can go next. Each becomes an output port + a labeled edge."
+    >
+      <div className="flex flex-col gap-2">
+        {exits.map((label, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <input
+              value={label}
+              onChange={(e) => {
+                const next = exits.slice();
+                next[i] = e.target.value;
+                onChange(next);
+              }}
+              placeholder="Condition…"
+              className={cn(INS_INPUT, "h-9")}
+            />
+            <button
+              onClick={() => onChange(exits.filter((_, j) => j !== i))}
+              aria-label="Remove transition"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-rose-400"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+        <AddRowButton label="Add transition" onClick={() => onChange([...exits, ""])} />
+      </div>
+    </InsField>
+  );
+}
+
+function TransitionBackToStart({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <InsField
+      label="Transition back to start"
+      hint="After this node, return the conversation to the start node."
+    >
+      <InsSelect value={value} onChange={onChange} options={["false", "true"]} />
+    </InsField>
+  );
+}
+
+/* ── Endpoint (API) inspector body ───────────────────────────────────── */
+
+type KV = { key: string; value: string };
+type RVar = { name: string; path: string };
+
+function EndpointBody({
+  cfg,
+  onConfig,
+}: {
+  cfg: Record<string, unknown>;
+  onConfig: (key: string, value: unknown) => void;
+}) {
+  const [tab, setTab] = React.useState<"api" | "code">("api");
+  const s = (k: string, d = "") => String(cfg[k] ?? d);
+  const headers = (cfg.headers as KV[]) ?? [
+    { key: "Content-Type", value: "application/json" },
+  ];
+  const vars = (cfg.responseVars as RVar[]) ?? [];
+
+  return (
+    <div className="space-y-5">
+      <Segmented
+        full
+        value={tab}
+        onChange={(v) => setTab(v as "api" | "code")}
+        options={[
+          { v: "api", l: "API" },
+          { v: "code", l: "Code" },
+        ]}
+      />
+
+      {tab === "api" ? (
+        <>
+          <SectionCard
+            title="API call"
+            hint="The HTTP request this node makes."
+            action={
+              <Segmented
+                small
+                value={s("apiMode", "form")}
+                onChange={(v) => onConfig("apiMode", v)}
+                options={[
+                  { v: "form", l: "Form" },
+                  { v: "curl", l: "cURL" },
+                ]}
+              />
+            }
+          >
+            <div className="grid grid-cols-[104px_1fr] gap-2">
+              <InsField label="Method">
+                <InsSelect
+                  value={s("method", "POST")}
+                  onChange={(v) => onConfig("method", v)}
+                  options={["GET", "POST", "PUT", "PATCH", "DELETE"]}
+                />
+              </InsField>
+              <InsField label="URL" required error={!s("url")}>
+                <InsInput
+                  mono
+                  value={s("url")}
+                  onChange={(v) => onConfig("url", v)}
+                  placeholder="https://api.example.com/orders/${orderId}"
+                />
+              </InsField>
+            </div>
+
+            <InsField label="Headers">
+              <div className="flex flex-col gap-2">
+                {headers.map((h, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      value={h.key}
+                      onChange={(e) => {
+                        const next = headers.slice();
+                        next[i] = { ...h, key: e.target.value };
+                        onConfig("headers", next);
+                      }}
+                      placeholder="Key"
+                      className={cn(INS_INPUT, "h-9")}
+                    />
+                    <input
+                      value={h.value}
+                      onChange={(e) => {
+                        const next = headers.slice();
+                        next[i] = { ...h, value: e.target.value };
+                        onConfig("headers", next);
+                      }}
+                      placeholder="Value"
+                      className={cn(INS_INPUT, "h-9")}
+                    />
+                    <button
+                      onClick={() => onConfig("headers", headers.filter((_, j) => j !== i))}
+                      aria-label="Remove header"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-rose-400"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                <AddRowButton
+                  label="Add Header"
+                  onClick={() => onConfig("headers", [...headers, { key: "", value: "" }])}
+                />
+              </div>
+            </InsField>
+
+            <InsField label="Body">
+              <InsTextarea mono value={s("body")} onChange={(v) => onConfig("body", v)} placeholder="{}" />
+            </InsField>
+
+            <InsToggle
+              label="Route via static IP"
+              hint="Send this request from a fixed IP: 15.206.64.175"
+              checked={Boolean(cfg.staticIp)}
+              onChange={(v) => onConfig("staticIp", v)}
+            />
+          </SectionCard>
+
+          <SectionCard
+            title="Response variables"
+            hint="Pull values from the API response into named variables the agent can use. Paths are dot-paths (e.g. data.id, items[0].name) — not JSONPath."
+            action={
+              <Segmented
+                small
+                value={s("respMode", "form")}
+                onChange={(v) => onConfig("respMode", v)}
+                options={[
+                  { v: "form", l: "Form" },
+                  { v: "json", l: "JSON" },
+                ]}
+              />
+            }
+          >
+            <div className="flex flex-col gap-2">
+              {vars.map((rv, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={rv.name}
+                    onChange={(e) => {
+                      const next = vars.slice();
+                      next[i] = { ...rv, name: e.target.value };
+                      onConfig("responseVars", next);
+                    }}
+                    placeholder="variable"
+                    className={cn(INS_INPUT, "h-9")}
+                  />
+                  <input
+                    value={rv.path}
+                    onChange={(e) => {
+                      const next = vars.slice();
+                      next[i] = { ...rv, path: e.target.value };
+                      onConfig("responseVars", next);
+                    }}
+                    placeholder="data.id"
+                    className={cn(INS_INPUT, "h-9 font-mono text-xs")}
+                  />
+                  <button
+                    onClick={() => onConfig("responseVars", vars.filter((_, j) => j !== i))}
+                    aria-label="Remove variable"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-rose-400"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+              <AddRowButton
+                label="Add Variable"
+                onClick={() => onConfig("responseVars", [...vars, { name: "", path: "" }])}
+              />
+            </div>
+          </SectionCard>
+        </>
+      ) : (
+        <SectionCard
+          title="Code"
+          hint="JavaScript that runs with the request context as input. Return any value the agent can use."
+        >
+          <InsTextarea
+            tall
+            mono
+            value={s("code")}
+            onChange={(v) => onConfig("code", v)}
+            placeholder="// The request context is available on the input object. return input;"
+          />
+        </SectionCard>
+      )}
+
+      {/* Behavior — shared by both tabs */}
+      <SectionCard title="Behavior" hint="Timeout and response-summary settings.">
+        <InsField label="Timeout (ms)">
+          <input
+            type="number"
+            value={s("timeout", "15000")}
+            onChange={(e) => onConfig("timeout", e.target.value)}
+            className={cn(INS_INPUT, "h-9 tabular-nums")}
+          />
+        </InsField>
+        <InsToggle
+          label="Enable AI summary"
+          hint="A small model turns the raw response into a natural-language summary. Adds latency."
+          checked={Boolean(cfg.aiSummary)}
+          onChange={(v) => onConfig("aiSummary", v)}
+        />
+      </SectionCard>
+
+      <TransitionBackToStart value={s("backToStart", "false")} onChange={(v) => onConfig("backToStart", v)} />
+    </div>
+  );
+}
+
+/** Boxed config section: header (title + hint + optional action) then content. */
+function SectionCard({
+  title,
+  hint,
+  action,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div className="flex items-start justify-between gap-3 bg-white/[0.02] px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">{title}</div>
+          {hint && <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+      <div className="space-y-4 border-t border-white/[0.04] p-4">{children}</div>
+    </div>
+  );
+}
+
+function Segmented({
+  value,
+  onChange,
+  options,
+  full,
+  small,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { v: string; l: string }[];
+  full?: boolean;
+  small?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1",
+        full && "flex w-full",
+        small ? "h-8" : "h-10",
+      )}
+    >
+      {options.map((o) => (
+        <button
+          key={o.v}
+          onClick={() => onChange(o.v)}
+          className={cn(
+            "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+            full && "flex-1",
+            small ? "h-6 px-2.5 text-[11px]" : "h-8 px-3 text-xs",
+            value === o.v
+              ? "bg-secondary text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {o.l}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AddRowButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex h-8 w-fit items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-secondary/60"
+    >
+      <Plus size={13} /> {label}
+    </button>
   );
 }
 

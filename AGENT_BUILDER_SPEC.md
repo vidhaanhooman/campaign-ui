@@ -373,6 +373,65 @@ Status: ⬜ (registry + Select-Node modal + global chrome + tidy-up)
 
 ---
 
+## FUNCTIONAL CONTRACT — from existing `AgentFlow.tsx` (functionality only, no design taken)
+
+Source: `hooman-frontend/app/platform/agents/create/AgentFlow.tsx` (read-only,
+never modified). This is the **data + behavior** the backend expects. Our editor
+should serialize to these shapes for parity; design stays ours (REF-10/11).
+
+### Node types & `data` shapes
+- `llm` — `{ name, systemPrompt, functions[], children[], type:"llm" }`
+- `fixed` (Static) — `{ name, response, child, type:"fixed" }`
+- `logic` (Condition) — `{ name, condition, type:"logic" }`
+- `endpoint` — `{ name, child, type:"endpoint", endpoint:{ address, type:"POST",
+  timeout:15000, headers, body, outputs, conditions[] }, headers[]{key,value}, outputs[] }`
+
+**Start** = the node with **`id:"start"`**; its `type` toggles **`llm` ⇄ `logic`**
+(`flow:changeStartType` drops start's edges + swaps the data shape). Not a
+separate type.
+
+### Link model (differs per type — this is the crux)
+- **fixed / endpoint** → single next: `data.child = targetNodeId` (one output).
+  Connect sets it; edge-delete resets to `""`.
+- **llm** → many transitions: `data.children[]`, each `IChild = { key, id, transfer }`.
+  Output port `sourceHandle === child.key`; connect sets `child.id = target`;
+  delete sets `child.id = ""`.
+  `transfer = { type:"description", description, messages:{ start:{ type:"fixed", message } },
+  parameters[], transitionBackToStart:false }` — i.e. **transitionBackToStart is
+  PER-transition**, plus per-transition message + parameters.
+- **logic** → nested condition tree: `condition = { property, operator:"==", value,
+  type:"string", yes, no, output, key }`. `yes`/`no` = **target id (string) OR a
+  nested Condition** (nested-if). Unwired branch sentinel = the condition's own
+  `key`. Handle ids: **`condId#yes` / `condId#no` / `condId#yes#no…`** (`#`-path).
+  Recursive add/update/clear by path.
+
+### Behaviors
+- **Logic node has NO drawer** — condition edited inline on the node face. All
+  other types open the side **NodeDrawer**.
+- Node ops via `window` CustomEvents: `flow:addChild/editChild/deleteNode/
+  deleteChild/duplicateNode/updateCondition/updateName/changeStartType/
+  addLLMNode/addStaticNode/selectNode`.
+- **Edge delete clears the source's stored ref** (child / children[].id /
+  condition branch) → no dangling links.
+- **Duplicate** deep-copies + regenerates child ids.
+- IDs: `generateFirestoreId()`.
+- `updateNodeInternals` on mount + on node-set change fixes a handle-bounds race
+  that otherwise renders edges "disconnected". (We should replicate this guard.)
+- Add-node toolbar: LLM (blue), Static (violet), Logic (orange), Endpoint (green).
+
+### Save payload
+Whole graph persists as **`agent.fNodes` / `agent.fEdges`** (plain React Flow
+`nodes[]`/`edges[]`) on the MobX agent model → Firestore. Serialize verbatim
+with the per-type `data` shapes above.
+
+### Gaps vs our current build (`app/agents/new`)
+1. Our flat `exits[]` + `sourceHandle t-i` ≠ their per-type model
+   (single `child` / keyed `children[]` / nested `condition`).
+2. **Condition = nested if/else tree**, not a flat list.
+3. **transitionBackToStart is per-transition** (LLM child), not per-node.
+4. Endpoint needs the full `endpoint{…}` + `headers[]` + `outputs[]`.
+5. Start is `id:"start"` toggling `llm`/`logic` — not a distinct `start` type.
+
 ## Node/inspector matrix (from refs)
 
 | Node | On-canvas face | Inspector fields |
