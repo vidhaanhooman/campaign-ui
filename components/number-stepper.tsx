@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,9 @@ export function NumberStepper({
   inputClassName?: string;
 }) {
   const draggingRef = useRef(false);
+  // While the field is focused, hold the raw text so it can be empty / edited
+  // freely (otherwise a forced 0 becomes an un-deletable leading digit).
+  const [draft, setDraft] = useState<string | null>(null);
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
   const startScrub = (e: React.PointerEvent) => {
@@ -60,11 +63,19 @@ export function NumberStepper({
     >
       <input
         type="number"
-        value={Number.isNaN(value) ? "" : value}
+        value={draft ?? (Number.isNaN(value) ? "" : String(value))}
         onChange={(e) => {
           const raw = e.target.value;
-          if (raw === "") return onChange(0);
-          onChange(clamp(Number(raw)));
+          setDraft(raw); // allow empty / intermediate text while typing
+          if (raw === "") return; // don't commit until there's a value
+          const n = Number(raw);
+          if (!Number.isNaN(n)) onChange(clamp(n));
+        }}
+        onBlur={() => {
+          if (draft === "" || (draft != null && Number.isNaN(Number(draft)))) {
+            onChange(clamp(min));
+          }
+          setDraft(null); // fall back to the committed value
         }}
         min={min}
         max={max === Infinity ? undefined : max}

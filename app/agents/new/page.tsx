@@ -426,8 +426,10 @@ function ConditionEdge({
   const targetNode = useInternalNode(target);
   const hovered = React.useContext(HoverNode);
   const showLoops = React.useContext(ShowLoops);
-  const { setCenter, getZoom } = useReactFlow();
+  const { setCenter, getZoom, deleteElements } = useReactFlow();
   if (!sourceNode || !targetNode) return null;
+
+  const removeEdge = () => deleteElements({ edges: [{ id }] });
 
   const focusNode = (n: InternalNode) => {
     const w = n.measured.width ?? 0;
@@ -512,20 +514,32 @@ function ConditionEdge({
           }}
         />
         <EdgeLabelRenderer>
-        {/* source tag → jump to target */}
-        <button
-          className="nodrag nopan absolute inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-[10px] font-medium text-violet-200 shadow-sm transition-colors hover:bg-violet-500/25"
+        {/* source tag → jump to target (delete appears on hover) */}
+        <div
+          className="group nodrag nopan absolute inline-flex items-center gap-1"
           style={{
             transform: `translate(0,-50%) translate(${sx + 8}px,${sy}px)`,
             pointerEvents: "all",
             opacity: dim ? 0.35 : 1,
           }}
-          onClick={() => focusNode(targetNode)}
-          title={`Loops back to ${tName}${label ? ` · ${label}` : ""}`}
         >
-          <CornerDownRight size={10} className="shrink-0 rotate-180" />
-          <span className="max-w-[120px] truncate">to {tName}</span>
-        </button>
+          <button
+            className="inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-[10px] font-medium text-violet-200 shadow-sm transition-colors hover:bg-violet-500/25"
+            onClick={() => focusNode(targetNode)}
+            title={`Loops back to ${tName}${label ? ` · ${label}` : ""}`}
+          >
+            <CornerDownRight size={10} className="shrink-0 rotate-180" />
+            <span className="max-w-[120px] truncate">to {tName}</span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); removeEdge(); }}
+            title="Delete connection"
+            aria-label="Delete connection"
+            className="hidden size-[18px] shrink-0 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/[0.14] text-violet-200 transition-colors hover:border-rose-500/60 hover:text-rose-400 group-hover:inline-flex"
+          >
+            <X size={11} />
+          </button>
+        </div>
 
         {/* target inbound tab → jump back to source */}
         <button
@@ -571,16 +585,26 @@ function ConditionEdge({
               opacity: dim ? 0.25 : 1,
             }}
           >
-            <button
-              onClick={() => toast(`Edit transition: ${label}`)}
-              className={cn(
-                "inline-flex max-w-[160px] items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
-                isBack ? "border-violet-500/40" : "border-border",
-              )}
-            >
-              <span className="truncate">{label}</span>
-              <Pencil size={9} className="shrink-0 text-muted-foreground" />
-            </button>
+            <div className="inline-flex items-center gap-1">
+              <button
+                onClick={() => toast(`Edit transition: ${label}`)}
+                className={cn(
+                  "inline-flex max-w-[160px] items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
+                  isBack ? "border-violet-500/40" : "border-border",
+                )}
+              >
+                <span className="truncate">{label}</span>
+                <Pencil size={9} className="shrink-0 text-muted-foreground" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); removeEdge(); }}
+                title="Delete connection"
+                aria-label="Delete connection"
+                className="hidden size-[18px] shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:border-rose-500/50 hover:text-rose-400 group-hover:inline-flex"
+              >
+                <X size={11} />
+              </button>
+            </div>
 
             {/* Hover details — full transition (condition · tool · description · route) */}
             <div className="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 w-max min-w-[160px] max-w-[260px] -translate-x-1/2 -translate-y-0.5 rounded-lg border border-border bg-popover px-3 py-2 text-left opacity-0 shadow-xl transition-all duration-150 group-hover:-translate-y-0 group-hover:opacity-100">

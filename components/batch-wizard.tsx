@@ -7,6 +7,7 @@ import {
   ClipboardList,
   FileSpreadsheet,
   FlaskConical,
+  Shuffle,
   Megaphone,
   Phone,
   Plus,
@@ -108,6 +109,7 @@ export function BatchWizard({
 
   // pool
   const [pool, setPool] = useState<string[]>([NUMBERS[0]]);
+  const [shufflePool, setShufflePool] = useState(false);
   const [poolQuery, setPoolQuery] = useState("");
   const filteredNumbers = useMemo(() => {
     if (!poolQuery.trim()) return NUMBERS;
@@ -462,6 +464,24 @@ export function BatchWizard({
                     onToggle={togglePool}
                     onClear={() => setPool([])}
                   />
+                  {pool.length > 1 && (
+                    <div className="mt-2 flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                      <Switch
+                        checked={shufflePool}
+                        onCheckedChange={(v) => setShufflePool(Boolean(v))}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <Shuffle size={13} className="text-muted-foreground" />
+                          Shuffle numbers
+                        </div>
+                        <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Randomize the order instead of rotating them in sequence.
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </FieldGroup>
               </div>
             )}
