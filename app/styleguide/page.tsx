@@ -54,12 +54,60 @@ export default function StyleGuidePage() {
           </p>
         </header>
 
+        <Section title="Color tokens — surfaces & roles">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+            {[
+              ["Background", "--background"],
+              ["Foreground", "--foreground"],
+              ["Card", "--card"],
+              ["Card FG", "--card-foreground"],
+              ["Popover", "--popover"],
+              ["Popover FG", "--popover-foreground"],
+              ["Primary", "--primary"],
+              ["Primary FG", "--primary-foreground"],
+              ["Secondary", "--secondary"],
+              ["Secondary FG", "--secondary-foreground"],
+              ["Muted", "--muted"],
+              ["Muted FG", "--muted-foreground"],
+              ["Accent", "--accent"],
+              ["Accent FG", "--accent-foreground"],
+              ["Destructive", "--destructive"],
+              ["Destructive FG", "--destructive-foreground"],
+              ["Border", "--border"],
+              ["Input", "--input"],
+              ["Ring", "--ring"],
+            ].map(([name, v]) => (
+              <Tok key={v} name={name} v={v} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Color tokens — chart & sidebar">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+            {[
+              ["Chart 1", "--chart-1"],
+              ["Chart 2", "--chart-2"],
+              ["Chart 3", "--chart-3"],
+              ["Chart 4", "--chart-4"],
+              ["Chart 5", "--chart-5"],
+              ["Sidebar", "--sidebar"],
+              ["Sidebar FG", "--sidebar-foreground"],
+              ["Sidebar Primary", "--sidebar-primary"],
+              ["Sidebar Accent", "--sidebar-accent"],
+              ["Sidebar Border", "--sidebar-border"],
+              ["Sidebar Ring", "--sidebar-ring"],
+            ].map(([name, v]) => (
+              <Tok key={v} name={name} v={v} />
+            ))}
+          </div>
+        </Section>
+
         <Section title="Semantic layers">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Swatch name="Element fill" cls="bg-card border border-border" note="#333/30 + border-border" />
             <Swatch name="Card" cls="rounded-xl border border-border bg-card" note="rounded-xl" />
             <Swatch name="Dropdown surface" cls={cn("rounded-lg", SURFACE)} note="color-mix #333/30" />
-            <Swatch name="Internal separator" cls="border-t-2 border-white/[0.04] bg-transparent" note="white/[0.04]" />
+            <Swatch name="Internal separator" cls="border-t-2 border-border bg-transparent" note="white/[0.04]" />
           </div>
         </Section>
 
@@ -131,7 +179,7 @@ export default function StyleGuidePage() {
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-white/[0.04]">
+                <tr className="border-b border-border">
                   {["Agent", "Calls", "Transferred", "Rate (%)"].map((h, i) => (
                     <th key={h} className={cn("py-2.5 px-3 text-xs font-medium text-muted-foreground first:pl-5 last:pr-5", i === 0 ? "text-left" : "text-right")}>
                       {h}
@@ -145,7 +193,7 @@ export default function StyleGuidePage() {
                   ["palmonas", 25, 4, 16],
                   ["standard", 24, 4, 17],
                 ].map((r, ri) => (
-                  <tr key={ri} className="border-b border-white/[0.04] last:border-0 transition-colors hover:bg-secondary/40">
+                  <tr key={ri} className="border-b border-border last:border-0 transition-colors hover:bg-secondary/40">
                     {r.map((c, ci) => (
                       <td key={ci} className={cn("py-2.5 px-3 first:pl-5 last:pr-5", ci === 0 ? "text-left text-sm text-muted-foreground" : "text-right font-mono text-sm tabular-nums text-foreground")}>
                         {c}
@@ -162,7 +210,7 @@ export default function StyleGuidePage() {
           <div className="grid gap-4 lg:grid-cols-2">
             {/* A filter/range excludes everything */}
             <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="border-b border-white/[0.04] px-5 py-3 text-sm font-medium text-foreground">
+              <div className="border-b border-border px-5 py-3 text-sm font-medium text-foreground">
                 Agent Wise Data
               </div>
               <EmptyState
@@ -179,7 +227,7 @@ export default function StyleGuidePage() {
             </div>
             {/* Never had data — onboarding */}
             <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="border-b border-white/[0.04] px-5 py-3 text-sm font-medium text-foreground">
+              <div className="border-b border-border px-5 py-3 text-sm font-medium text-foreground">
                 Campaigns
               </div>
               <EmptyState
@@ -263,7 +311,7 @@ export default function StyleGuidePage() {
             <div className="mt-1.5 inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
               <Zap size={9} className="text-amber-400" /> check_calendar
             </div>
-            <div className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[10px] text-muted-foreground/70">
+            <div className="mt-1.5 border-t border-border pt-1.5 text-[10px] text-muted-foreground/70">
               Detect intent <span className="text-muted-foreground/40">→</span> Booking
             </div>
           </div>
@@ -347,7 +395,7 @@ function FlowNodeCard({
   invalid?: boolean;
 }) {
   return (
-    <div className="relative w-[288px] rounded-2xl border border-white/[0.08] bg-card">
+    <div className="relative w-[288px] rounded-2xl border border-border bg-card">
       <span className={cn(PORT, "absolute left-[-6px] top-8")} />
       <span className={cn(PORT, "absolute right-[-6px] top-8")} />
       <div className="flex items-start gap-2.5 px-4 pt-3.5">
@@ -372,6 +420,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </div>
       {children}
     </section>
+  );
+}
+
+function Tok({ name, v }: { name: string; v: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span
+        className="h-8 w-8 shrink-0 rounded-md border border-border"
+        style={{ background: `var(${v})` }}
+      />
+      <div className="min-w-0">
+        <div className="truncate text-xs font-medium text-foreground">{name}</div>
+        <div className="truncate font-mono text-[10px] text-muted-foreground">{v}</div>
+      </div>
+    </div>
   );
 }
 
@@ -417,8 +480,8 @@ function DropdownDemo() {
   const options = ["Agent", "Calling Number", "Calling Hours", "Timezone", "Retries"];
   return (
     <div className={cn("w-72 overflow-hidden rounded-lg p-0", SURFACE)}>
-      <div className="border-b border-white/[0.04] p-2">
-        <div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
+      <div className="border-b border-border p-2">
+        <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-transparent px-2.5">
           <Search size={13} className="text-muted-foreground" />
           <input
             placeholder="Search"

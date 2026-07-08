@@ -190,9 +190,9 @@ export function UpdateCampaignDrawer({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[960px] flex flex-col overflow-hidden border-l border-white/[0.04] p-0 shadow-2xl shadow-black/60"
+        className="!max-w-[960px] flex flex-col overflow-hidden border-l border-border p-0 shadow-2xl shadow-black/60"
       >
-        <DialogHeader className="border-b border-white/[0.04] px-8 py-4">
+        <DialogHeader className="border-b border-border px-8 py-4">
           <DialogTitle className="text-base font-semibold">
             Update {mode === "realtime" ? "Realtime" : "Batch"} Campaign
           </DialogTitle>
@@ -641,7 +641,7 @@ export function UpdateCampaignDrawer({
         {/* Changes diff — only once there is something to show */}
         {isDirty && <ChangesSummary changes={changes} />}
 
-        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-white/[0.04] !bg-transparent px-6 !py-3">
+        <DialogFooter className="!m-0 flex items-center justify-end gap-2 !rounded-none border-t border-border !bg-transparent px-6 !py-3">
           <Button variant="ghost" onClick={() => attemptClose(false)}>
             Cancel
           </Button>
@@ -706,7 +706,7 @@ function ChangesSummary({
   changes: ReturnType<typeof diffCampaign>;
 }) {
   return (
-    <div className="border-t border-white/[0.04] bg-card px-6 py-3">
+    <div className="border-t border-border bg-card px-6 py-3">
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         Changes · {changes.length}
       </span>

@@ -41,11 +41,14 @@ import "@xyflow/react/dist/style.css";
 import {
   AlertTriangle,
   Ban,
+  Check,
   ChevronDown,
+  ChevronRight,
   ClipboardPaste,
   Clock,
   Copy,
   CornerDownRight,
+  RotateCcw,
   ListChecks,
   Maximize2,
   MessageSquare,
@@ -156,6 +159,33 @@ const OpenPicker = React.createContext<(fromId?: string, fromHandle?: string | n
 /** Appends a new (empty) branch/transition — adds an output hole to the node. */
 const AddExit = React.createContext<(nodeId: string) => void>(() => {});
 
+/** Resolved outbound target for a node's handle + jump-to-node — powers the
+ *  labeled transition rows (row = port, target name = click-to-navigate). */
+type RowTarget = { id: string; name: string; loop: boolean };
+type RowSource = { id: string; name: string; condition: string; loop: boolean };
+type RowNavCtx = {
+  targetOf: (nodeId: string, handle: string) => RowTarget | null;
+  inboundOf: (nodeId: string) => RowSource[];
+  jumpTo: (nodeId: string) => void;
+  // Twilio-style: click a branch → open the drawer focused on that rule.
+  editBranch: (nodeId: string, index: number) => void;
+};
+const RowNav = React.createContext<RowNavCtx>({
+  targetOf: () => null,
+  inboundOf: () => [],
+  jumpTo: () => {},
+  editBranch: () => {},
+});
+
+/** Validation — issues surfaced inline on nodes and in the issues panel. */
+type Issue = { nodeId: string; branchIndex?: number; level: "error" | "warn"; message: string };
+type NodeIssue = { level: "error" | "warn" | null; branches: Set<number> };
+const NodeIssues = React.createContext<(nodeId: string) => NodeIssue>(() => ({ level: null, branches: new Set() }));
+
+/** True when a node should recede — a node is selected and this isn't it or a
+ *  direct neighbour. Selection-driven focus (a consequence, not a mode). */
+const FocusDim = React.createContext<(nodeId: string) => boolean>(() => false);
+
 /** The node currently hovered — used to highlight its in/out edges. */
 const HoverNode = React.createContext<string | null>(null);
 
@@ -180,17 +210,27 @@ function makeNode(kind: NodeKind) {
     const updateNodeInternals = useUpdateNodeInternals();
     const isStart = id === "start"; // the entry node — no incoming port
 
-    // Transitions are plain strings — one output port per string (t-i).
-    const ports: string[] = (data.exits ?? []).map((_, i) => `t-${i}`);
-    const multi = ports.length > 1;
+    const rowNav = React.useContext(RowNav);
+    const dimmed = React.useContext(FocusDim)(id);
+    const nodeIssue = React.useContext(NodeIssues)(id);
+    const inbound = rowNav.inboundOf(id);
+    const [inboundOpen, setInboundOpen] = React.useState(false);
+    const showInbound = inboundOpen || selected; // auto-expand while selected
+    // Each transition is a labeled row that IS its output port (t-i). Nodes with
+    // no explicit exits (Static/Endpoint) still get one implicit "Next" row.
+    const exits = data.exits ?? [];
+    const rows: { label: string | null; handle: string }[] = exits.length
+      ? exits.map((label, i) => ({ label, handle: `t-${i}` }))
+      : [{ label: null, handle: "t-0" }];
+    const multi = rows.length > 1;
 
-    // Re-measure handles when the port set changes (else edges mis-draw).
+    // Re-measure handles when the row/port set changes (else edges mis-draw).
     React.useEffect(() => {
       updateNodeInternals(id);
-    }, [id, ports.length, updateNodeInternals]);
+    }, [id, rows.length, updateNodeInternals]);
 
     return (
-      <div className="group relative">
+      <div className={cn("group relative transition-opacity duration-200", dimmed && "opacity-35")}>
         {/* ambient glow — appears on select (and error) */}
         <div
           aria-hidden
@@ -215,30 +255,38 @@ function makeNode(kind: NodeKind) {
         <div
           className={cn(
             "rf-node-in relative w-[288px] rounded-2xl border bg-card transition-colors duration-200",
-            data.invalid
-              ? "border-rose-500/40"
+            nodeIssue.level === "error"
+              ? "border-rose-500/45"
               : selected
                 ? "border-violet-400/50"
-                : "border-white/[0.08] hover:border-white/[0.16]",
+                : nodeIssue.level === "warn"
+                  ? "border-amber-500/35"
+                  : "border-border hover:border-white/[0.16]",
           )}
-          style={{
-            backgroundColor: "var(--card)",
-            minHeight: multi ? 72 + ports.length * 22 : undefined,
-          }}
+          style={{ backgroundColor: "var(--card)" }}
         >
-          {!isStart && (
-            <Handle
-              type="target"
-              position={Position.Left}
-              className={cn(PORT, "!left-[-6px]", multi && "!top-8")}
-            />
-          )}
-
-          {/* header — icon · title · kebab */}
-          <div className="flex items-start gap-2.5 px-4 pt-3.5">
+          {/* header — icon · title/category · kebab (input port on the left) */}
+          <div className="relative flex items-start gap-2.5 px-4 pb-2 pt-3.5">
+            {!isStart && (
+              <Handle
+                type="target"
+                position={Position.Left}
+                className={cn(PORT, "!left-[-6px] !top-[26px]")}
+              />
+            )}
             <Icon size={17} className={cn(m.accent, "mt-px shrink-0")} />
-            <div className="min-w-0 flex-1 truncate text-[15px] font-medium leading-snug text-foreground">
-              {data.name}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[15px] font-medium leading-snug text-foreground">
+                {data.name}
+              </div>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <span className="text-[9px] font-medium uppercase tracking-[0.12em] text-muted-foreground/45">
+                  {m.category}
+                </span>
+                {nodeIssue.level && (
+                  <AlertTriangle size={11} className={nodeIssue.level === "error" ? "text-rose-400" : "text-amber-400"} />
+                )}
+              </div>
             </div>
             <button
               onClick={(e) => {
@@ -252,43 +300,85 @@ function makeNode(kind: NodeKind) {
             </button>
           </div>
 
+          {/* inbound summary — who transitions INTO this node, on what condition.
+              Collapsed by default; auto-expands while the node is selected. */}
+          {!isStart && inbound.length > 0 && (
+            <div className="px-4 pb-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); setInboundOpen((o) => !o); }}
+                className="nodrag inline-flex items-center gap-1 text-[10px] text-muted-foreground/55 transition-colors hover:text-foreground"
+              >
+                <ChevronRight size={10} className={cn("transition-transform", showInbound && "rotate-90")} />
+                {inbound.length} in
+              </button>
+              {showInbound && (
+                <div className="mt-1 flex flex-col gap-0.5 rounded-md border border-white/[0.05] bg-white/[0.02] p-1">
+                  {inbound.map((src, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.stopPropagation(); rowNav.jumpTo(src.id); }}
+                      title={`From ${src.name} · ${src.condition}`}
+                      className="nodrag flex items-center gap-1.5 rounded px-1.5 py-1 text-left text-[10.5px] transition-colors hover:bg-white/[0.05]"
+                    >
+                      {src.loop && <RotateCcw size={9} className="shrink-0 text-violet-300/80" />}
+                      <span className="shrink-0 text-muted-foreground/70">{src.name}</span>
+                      <span className="min-w-0 flex-1 truncate text-muted-foreground/45">{src.condition}</span>
+                      <ChevronRight size={10} className="shrink-0 text-muted-foreground/40" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {data.desc && (
-            <p className="line-clamp-2 px-4 pt-1.5 text-[12.5px] leading-relaxed text-muted-foreground/70">
+            <p className="line-clamp-2 px-4 pb-1 text-[12px] leading-relaxed text-muted-foreground/60">
               {data.desc}
             </p>
           )}
 
-          {/* footer — category · warning */}
-          <div className="flex items-center justify-between px-4 pb-3.5 pt-3">
-            <span className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground/45">
-              {m.category}
-            </span>
-            {data.invalid && <AlertTriangle size={14} className="text-amber-400" />}
-          </div>
-
-          {/* output ports — one per branch (labeled by handle id) */}
-          {multi ? (
-            ports.map((handle, i) => {
-              const top = `${((i + 1) / (ports.length + 1)) * 100}%`;
+          {/* transition rows — each row IS an output port: condition · → target.
+              The target name is a link: clicking it navigates (forward or loop). */}
+          <div className="mt-1 border-t border-white/[0.05] py-1">
+            {rows.map(({ label, handle }, i) => {
+              const tgt = rowNav.targetOf(id, handle);
               return (
-                <Handle
-                  key={handle}
-                  id={handle}
-                  type="source"
-                  position={Position.Right}
-                  style={{ top }}
-                  className={cn(PORT, "!right-[-6px]")}
-                />
+                <div key={handle} className="relative flex h-[30px] items-center gap-2 px-4">
+                  {nodeIssue.branches.has(i) ? (
+                    <AlertTriangle size={11} className="shrink-0 text-amber-400" />
+                  ) : (
+                    <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full opacity-70", m.dot)} />
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); rowNav.editBranch(id, i); }}
+                    title="Edit this branch in the panel"
+                    className="nodrag min-w-0 flex-1 truncate text-left text-[12px] text-foreground/85 transition-colors hover:text-foreground"
+                  >
+                    {label && label.length ? label : "Next"}
+                  </button>
+                  {tgt ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); rowNav.jumpTo(tgt.id); }}
+                      title={`Go to ${tgt.name}`}
+                      className="nodrag inline-flex max-w-[108px] shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground/70 transition-colors hover:text-foreground"
+                    >
+                      {tgt.loop && <RotateCcw size={10} className="shrink-0 text-violet-300/80" />}
+                      <span className="truncate">{tgt.name}</span>
+                      <ChevronRight size={11} className="shrink-0 opacity-60" />
+                    </button>
+                  ) : (
+                    <span className="shrink-0 text-[10px] text-muted-foreground/35">unwired</span>
+                  )}
+                  <Handle
+                    id={handle}
+                    type="source"
+                    position={Position.Right}
+                    className={cn(PORT, "!right-[-6px]")}
+                  />
+                </div>
               );
-            })
-          ) : (
-            <Handle
-              id={ports[0]}
-              type="source"
-              position={Position.Right}
-              className={cn(PORT, "!right-[-6px]")}
-            />
-          )}
+            })}
+          </div>
         </div>
 
         {/* "+" add affordance — connect a new node (single-exit, non-branching nodes) */}
@@ -297,7 +387,7 @@ function makeNode(kind: NodeKind) {
             onClick={(e) => {
               e.stopPropagation();
               const r = e.currentTarget.getBoundingClientRect();
-              openPicker(id, ports[0], { x: r.right + 6, y: r.top });
+              openPicker(id, rows[0].handle, { x: r.right + 6, y: r.top });
             }}
             title="Click to add a new node"
             className="nodrag absolute right-[-30px] top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-0 transition-all hover:border-foreground hover:text-foreground group-hover:opacity-100"
@@ -426,8 +516,14 @@ function ConditionEdge({
   const targetNode = useInternalNode(target);
   const hovered = React.useContext(HoverNode);
   const showLoops = React.useContext(ShowLoops);
+  const rowNav = React.useContext(RowNav);
   const { setCenter, getZoom, deleteElements } = useReactFlow();
   if (!sourceNode || !targetNode) return null;
+
+  const branchIndex = (() => {
+    const h = sourceHandleId ?? "t-0";
+    return h.startsWith("t-") ? parseInt(h.slice(2), 10) : 0;
+  })();
 
   const removeEdge = () => deleteElements({ edges: [{ id }] });
 
@@ -492,8 +588,8 @@ function ConditionEdge({
       ? "rgba(167,139,250,0.95)"
       : "rgba(167,139,250,0.5)"
     : connected
-      ? "rgba(255,255,255,0.6)"
-      : "rgba(255,255,255,0.18)";
+      ? "rgba(255,255,255,0.55)"
+      : "rgba(255,255,255,0.10)";
 
   // B · jump chips — a backward edge collapses to a "↩ to X" tag at the source
   // and a small inbound tab at the target, instead of a long crossing line.
@@ -568,7 +664,7 @@ function ConditionEdge({
         className={connected ? "rf-flow-anim" : undefined}
         style={{
           stroke,
-          strokeWidth: connected ? 2 : 1.5,
+          strokeWidth: connected ? 2 : 1.25,
           strokeDasharray: isBack ? "6 5" : connected ? "5 5" : "none",
           strokeLinecap: "round",
           opacity: dim ? 0.25 : 1,
@@ -587,7 +683,8 @@ function ConditionEdge({
           >
             <div className="inline-flex items-center gap-1">
               <button
-                onClick={() => toast(`Edit transition: ${label}`)}
+                onClick={(e) => { e.stopPropagation(); rowNav.editBranch(source, branchIndex); }}
+                title="Edit this transition in the panel"
                 className={cn(
                   "inline-flex max-w-[160px] items-center gap-1.5 rounded-md border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm transition-colors hover:border-foreground/40",
                   isBack ? "border-violet-500/40" : "border-border",
@@ -625,7 +722,7 @@ function ConditionEdge({
                   {desc}
                 </div>
               )}
-              <div className="mt-1.5 border-t border-white/[0.06] pt-1.5 text-[10px] text-muted-foreground/70">
+              <div className="mt-1.5 border-t border-border pt-1.5 text-[10px] text-muted-foreground/70">
                 {sName} <span className="text-muted-foreground/40">→</span> {tName}
               </div>
             </div>
@@ -643,55 +740,114 @@ const EDGE_DEFAULTS = {
   markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(255,255,255,0.3)", width: 16, height: 16 },
 };
 
-/* ── Seed graph — a sample voice-agent flow with room for loops ───────────
-   Forward path is wired; three natural BACKWARD spots are left for you to draw
-   (see the note in chat). Backward = target sits left of its source. */
+/* ── First arrival — a bare Start node; the user picks a template or starts
+   blank from the start overlay. Templates drop in an editable working flow. */
 
-const SEED_NODES: Node<NodeData>[] = [
+const START_NODE: Node<NodeData> = {
+  id: "start",
+  type: "llm",
+  position: { x: 80, y: 260 },
+  data: { name: "Greeting", desc: "Greets the caller and asks how to help.", config: { startType: "LLM" }, exits: ["ready"] },
+};
+
+const SEED_NODES: Node<NodeData>[] = [START_NODE];
+const SEED_EDGES: Edge[] = [];
+
+const e = (id: string, source: string, sh: string, target: string): Edge => ({
+  id,
+  source,
+  sourceHandle: sh,
+  target,
+  ...EDGE_DEFAULTS,
+});
+
+type Template = {
+  id: string;
+  name: string;
+  desc: string;
+  icon: LucideIcon;
+  build: () => { nodes: Node<NodeData>[]; edges: Edge[] };
+};
+
+const TEMPLATES: Template[] = [
   {
-    id: "start",
-    type: "llm",
-    position: { x: 40, y: 280 },
-    data: { name: "Greeting", desc: "Greets the caller and asks how to help.", config: { startType: "LLM" }, exits: ["ready"] },
-  },
-  {
-    id: "intent",
-    type: "logic",
-    position: { x: 360, y: 260 },
-    data: { name: "Detect intent", desc: "Routes the call by what the caller wants.", exits: ["Booking", "Support", "Unclear"] },
+    id: "support",
+    name: "Support triage",
+    desc: "Greet, detect intent, then route to booking or support.",
+    icon: Network,
+    build: () => ({
+      nodes: [
+        { ...START_NODE, position: { x: 40, y: 280 } },
+        {
+          id: "intent",
+          type: "logic",
+          position: { x: 360, y: 260 },
+          data: {
+            name: "Detect intent",
+            desc: "Routes the call by what the caller wants.",
+            exits: ["intent == booking", "intent == support", "Else"],
+            config: {
+              conditionRules: [
+                { conds: [{ variable: "intent", operator: "==", type: "string", value: "booking" }] },
+                { conds: [{ variable: "intent", operator: "==", type: "string", value: "support" }] },
+              ],
+            },
+          },
+        },
+        { id: "booking", type: "llm", position: { x: 720, y: 120 }, data: { name: "Booking", desc: "Collects date, time and details.", exits: ["confirmed"] } },
+        { id: "create", type: "endpoint", position: { x: 1060, y: 120 }, data: { name: "Create appointment", desc: "Calls the scheduling API.", exits: ["done"] } },
+        { id: "support", type: "fixed", position: { x: 720, y: 300 }, data: { name: "Support message", desc: "Plays support hours and options.", exits: ["next"] } },
+        { id: "reprompt", type: "fixed", position: { x: 720, y: 470 }, data: { name: "Reprompt", desc: "Asks the caller to rephrase.", exits: ["retry"] } },
+      ],
+      edges: [
+        e("e1", "start", "t-0", "intent"),
+        e("e2", "intent", "t-0", "booking"),
+        e("e3", "intent", "t-1", "support"),
+        e("e4", "intent", "t-2", "reprompt"),
+        e("e5", "booking", "t-0", "create"),
+      ],
+    }),
   },
   {
     id: "booking",
-    type: "llm",
-    position: { x: 720, y: 120 },
-    data: { name: "Booking", desc: "Collects date, time and details.", exits: ["confirmed"] },
+    name: "Appointment booking",
+    desc: "Greet, collect details, then create the appointment.",
+    icon: Sparkles,
+    build: () => ({
+      nodes: [
+        { ...START_NODE, position: { x: 80, y: 200 } },
+        { id: "collect", type: "llm", position: { x: 420, y: 200 }, data: { name: "Collect details", desc: "Ask for date, time and name.", exits: ["ready"] } },
+        { id: "create", type: "endpoint", position: { x: 760, y: 200 }, data: { name: "Create appointment", desc: "Calls the scheduling API.", exits: ["done"] } },
+        { id: "confirm", type: "fixed", position: { x: 1100, y: 200 }, data: { name: "Confirm", desc: "Reads back the booking.", exits: ["end"] } },
+      ],
+      edges: [e("e1", "start", "t-0", "collect"), e("e2", "collect", "t-0", "create"), e("e3", "create", "t-0", "confirm")],
+    }),
   },
   {
-    id: "create",
-    type: "endpoint",
-    position: { x: 1060, y: 120 },
-    data: { name: "Create appointment", desc: "Calls the scheduling API.", exits: ["done"] },
+    id: "lead",
+    name: "Lead qualification",
+    desc: "Qualify the caller, then book a demo or nurture.",
+    icon: MessageSquare,
+    build: () => ({
+      nodes: [
+        { ...START_NODE, position: { x: 80, y: 240 } },
+        {
+          id: "qualify",
+          type: "logic",
+          position: { x: 420, y: 220 },
+          data: {
+            name: "Qualified?",
+            desc: "Branch on whether the lead is a fit.",
+            exits: ["budget == yes", "Else"],
+            config: { conditionRules: [{ conds: [{ variable: "budget", operator: "==", type: "string", value: "yes" }] }] },
+          },
+        },
+        { id: "demo", type: "llm", position: { x: 780, y: 120 }, data: { name: "Book a demo", desc: "Schedule a product demo.", exits: ["done"] } },
+        { id: "nurture", type: "fixed", position: { x: 780, y: 320 }, data: { name: "Nurture message", desc: "Send follow-up resources.", exits: ["end"] } },
+      ],
+      edges: [e("e1", "start", "t-0", "qualify"), e("e2", "qualify", "t-0", "demo"), e("e3", "qualify", "t-1", "nurture")],
+    }),
   },
-  {
-    id: "support",
-    type: "fixed",
-    position: { x: 720, y: 300 },
-    data: { name: "Support message", desc: "Plays support hours and options.", exits: ["next"] },
-  },
-  {
-    id: "reprompt",
-    type: "fixed",
-    position: { x: 720, y: 470 },
-    data: { name: "Reprompt", desc: "Asks the caller to rephrase.", exits: ["retry"] },
-  },
-];
-
-const SEED_EDGES: Edge[] = [
-  { id: "e1", source: "start", sourceHandle: "t-0", target: "intent", ...EDGE_DEFAULTS },
-  { id: "e2", source: "intent", sourceHandle: "t-0", target: "booking", ...EDGE_DEFAULTS },
-  { id: "e3", source: "intent", sourceHandle: "t-1", target: "support", ...EDGE_DEFAULTS },
-  { id: "e4", source: "intent", sourceHandle: "t-2", target: "reprompt", ...EDGE_DEFAULTS },
-  { id: "e5", source: "booking", sourceHandle: "t-0", target: "create", ...EDGE_DEFAULTS },
 ];
 
 let idSeq = 100;
@@ -802,18 +958,117 @@ function Canvas() {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
   const [showLoops, setShowLoops] = React.useState(false);
+  const [focusBranch, setFocusBranch] = React.useState<{ nodeId: string; index: number } | null>(null);
+  const [issuesOpen, setIssuesOpen] = React.useState(false);
+  const [startDismissed, setStartDismissed] = React.useState(false);
+  const [agentName, setAgentName] = React.useState("Untitled agent");
+  const [saveState, setSaveState] = React.useState<"saved" | "saving">("saved");
+  const [showTips, setShowTips] = React.useState(false);
   const connectingFrom = React.useRef<{ nodeId: string; handleId: string | null } | null>(null);
   const wrap = React.useRef<HTMLDivElement>(null);
-  const { fitView } = useReactFlow();
+  const { fitView, setCenter, getZoom } = useReactFlow();
 
   const selected = nodes.find((n) => n.id === selectedId) ?? null;
+
+  // Row navigation — resolves a node handle's outbound target (name + loop flag)
+  // and pans to a node. Powers the labeled transition rows on each node.
+  const nodeName = React.useMemo(
+    () => new Map(nodes.map((n) => [n.id, (n.data as NodeData).name])),
+    [nodes],
+  );
+  const nodeX = React.useMemo(() => new Map(nodes.map((n) => [n.id, n.position.x])), [nodes]);
+  const nodeExits = React.useMemo(
+    () => new Map(nodes.map((n) => [n.id, (n.data as NodeData).exits ?? []])),
+    [nodes],
+  );
+  const [history, setHistory] = React.useState<string[]>([]);
+
+  const centerOn = React.useCallback(
+    (nodeId: string) => {
+      const n = nodes.find((x) => x.id === nodeId);
+      if (!n) return;
+      const w = n.measured?.width ?? 288;
+      const h = n.measured?.height ?? 160;
+      setCenter(n.position.x + w / 2, n.position.y + h / 2, { zoom: getZoom(), duration: 450 });
+    },
+    [nodes, setCenter, getZoom],
+  );
+
+  const rowNav = React.useMemo<RowNavCtx>(
+    () => ({
+      targetOf: (nodeId, handle) => {
+        const e = edges.find(
+          (ed) => ed.source === nodeId && (ed.sourceHandle ?? "t-0") === handle,
+        );
+        if (!e) return null;
+        const sx = nodeX.get(nodeId);
+        const tx = nodeX.get(e.target);
+        return {
+          id: e.target,
+          name: nodeName.get(e.target) ?? e.target,
+          loop: sx != null && tx != null && tx < sx - 4,
+        };
+      },
+      inboundOf: (nodeId) => {
+        const tx = nodeX.get(nodeId);
+        return edges
+          .filter((e) => e.target === nodeId)
+          .map((e) => {
+            const handle = e.sourceHandle ?? "t-0";
+            const idx = handle.startsWith("t-") ? parseInt(handle.slice(2), 10) : 0;
+            const exits = nodeExits.get(e.source) ?? [];
+            const sx = nodeX.get(e.source);
+            return {
+              id: e.source,
+              name: nodeName.get(e.source) ?? e.source,
+              condition: exits[idx] && exits[idx].length ? exits[idx] : "Next",
+              loop: sx != null && tx != null && sx > tx + 4,
+            };
+          });
+      },
+      jumpTo: (nodeId) => {
+        centerOn(nodeId);
+        setSelectedId((prev) => {
+          if (prev && prev !== nodeId) setHistory((h) => [...h, prev]);
+          return nodeId;
+        });
+      },
+      editBranch: (nodeId, index) => {
+        setSelectedId(nodeId);
+        setFocusBranch({ nodeId, index });
+      },
+    }),
+    [edges, nodeName, nodeX, nodeExits, centerOn],
+  );
+
+  // Selection-driven focus: dim everything that isn't the selected node or one
+  // of its direct neighbours (no toggle — it's just a consequence of selecting).
+  const focusDim = React.useMemo<(id: string) => boolean>(() => {
+    if (!selectedId) return () => false;
+    const neigh = new Set<string>([selectedId]);
+    edges.forEach((e) => {
+      if (e.source === selectedId) neigh.add(e.target);
+      if (e.target === selectedId) neigh.add(e.source);
+    });
+    return (id) => !neigh.has(id);
+  }, [selectedId, edges]);
+
+  const goBack = React.useCallback(() => {
+    setHistory((h) => {
+      if (!h.length) return h;
+      const prev = h[h.length - 1];
+      centerOn(prev);
+      setSelectedId(prev);
+      return h.slice(0, -1);
+    });
+  }, [centerOn]);
 
   // Tidy up — Sugiyama-style layered layout so every path reads clearly with no
   // overlaps: (1) drop backward edges so the rest is a DAG, (2) longest-path
   // layering into columns, (3) barycenter ordering within columns to minimise
   // edge crossings, (4) wide, centered spacing.
   const tidyUp = React.useCallback(() => {
-    const COL = 460, ROW = 260, X0 = 80, Y0 = 120;
+    const COL = 460, ROW = 340, X0 = 80, Y0 = 120;
     const ids = nodes.map((n) => n.id);
     const succ = new Map<string, string[]>(ids.map((id) => [id, []]));
     const pred = new Map<string, string[]>(ids.map((id) => [id, []]));
@@ -899,6 +1154,56 @@ function Canvas() {
     }, 0);
   }, [nodes, edges]);
 
+  // Validation — unwired branches, empty conditions, unreachable nodes.
+  const validation = React.useMemo(() => {
+    const issues: Issue[] = [];
+    const succ = new Map<string, string[]>(nodes.map((n) => [n.id, []]));
+    edges.forEach((e) => succ.get(e.source)?.push(e.target));
+    // reachability (directed, from Start)
+    const reach = new Set<string>();
+    const stack = nodes.some((n) => n.id === "start") ? ["start"] : [];
+    while (stack.length) {
+      const id = stack.pop()!;
+      if (reach.has(id)) continue;
+      reach.add(id);
+      (succ.get(id) ?? []).forEach((t) => !reach.has(t) && stack.push(t));
+    }
+    const wired = new Set(edges.map((e) => `${e.source}::${e.sourceHandle ?? "t-0"}`));
+    nodes.forEach((n) => {
+      const d = n.data as NodeData;
+      if (n.id !== "start" && !reach.has(n.id)) {
+        issues.push({ nodeId: n.id, level: "error", message: "Unreachable from Start" });
+      }
+      // Endpoints may terminate; other node kinds should route their branches.
+      if (n.type === "endpoint") return;
+      const rows = (d.exits ?? []).length ? (d.exits as string[]) : [""];
+      rows.forEach((label, i) => {
+        const isElse = (label ?? "").trim().toLowerCase() === "else";
+        if (!wired.has(`${n.id}::t-${i}`)) {
+          issues.push({ nodeId: n.id, branchIndex: i, level: "warn", message: `Branch "${label || "(unnamed)"}" has no destination` });
+        } else if (!isElse && !(label ?? "").trim()) {
+          issues.push({ nodeId: n.id, branchIndex: i, level: "warn", message: "Branch has no condition" });
+        }
+      });
+    });
+    const byNode = new Map<string, NodeIssue>();
+    issues.forEach((iss) => {
+      const cur = byNode.get(iss.nodeId) ?? { level: null, branches: new Set<number>() };
+      cur.level = cur.level === "error" || iss.level === "error" ? "error" : "warn";
+      if (iss.branchIndex != null) cur.branches.add(iss.branchIndex);
+      byNode.set(iss.nodeId, cur);
+    });
+    return { issues, byNode };
+  }, [nodes, edges]);
+  const issuesOf = React.useCallback(
+    (nodeId: string) => validation.byNode.get(nodeId) ?? { level: null, branches: new Set<number>() },
+    [validation],
+  );
+  const nodeNameOf = React.useCallback(
+    (nodeId: string) => (nodes.find((n) => n.id === nodeId)?.data as NodeData | undefined)?.name ?? nodeId,
+    [nodes],
+  );
+
   // Collapse the app sidebar the moment the user touches the canvas — they can
   // reopen it manually if needed. Restore it when leaving the builder.
   const { setCollapsed } = useSidebar();
@@ -921,6 +1226,20 @@ function Canvas() {
         ns.map((n) => {
           if (n.id !== id) return n;
           const d = n.data as NodeData;
+          // Condition nodes stay in sync with their rule builder: a new branch is
+          // an Else-If clause, and exits are derived from the clauses (+ Else).
+          if (n.type === "logic") {
+            const clauses = (d.config?.conditionRules as CondClause[]) ?? [{ conds: [emptyRule()] }];
+            const next = [...clauses, { conds: [emptyRule()] }];
+            return {
+              ...n,
+              data: {
+                ...d,
+                config: { ...(d.config ?? {}), conditionRules: next },
+                exits: [...next.map(clauseLabel), "Else"],
+              },
+            };
+          }
           return { ...n, data: { ...d, exits: [...(d.exits ?? []), ""] } };
         }),
       );
@@ -967,6 +1286,7 @@ function Canvas() {
         { id: `e-${id}`, source: from, sourceHandle: fromHandle ?? undefined, target: id, data: { label: "new" }, ...EDGE_DEFAULTS },
       ]);
     }
+    return id;
   };
 
   const openPicker = React.useCallback(
@@ -980,14 +1300,18 @@ function Canvas() {
     [],
   );
 
-  // Place the new node to the right of its source (or center-ish), then connect.
+  // Place the new node to the right of its source (or center-ish), connect it,
+  // give it a smart type-based name, and select it so it's ready to configure.
   const pickNode = (kind: NodeKind, data: NodeData) => {
     const from = picker?.fromId;
     const src = from ? nodes.find((n) => n.id === from) : undefined;
     const at = src
-      ? { x: src.position.x + 320, y: src.position.y + (Math.random() * 80 - 40) }
+      ? { x: src.position.x + 340, y: src.position.y + (Math.random() * 80 - 40) }
       : { x: 420 + Math.random() * 120, y: 320 + Math.random() * 80 };
-    spawn(kind, { ...data }, at, from, picker?.fromHandle);
+    const typeLabel = { llm: "LLM", fixed: "Static", logic: "Condition", endpoint: "Endpoint" }[kind];
+    const count = nodes.filter((n) => n.type === kind).length + 1;
+    const id = spawn(kind, { ...data, name: `${typeLabel} ${count}` }, at, from, picker?.fromHandle);
+    setSelectedId(id);
     setPicker(null);
   };
 
@@ -1031,6 +1355,51 @@ function Canvas() {
     setEdges((es) => es.filter((e) => e.source !== id && e.target !== id));
     setMenu(null);
   };
+  const clearCanvas = () => {
+    setNodes((ns) => ns.filter((n) => n.id === "start").map((n) => ({ ...n, data: { ...(n.data as NodeData), exits: [""] } })));
+    setEdges([]);
+    setSelectedId(null);
+    setFocusBranch(null);
+    setHistory([]);
+    setMenu(null);
+    setIssuesOpen(false);
+    toast("Canvas cleared");
+  };
+  const applyTemplate = (t: Template, goal: string) => {
+    const built = t.build();
+    setNodes(built.nodes);
+    setEdges(built.edges);
+    if (goal.trim()) setAgentName(goal.trim().slice(0, 60));
+    setStartDismissed(true);
+    setSelectedId(null);
+    setFocusBranch(null);
+    setHistory([]);
+  };
+  const startBlank = (goal: string) => {
+    if (goal.trim()) setAgentName(goal.trim().slice(0, 60));
+    setStartDismissed(true);
+  };
+
+  // "Saved" indicator — flip to Saving on any change, settle back to Saved.
+  const firstSave = React.useRef(true);
+  React.useEffect(() => {
+    if (firstSave.current) { firstSave.current = false; return; }
+    setSaveState("saving");
+    const h = setTimeout(() => setSaveState("saved"), 600);
+    return () => clearTimeout(h);
+  }, [nodes, edges]);
+
+  // One-time gesture tips after the user leaves the start overlay.
+  React.useEffect(() => {
+    if (startDismissed && typeof window !== "undefined" && !localStorage.getItem("agentTipsSeen")) {
+      setShowTips(true);
+    }
+  }, [startDismissed]);
+  const dismissTips = () => {
+    setShowTips(false);
+    if (typeof window !== "undefined") localStorage.setItem("agentTipsSeen", "1");
+  };
+
   const duplicate = (id: string) => {
     const n = nodes.find((x) => x.id === id);
     if (!n) return;
@@ -1048,11 +1417,14 @@ function Canvas() {
     <OpenMenu.Provider value={openMenu}>
     <OpenPicker.Provider value={openPicker}>
     <AddExit.Provider value={addExit}>
-    <HoverNode.Provider value={hoveredNode}>
+    <RowNav.Provider value={rowNav}>
+    <FocusDim.Provider value={focusDim}>
+    <NodeIssues.Provider value={issuesOf}>
+    <HoverNode.Provider value={hoveredNode ?? selectedId}>
     <ShowLoops.Provider value={showLoops}>
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/[0.04] px-6 py-3">
+      <header className="flex items-center justify-between border-b border-border px-6 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/landing")}
@@ -1061,9 +1433,13 @@ function Canvas() {
             ← Agents
           </button>
           <span className="h-4 w-px bg-white/[0.08]" />
-          <span className="text-sm font-medium text-foreground">Untitled agent</span>
+          <span className="text-sm font-medium text-foreground">{agentName}</span>
           <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Draft
+            {saveState === "saving" ? (
+              <><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" /> Saving…</>
+            ) : (
+              <><Check size={11} className="text-emerald-400" /> Saved</>
+            )}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -1103,10 +1479,10 @@ function Canvas() {
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
           onNodeContextMenu={onNodeContextMenu}
-          onNodeClick={(_, n) => setSelectedId(n.id)}
+          onNodeClick={(_, n) => { setSelectedId(n.id); setFocusBranch(null); }}
           onNodeMouseEnter={(_, n) => setHoveredNode(n.id)}
           onNodeMouseLeave={() => setHoveredNode(null)}
-          onPaneClick={() => setSelectedId(null)}
+          onPaneClick={() => { setSelectedId(null); setFocusBranch(null); }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
@@ -1115,19 +1491,39 @@ function Canvas() {
           <Background variant={BackgroundVariant.Dots} gap={16} size={1.3} color="rgba(255,255,255,0.18)" />
           <Controls
             showInteractive={false}
-            className="!rounded-lg !border !border-border !bg-card/80 !shadow-lg backdrop-blur [&_button]:!border-white/[0.06] [&_button]:!bg-transparent [&_button]:!text-foreground [&_button:hover]:!bg-secondary"
+            className="!rounded-lg !border !border-border !bg-card/80 !shadow-lg backdrop-blur [&_button]:!border-border [&_button]:!bg-transparent [&_button]:!text-foreground [&_button:hover]:!bg-secondary"
           />
         </ReactFlow>
 
-        {/* Tidy up — auto-arrange nodes into clean columns with no overlaps */}
-        <button
-          onClick={tidyUp}
-          className="absolute left-4 top-4 z-30 inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground"
-          title="Auto-arrange the flow"
-        >
-          <Network size={13} />
-          Tidy up
-        </button>
+        {/* Top-left cluster — back (walk history) + tidy up */}
+        <div className="absolute left-4 top-4 z-30 flex items-center gap-2">
+          {history.length > 0 && (
+            <button
+              onClick={goBack}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground"
+              title="Back to where you jumped from"
+            >
+              <ChevronRight size={13} className="rotate-180" />
+              Back
+            </button>
+          )}
+          <button
+            onClick={tidyUp}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:text-foreground"
+            title="Auto-arrange the flow"
+          >
+            <Network size={13} />
+            Tidy up
+          </button>
+          <button
+            onClick={clearCanvas}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:border-rose-500/50 hover:text-rose-400"
+            title="Remove all nodes except Start"
+          >
+            <Trash2 size={13} />
+            Clear
+          </button>
+        </div>
 
         {/* Loop-layer toggle — reveal backward edges as lines (else they show as jump chips) */}
         {loopCount > 0 && (
@@ -1149,6 +1545,30 @@ function Canvas() {
           </button>
         )}
 
+        {/* First arrival — template picker / start blank */}
+        {!startDismissed && nodes.length <= 1 && edges.length === 0 && (
+          <StartOverlay onPick={applyTemplate} onBlank={startBlank} />
+        )}
+
+        {/* Empty-flow onboarding hint (after dismissing the start overlay) */}
+        {startDismissed && nodes.length <= 1 && edges.length === 0 && (
+          <div className="pointer-events-none absolute bottom-24 left-1/2 z-20 -translate-x-1/2 text-center">
+            <p className="text-sm font-medium text-foreground">Your flow is empty</p>
+            <p className="mt-1 text-xs text-muted-foreground">Add your first step from the bar below to begin.</p>
+            <ChevronDown size={16} className="mx-auto mt-2 animate-bounce text-muted-foreground/60" />
+          </div>
+        )}
+
+        {/* One-time gesture tips */}
+        {showTips && (
+          <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card/95 px-3.5 py-2 text-[11px] text-muted-foreground shadow-lg backdrop-blur">
+            <span>Drag from a dot to connect · click a branch to edit · ⋯ for more</span>
+            <button onClick={dismissTips} aria-label="Dismiss tips" className="text-muted-foreground/70 transition-colors hover:text-foreground">
+              <X size={13} />
+            </button>
+          </div>
+        )}
+
         {/* Persistent typed chip toolbar — hidden while the inspector is open */}
         {!selected && <NodeToolbar onPick={pickNode} />}
 
@@ -1157,10 +1577,12 @@ function Canvas() {
           <NodeMenu at={picker.at} onPick={pickNode} onClose={() => setPicker(null)} />
         )}
 
+
         {selected && (
           <Inspector
             key={selected.id}
             node={selected as Node<NodeData>}
+            focusIndex={focusBranch?.nodeId === selected.id ? focusBranch.index : null}
             onData={(patch) => updateData(selected.id, patch)}
             onConfig={(k, v) => updateConfig(selected.id, k, v)}
             onDelete={() => {
@@ -1196,6 +1618,9 @@ function Canvas() {
     </div>
     </ShowLoops.Provider>
     </HoverNode.Provider>
+    </NodeIssues.Provider>
+    </FocusDim.Provider>
+    </RowNav.Provider>
     </AddExit.Provider>
     </OpenPicker.Provider>
     </OpenMenu.Provider>
@@ -1248,6 +1673,64 @@ function NodeMenu({
   );
 }
 
+/* ── Start overlay — first arrival: goal + template picker / start blank ─── */
+
+function StartOverlay({
+  onPick,
+  onBlank,
+}: {
+  onPick: (t: Template, goal: string) => void;
+  onBlank: (goal: string) => void;
+}) {
+  const [goal, setGoal] = React.useState("");
+  return (
+    <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/70 p-6 backdrop-blur-sm">
+      <div className="rf-node-in w-[600px] max-w-full rounded-2xl border border-border bg-popover p-6 shadow-2xl">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">What should this agent do?</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Start from a template you can edit, or build from scratch.
+        </p>
+        <input
+          value={goal}
+          onChange={(e) => setGoal(e.target.value)}
+          placeholder="e.g. Book appointments for a dental clinic"
+          className="mt-4 h-10 w-full rounded-lg border border-border bg-transparent dark:bg-input/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+        />
+
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          {TEMPLATES.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => onPick(t, goal)}
+                className="flex items-start gap-3 rounded-xl border border-border bg-white/[0.02] p-3 text-left transition-colors hover:border-white/[0.16] hover:bg-white/[0.04]"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-white/[0.08]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+                  <Icon size={15} className="text-violet-300" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium text-foreground">{t.name}</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground/75">{t.desc}</span>
+                </span>
+              </button>
+            );
+          })}
+          <button
+            onClick={() => onBlank(goal)}
+            className="flex items-center gap-3 rounded-xl border border-dashed border-white/[0.12] p-3 text-left transition-colors hover:border-white/[0.24] hover:bg-white/[0.02]"
+          >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-white/[0.08]">
+              <Plus size={15} className="text-muted-foreground" />
+            </span>
+            <span className="text-[13px] font-medium text-foreground">Start from scratch</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Node toolbar — persistent typed chip row at the bottom of the canvas ── */
 
 function NodeToolbar({
@@ -1283,12 +1766,14 @@ function NodeToolbar({
 
 function Inspector({
   node,
+  focusIndex,
   onData,
   onConfig,
   onDelete,
   onClose,
 }: {
   node: Node<NodeData>;
+  focusIndex: number | null;
   onData: (patch: Partial<NodeData>) => void;
   onConfig: (key: string, value: unknown) => void;
   onDelete: () => void;
@@ -1329,7 +1814,7 @@ function Inspector({
         className="absolute inset-y-0 left-[-3px] z-30 w-1.5 cursor-col-resize transition-colors hover:bg-violet-400/40"
       />
       {/* header */}
-      <div className="flex items-start justify-between gap-2 border-b border-white/[0.06] px-5 py-4">
+      <div className="flex items-start justify-between gap-2 border-b border-border px-5 py-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <m.icon size={15} className={m.accent} />
@@ -1369,6 +1854,7 @@ function Inspector({
         {kind === "llm" && (
           <TransitionsEditor
             exits={node.data.exits ?? []}
+            focusIndex={focusIndex}
             onChange={(next) => onData({ exits: next })}
           />
         )}
@@ -1376,7 +1862,8 @@ function Inspector({
         {/* Condition uses a structured rule builder (If / Else if / Else). */}
         {kind === "logic" && (
           <ConditionRules
-            value={(cfg.conditionRules as CondClause[]) ?? [{ conds: [emptyRule()] }]}
+            value={clausesFromNode(node.data.exits ?? [], cfg.conditionRules as CondClause[] | undefined)}
+            focusIndex={focusIndex}
             onChange={(clauses) => {
               onConfig("conditionRules", clauses);
               onData({ exits: [...clauses.map(clauseLabel), "Else"] });
@@ -1486,7 +1973,7 @@ function Inspector({
 /* ── Inspector field primitives ──────────────────────────────────────── */
 
 const INS_INPUT =
-  "w-full rounded-lg border border-border bg-card px-2.5 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40";
+  "w-full rounded-lg border border-border bg-transparent dark:bg-input/30 px-2.5 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40";
 
 function InsField({
   label,
@@ -1600,7 +2087,7 @@ function InsToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-3.5 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-input/30 px-3.5 py-3">
       <div className="min-w-0">
         <div className="text-sm text-foreground">{label}</div>
         <div className="mt-0.5 text-[11px] text-muted-foreground">{hint}</div>
@@ -1692,18 +2179,45 @@ const emptyRule = (): CondRule => ({ variable: "", operator: "==", type: "string
 const clauseLabel = (c: CondClause) =>
   c.conds.map((r) => `${r.variable || "?"} ${r.operator} ${r.value || "?"}`).join(" and ");
 
+/** Parse a flat exit label (e.g. "Order == Yes") back into a rule so the builder
+ *  can reflect branches that were created outside it. */
+function parseExitToRule(label: string): CondRule {
+  const m = label.trim().match(/^(.+?)\s*(==|!=|>=|<=|>|<|contains)\s*(.+)$/);
+  if (m) return { variable: m[1].trim(), operator: m[2], type: "string", value: m[3].trim() };
+  return { variable: label.trim(), operator: "==", type: "string", value: "" };
+}
+
+/** Reconcile a Condition node's clauses with its exits so EVERY branch shows in
+ *  the builder: one clause per branch (all exits except a trailing "Else"),
+ *  reusing stored clause detail where present, parsing the label otherwise. */
+function clausesFromNode(exits: string[], stored?: CondClause[]): CondClause[] {
+  const hasElse = exits.length > 0 && exits[exits.length - 1].trim().toLowerCase() === "else";
+  const branches = hasElse ? exits.slice(0, -1) : exits;
+  if (branches.length === 0) return stored?.length ? stored : [{ conds: [emptyRule()] }];
+  return branches.map((label, i) => stored?.[i] ?? { conds: [parseExitToRule(label)] });
+}
+
 function ConditionRules({
   value,
   onChange,
+  focusIndex,
 }: {
   value: CondClause[];
   onChange: (clauses: CondClause[]) => void;
+  focusIndex?: number | null;
 }) {
   const clauses = value.length ? value : [{ conds: [emptyRule()] }];
   const setClause = (ci: number, next: CondClause) =>
     onChange(clauses.map((c, i) => (i === ci ? next : c)));
   const setRule = (ci: number, ri: number, patch: Partial<CondRule>) =>
     setClause(ci, { conds: clauses[ci].conds.map((r, i) => (i === ri ? { ...r, ...patch } : r)) });
+
+  // Twilio-style: when opened from a branch on the node, scroll to + highlight it.
+  const refs = React.useRef<(HTMLDivElement | null)[]>([]);
+  React.useEffect(() => {
+    if (focusIndex == null) return;
+    refs.current[focusIndex]?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [focusIndex]);
 
   return (
     <InsField
@@ -1712,7 +2226,14 @@ function ConditionRules({
     >
       <div className="flex flex-col gap-3">
         {clauses.map((clause, ci) => (
-          <div key={ci} className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-3">
+          <div
+            key={ci}
+            ref={(el) => { refs.current[ci] = el; }}
+            className={cn(
+              "flex flex-col gap-2.5 rounded-lg border p-3 transition-colors",
+              ci === focusIndex ? "border-violet-400/60 bg-violet-500/[0.06]" : "border-border bg-card",
+            )}
+          >
             <div className="flex items-center gap-3 text-[11px] font-medium">
               <span className="text-foreground">{ci === 0 ? "If" : "Else if"}</span>
               <button
@@ -1769,10 +2290,19 @@ function ConditionRules({
 function TransitionsEditor({
   exits,
   onChange,
+  focusIndex,
 }: {
   exits: string[];
   onChange: (next: string[]) => void;
+  focusIndex?: number | null;
 }) {
+  const refs = React.useRef<(HTMLInputElement | null)[]>([]);
+  React.useEffect(() => {
+    if (focusIndex == null) return;
+    const el = refs.current[focusIndex];
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    el?.focus();
+  }, [focusIndex]);
   return (
     <InsField
       label="Transitions"
@@ -1782,6 +2312,7 @@ function TransitionsEditor({
         {exits.map((label, i) => (
           <div key={i} className="flex items-center gap-2">
             <input
+              ref={(el) => { refs.current[i] = el; }}
               value={label}
               onChange={(e) => {
                 const next = exits.slice();
@@ -1789,7 +2320,7 @@ function TransitionsEditor({
                 onChange(next);
               }}
               placeholder="Condition…"
-              className={cn(INS_INPUT, "h-9")}
+              className={cn(INS_INPUT, "h-9", i === focusIndex && "border-violet-400/60 ring-3 ring-violet-400/20")}
             />
             <button
               onClick={() => onChange(exits.filter((_, j) => j !== i))}
@@ -2035,7 +2566,7 @@ function SectionCard({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-start justify-between gap-3 border-b border-white/[0.04] px-4 py-3">
+      <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
         <div className="min-w-0">
           <div className="text-sm font-medium text-foreground">{title}</div>
           {hint && <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
@@ -2063,7 +2594,7 @@ function Segmented({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1",
+        "inline-flex items-center gap-1 rounded-lg border border-border bg-input/30 p-1",
         full && "flex w-full",
         small ? "h-8" : "h-10",
       )}

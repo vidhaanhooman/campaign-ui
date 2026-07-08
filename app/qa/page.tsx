@@ -12,12 +12,14 @@ import {
   ClipboardCheck,
   FileAudio,
   MoreVertical,
+  Plus,
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell, NotificationsButton } from "@/components/app-shell";
 import { PageHeader } from "@/components/stats/ui";
+import { AddMetricDialog } from "@/components/qa/add-metric-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
@@ -43,16 +45,18 @@ const BATCHES: Batch[] = [
 
 const STATUS: Record<BatchStatus, { label: string; cls: string; dot: string }> = {
   uploaded: { label: "Uploaded", cls: "text-muted-foreground", dot: "bg-muted-foreground/60" },
-  analyzing: { label: "Analyzing", cls: "text-sky-400", dot: "bg-sky-400 motion-safe:animate-pulse" },
-  analyzed: { label: "Analyzed", cls: "text-emerald-400", dot: "bg-emerald-400" },
+  analyzing: { label: "Analyzing", cls: "text-chart-2", dot: "bg-chart-2 motion-safe:animate-pulse" },
+  analyzed: { label: "Analyzed", cls: "text-chart-2", dot: "bg-chart-2" },
 };
 
 export default function QAPage() {
   const [mode, setMode] = React.useState<"data" | "empty">("data");
+  const [addMetric, setAddMetric] = React.useState(false);
   const batches = mode === "data" ? BATCHES : [];
 
   return (
     <AppShell activeNav="QA">
+      <AddMetricDialog open={addMetric} onOpenChange={setAddMetric} />
       <PageHeader
         icon={<ClipboardCheck size={16} />}
         label="QA"
@@ -60,6 +64,12 @@ export default function QAPage() {
         action={
           <div className="flex items-center gap-2">
             <PreviewToggle mode={mode} onChange={setMode} />
+            <button
+              onClick={() => setAddMetric(true)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Plus size={13} /> Add metric
+            </button>
             <a
               href="#"
               className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
@@ -79,7 +89,7 @@ export default function QAPage() {
 
       <div className="mx-auto w-full max-w-5xl px-8 py-8">
         <section className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
             <span className="text-sm font-medium text-foreground">Batches</span>
             <span className="text-xs text-muted-foreground">
               {batches.length} {batches.length === 1 ? "batch" : "batches"}
@@ -103,7 +113,7 @@ export default function QAPage() {
           ) : (
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-white/[0.04] text-left">
+                <tr className="border-b border-border text-left">
                   {["Batch", "Calls", "Status", "Metrics", "Score", ""].map((h, i) => (
                     <th
                       key={h || i}
@@ -135,7 +145,7 @@ function BatchRow({ batch: b }: { batch: Batch }) {
   return (
     <tr
       onClick={() => toast(`Open batch: ${b.name}`)}
-      className="cursor-pointer border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40"
+      className="cursor-pointer border-b border-border transition-colors last:border-0 hover:bg-secondary/40"
     >
       <td className="px-5 py-3.5">
         <div className="font-medium text-foreground">{b.name}</div>
@@ -146,7 +156,7 @@ function BatchRow({ batch: b }: { batch: Batch }) {
       <td className="px-5 py-3.5 text-right">
         <span className="font-mono tabular-nums text-foreground">{b.calls}</span>
         {b.audioMatched < b.calls && (
-          <span className="ml-1.5 text-[11px] text-amber-400">
+          <span className="ml-1.5 text-[11px] text-chart-1">
             {b.calls - b.audioMatched} no audio
           </span>
         )}
@@ -165,11 +175,11 @@ function BatchRow({ batch: b }: { batch: Batch }) {
           <span className="text-muted-foreground">—</span>
         ) : (
           <span className="inline-flex items-center gap-2">
-            <span className="h-1.5 w-14 overflow-hidden rounded-full ring-1 ring-inset ring-white/[0.06]">
+            <span className="h-1.5 w-14 overflow-hidden rounded-full ring-1 ring-inset ring-border">
               <span
                 className={cn(
                   "block h-full rounded-full",
-                  b.score >= 80 ? "bg-emerald-400" : b.score >= 60 ? "bg-amber-400" : "bg-rose-400",
+                  b.score >= 80 ? "bg-chart-2" : b.score >= 60 ? "bg-chart-1" : "bg-destructive",
                 )}
                 style={{ width: `${b.score}%` }}
               />
@@ -204,7 +214,7 @@ function PreviewToggle({
   onChange: (m: "data" | "empty") => void;
 }) {
   return (
-    <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card p-1">
+    <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-input/30 p-1">
       {(
         [
           ["data", "With data"],

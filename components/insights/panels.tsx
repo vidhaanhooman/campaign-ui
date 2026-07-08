@@ -139,7 +139,7 @@ export function TablePanel({
 }) {
   const head = (
     <thead>
-      <tr className="border-b border-white/[0.04]">
+      <tr className="border-b border-border">
         {columns.map((c) => (
           <th
             key={c.key}
@@ -185,7 +185,7 @@ export function TablePanel({
             <tr
               key={i}
               className={cn(
-                "border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40",
+                "border-b border-border transition-colors last:border-0 hover:bg-secondary/40",
                 i === 0 && "[&>td]:pt-3.5",
               )}
             >

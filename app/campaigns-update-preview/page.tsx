@@ -46,7 +46,7 @@ export default function UpdateCampaignPreviewPage() {
           </div>
 
           {/* Batch / Realtime toggle */}
-          <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card p-1">
+          <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-input/30 p-1">
             {(["batch", "realtime"] as const).map((m) => (
               <button
                 key={m}

@@ -322,7 +322,7 @@ function PreviewToggle({
   onChange: (m: "data" | "new") => void;
 }) {
   return (
-    <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card p-1">
+    <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-input/30 p-1">
       {(
         [
           ["data", "With data"],
@@ -420,7 +420,7 @@ function LiveOps() {
               key={c.name}
               className={cn(
                 "flex items-center gap-4 py-3",
-                i < DIALING.length - 1 && "border-b border-white/[0.04]",
+                i < DIALING.length - 1 && "border-b border-border",
               )}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
@@ -496,7 +496,7 @@ function RecentCampaigns() {
               href="/campaigns"
               className={cn(
                 "flex items-center gap-4 px-5 py-3 transition-colors hover:bg-secondary/40",
-                i < RECENT.length - 1 && "border-b border-white/[0.04]",
+                i < RECENT.length - 1 && "border-b border-border",
               )}
             >
               <span
@@ -573,7 +573,7 @@ function AccountStrip() {
 function WorkspaceCard() {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground">
             <Building2 size={15} />
@@ -611,7 +611,7 @@ function WorkspaceCard() {
 function DeveloperCard() {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-foreground">
             <KeyRound size={15} />
@@ -678,7 +678,7 @@ function ApiKeySection() {
     return (
       <div className="flex flex-col">
         <div className="mb-2 text-xs text-muted-foreground">Secret API key</div>
-        <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-white/[0.10] bg-black/25 px-3 py-3">
+        <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-border bg-black/25 px-3 py-3">
           <span className="text-xs text-muted-foreground">
             No API key generated yet.
           </span>
@@ -1066,7 +1066,7 @@ function EmptyHome() {
           ))}
         </div>
 
-        <div className="mt-8 border-t border-white/[0.04] pt-6">
+        <div className="mt-8 border-t border-border pt-6">
           <div className="flex justify-center">
             <button
               onClick={startAgent}
@@ -1143,7 +1143,7 @@ function EmptyHome() {
         </div>
 
         {/* Divider + feature row */}
-        <div className="relative mt-6 border-t border-white/[0.04] pt-5">
+        <div className="relative mt-6 border-t border-border pt-5">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-1.5 text-[11px] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <CreditCard size={12} /> No credit card
@@ -1180,7 +1180,7 @@ function UsagePanel() {
       <BandLabel>Usage</BandLabel>
       <a
         href="/usage"
-        className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-xl border border-border bg-card px-6 py-3.5 transition-colors hover:border-white/15"
+        className="group flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-xl border border-border bg-card px-6 py-3.5 transition-colors hover:border-border"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="truncate text-sm">

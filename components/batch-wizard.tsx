@@ -220,7 +220,7 @@ export function BatchWizard({
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR — title row, then a centered step row below */}
-      <header className="border-b border-white/[0.04]">
+      <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-medium tracking-tight text-foreground">
             Create batch campaign
@@ -254,7 +254,7 @@ export function BatchWizard({
                   <span
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
-                      hasError && "bg-red-400 text-primary-foreground font-medium",
+                      hasError && "bg-destructive text-primary-foreground font-medium",
                       !hasError && active && "bg-primary text-primary-foreground font-medium",
                       !hasError && done && !active && "bg-card text-muted-foreground",
                       !hasError && !active && !done && "bg-card text-muted-foreground",
@@ -292,15 +292,15 @@ export function BatchWizard({
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Q3 win-back outbound"
                     className={cn(
-                      "h-9 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
+                      "h-9 w-full rounded-lg border bg-transparent dark:bg-input/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
                       showErrors && step1Errors.name
-                        ? "border-red-400"
+                        ? "border-destructive"
                         : "border-border",
                     )}
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
-                <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                <div className="flex items-start gap-3 rounded-md border border-border bg-input/30 px-3 py-3">
                   <Switch
                     checked={abOn}
                     onCheckedChange={(v) => {
@@ -465,7 +465,7 @@ export function BatchWizard({
                     onClear={() => setPool([])}
                   />
                   {pool.length > 1 && (
-                    <div className="mt-2 flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                    <div className="mt-2 flex items-start gap-3 rounded-md border border-border bg-input/30 px-3 py-3">
                       <Switch
                         checked={shufflePool}
                         onCheckedChange={(v) => setShufflePool(Boolean(v))}
@@ -513,7 +513,7 @@ export function BatchWizard({
                       className={cn(
                         "w-full flex flex-col items-center justify-center gap-3 rounded-md border border-dashed bg-card px-6 py-12 text-center transition-colors hover:bg-card",
                         showErrors && step2Errors.csv
-                          ? "border-red-400"
+                          ? "border-destructive"
                           : "border-border",
                       )}
                     >
@@ -536,7 +536,7 @@ export function BatchWizard({
                       style={{ backgroundColor: "var(--card)" }}
                     >
                       {/* App chrome */}
-                      <div className="flex items-center gap-2 border-b border-white/[0.04] px-3 py-2">
+                      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                         <FileSpreadsheet size={13} className="text-muted-foreground" />
                         <span className="text-sm text-foreground font-medium">
                           sample-audience.csv
@@ -569,7 +569,7 @@ export function BatchWizard({
                       </div>
 
                       {/* Fake menu bar */}
-                      <div className="flex items-center gap-4 border-b border-white/[0.04] px-3 py-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-4 border-b border-border px-3 py-1 text-xs text-muted-foreground">
                         <span>File</span>
                         <span>Edit</span>
                         <span>View</span>
@@ -580,7 +580,7 @@ export function BatchWizard({
 
                       {/* Formula bar */}
                       <div
-                        className="flex items-center gap-3 border-b border-white/[0.04] px-2 py-1.5"
+                        className="flex items-center gap-3 border-b border-border px-2 py-1.5"
                         style={{ backgroundColor: "var(--background)" }}
                       >
                         <div className="flex h-6 w-12 items-center justify-center rounded border border-border bg-card text-xs font-mono text-foreground">
@@ -598,35 +598,35 @@ export function BatchWizard({
                       <div className="font-mono text-xs text-foreground">
                         {/* Column letters */}
                         <div
-                          className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-white/[0.04] text-xs text-muted-foreground"
+                          className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border text-xs text-muted-foreground"
                           style={{ backgroundColor: "var(--background)" }}
                         >
-                          <div className="border-r border-white/[0.04] px-2 py-1 text-center">
+                          <div className="border-r border-border px-2 py-1 text-center">
                             &nbsp;
                           </div>
-                          <div className="border-r border-white/[0.04] px-2 py-1 text-center">
+                          <div className="border-r border-border px-2 py-1 text-center">
                             A
                           </div>
-                          <div className="border-r border-white/[0.04] px-2 py-1 text-center">
+                          <div className="border-r border-border px-2 py-1 text-center">
                             B
                           </div>
                           <div className="px-2 py-1 text-center">C</div>
                         </div>
                         {/* Schema header row 1 */}
-                        <div className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-white/[0.04]">
+                        <div className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border">
                           <div
-                            className="border-r border-white/[0.04] px-2 py-1.5 text-center text-xs text-muted-foreground"
+                            className="border-r border-border px-2 py-1.5 text-center text-xs text-muted-foreground"
                             style={{ backgroundColor: "var(--background)" }}
                           >
                             1
                           </div>
-                          <div className="border-r border-white/[0.04] px-3 py-1.5 font-medium text-emerald-400">
+                          <div className="border-r border-border px-3 py-1.5 font-medium text-primary">
                             phone
                           </div>
-                          <div className="border-r border-white/[0.04] px-3 py-1.5 font-medium text-blue-400">
+                          <div className="border-r border-border px-3 py-1.5 font-medium text-chart-2">
                             name
                           </div>
-                          <div className="px-3 py-1.5 font-medium text-blue-400">
+                          <div className="px-3 py-1.5 font-medium text-chart-2">
                             order
                           </div>
                         </div>
@@ -634,18 +634,18 @@ export function BatchWizard({
                         {SAMPLE_ROWS.slice(0, 3).map((r, i) => (
                           <div
                             key={i}
-                            className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-white/[0.04] last:border-b-0"
+                            className="grid grid-cols-[32px_1.4fr_1fr_1fr] border-b border-border last:border-b-0"
                           >
                             <div
-                              className="border-r border-white/[0.04] px-2 py-1.5 text-center text-xs text-muted-foreground"
+                              className="border-r border-border px-2 py-1.5 text-center text-xs text-muted-foreground"
                               style={{ backgroundColor: "var(--background)" }}
                             >
                               {i + 2}
                             </div>
-                            <div className="border-r border-white/[0.04] px-3 py-1.5">
+                            <div className="border-r border-border px-3 py-1.5">
                               {r.phone}
                             </div>
-                            <div className="border-r border-white/[0.04] px-3 py-1.5">
+                            <div className="border-r border-border px-3 py-1.5">
                               {r.name}
                             </div>
                             <div className="px-3 py-1.5">{r.order}</div>
@@ -688,7 +688,7 @@ export function BatchWizard({
 
                     {/* preview */}
                     <div className="rounded-md border border-border bg-card overflow-hidden">
-                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-white/[0.04] bg-card px-3 py-2 text-xs font-medium text-muted-foreground">
+                      <div className="grid grid-cols-[1.4fr_1fr_1fr] border-b border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground">
                         <div className="font-mono">phone</div>
                         <div className="font-mono">name</div>
                         <div className="font-mono">order</div>
@@ -699,7 +699,7 @@ export function BatchWizard({
                           className={cn(
                             "grid grid-cols-[1.4fr_1fr_1fr] px-3 py-2 text-xs font-mono text-foreground",
                             i < SAMPLE_ROWS.length - 1 &&
-                              "border-b border-white/[0.04]",
+                              "border-b border-border",
                           )}
                         >
                           <div>{r.phone}</div>
@@ -722,7 +722,7 @@ export function BatchWizard({
 
                 <FieldGroup label="Campaign start">
                   <div className="flex flex-col items-start gap-3">
-                    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
+                    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
                       {(
                         [
                           { v: "now", label: "Start now" },
@@ -826,7 +826,7 @@ export function BatchWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -941,7 +941,7 @@ export function BatchWizard({
                   </FieldGroup>
                 )}
 
-                <div className="border-t border-white/[0.04] pt-5 space-y-5">
+                <div className="border-t border-border pt-5 space-y-5">
                   <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
@@ -980,7 +980,7 @@ export function BatchWizard({
                   </div>
 
                   {/* Use idle workspace slots */}
-                  <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                  <div className="flex items-start gap-3 rounded-md border border-border bg-input/30 px-3 py-3">
                     <Switch
                       checked={bursting}
                       onCheckedChange={(v) => setBursting(Boolean(v))}
@@ -1044,7 +1044,7 @@ export function BatchWizard({
                                     )}
                                     <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
                                       {a.versionName === "Live" && (
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                                       )}
                                       {a.versionName}
                                     </span>
@@ -1073,7 +1073,7 @@ export function BatchWizard({
                               className="inline-flex items-center gap-1.5"
                             >
                               {agentVersion === "Live" && (
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                               )}
                               <span className="font-mono">{agentVersion}</span>
                             </span>,
@@ -1234,7 +1234,7 @@ export function BatchWizard({
 
         {/* footer */}
         <div
-          className="flex items-center justify-between border-t border-white/[0.04] px-8 py-3"
+          className="flex items-center justify-between border-t border-border px-8 py-3"
         >
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
@@ -1296,8 +1296,8 @@ function FieldGroup({
 
 function FieldError({ msg }: { msg: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-xs text-red-400 mt-1">
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+    <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
       {msg}
     </div>
   );
@@ -1324,10 +1324,10 @@ function ReviewSection({
             key={i}
             className={cn(
               "grid grid-cols-[180px_1fr] text-sm",
-              i < visible.length - 1 && "border-b border-white/[0.04]",
+              i < visible.length - 1 && "border-b border-border",
             )}
           >
-            <div className="border-r border-white/[0.04] bg-card px-3 py-2.5 text-muted-foreground">
+            <div className="border-r border-border bg-card px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
             <div className="px-3 py-2.5 text-foreground">{value}</div>
@@ -1390,7 +1390,7 @@ function BatchSummary({
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/[0.04]">
+      <div className="px-4 py-3 border-b border-border">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
@@ -1554,7 +1554,7 @@ function VersionSelect({
           <SelectItem key={v.name} value={v.name}>
             <span className="flex items-center gap-2">
               {v.name === "Live" && (
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               )}
               <span className="font-medium">{v.name}</span>
               {v.tag && (
@@ -1585,15 +1585,15 @@ function CsvLogo() {
       >
         <path
           d="M20 2H7a2 2 0 00-2 2v24a2 2 0 002 2h18a2 2 0 002-2V9l-7-7z"
-          fill="#3A3A37"
-          stroke="#5E5E58"
+          fill="var(--card)"
+          stroke="var(--border)"
         />
-        <path d="M20 2v7h7l-7-7z" fill="#2A2A27" />
+        <path d="M20 2v7h7l-7-7z" fill="var(--background)" />
         <text
           x="16"
           y="24"
           fontSize="7"
-          fill="#EDEDED"
+          fill="var(--foreground)"
           textAnchor="middle"
           fontWeight="900"
         >

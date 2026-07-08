@@ -138,7 +138,7 @@ function UsageBlock({
             key={r.label}
             className={cn(
               "px-6 py-5",
-              i < rows.length - 1 && "border-b border-white/[0.04]",
+              i < rows.length - 1 && "border-b border-border",
             )}
           >
             <FullRow {...r} />

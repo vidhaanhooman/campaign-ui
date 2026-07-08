@@ -23,7 +23,7 @@ function to12h(v: string) {
 
 /* Matches the default SelectTrigger so every input reads the same from outside. */
 const TRIGGER_CLASS =
-  "flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-border bg-card py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+  "flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-border bg-transparent dark:bg-input/30 py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
 
 export type DatePickerTimeProps = {
   /** Selected date (controlled). */

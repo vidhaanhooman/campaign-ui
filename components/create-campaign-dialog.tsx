@@ -93,7 +93,7 @@ export function CreateCampaignDialog({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-white/[0.04] shadow-2xl shadow-black/60"
+        className="!max-w-[960px] p-0 overflow-hidden flex flex-col border-l border-border shadow-2xl"
       >
         <DialogTitle className="sr-only">Create campaign</DialogTitle>
 
@@ -187,7 +187,7 @@ function TypePicker({
                 <button
                   key={opt.type}
                   onClick={() => onPick(opt.type)}
-                  className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 text-left shadow-xl shadow-black/40 transition-colors hover:border-muted-foreground/40"
+                  className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 text-left shadow-xl transition-colors hover:border-muted-foreground/40"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -205,7 +205,7 @@ function TypePicker({
                     {opt.tagline}
                   </div>
 
-                  <div className="mt-auto space-y-3 pt-3 border-t border-white/[0.04]">
+                  <div className="mt-auto space-y-3 pt-3 border-t border-border">
                     <div>
                       <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
                         Good for
@@ -501,7 +501,7 @@ export function RealtimeWizard({
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR — title row, then a centered step row below */}
-      <header className="border-b border-white/[0.04]">
+      <header className="border-b border-border">
         <div className="flex items-center justify-between px-8 py-4">
           <h1 className="text-lg font-medium tracking-tight text-foreground">
             Create realtime campaign
@@ -570,15 +570,15 @@ export function RealtimeWizard({
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Order-confirmation outbound"
                     className={cn(
-                      "h-9 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-white",
+                      "h-9 w-full rounded-md border bg-transparent dark:bg-input/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
                       showErrors && step1Errors.name
-                        ? "border-red-400"
+                        ? "border-destructive"
                         : "border-border",
                     )}
                   />
                 </FieldGroup>
                 {/* A/B test toggle — sits above the agent section */}
-                <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                <div className="flex items-start gap-3 rounded-md border border-border bg-input/30 px-3 py-3">
                   <Switch
                     checked={abOn}
                     onCheckedChange={(v) => {
@@ -775,7 +775,7 @@ export function RealtimeWizard({
                 </p>
 
                 {/* Master control — open (or lock) every field at once. */}
-                <label className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-3">
+                <label className="flex items-center justify-between gap-3 rounded-lg border border-border bg-input/30 px-3.5 py-3">
                   <span className="min-w-0">
                     <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <Zap size={14} className="text-muted-foreground" />
@@ -814,7 +814,7 @@ export function RealtimeWizard({
                             ? "cursor-not-allowed border-border bg-card text-muted-foreground opacity-50"
                             : on
                               ? "border-foreground bg-primary font-medium text-primary-foreground"
-                              : "border-border bg-card text-muted-foreground hover:border-white/25 hover:text-foreground",
+                              : "border-border bg-card text-muted-foreground hover:border-border hover:text-foreground",
                         )}
                       >
                         <span
@@ -947,7 +947,7 @@ export function RealtimeWizard({
                         : `How long to wait before each retry attempt.`
                     }
                   >
-                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-card p-1">
+                    <div className="mb-3 inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
                       {(
                         [
                           { v: "all", label: "All attempts" },
@@ -1062,7 +1062,7 @@ export function RealtimeWizard({
                   </FieldGroup>
                 )}
 
-                <div className="border-t border-white/[0.04] pt-5 space-y-5">
+                <div className="border-t border-border pt-5 space-y-5">
                   <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
@@ -1100,7 +1100,7 @@ export function RealtimeWizard({
                   </div>
 
                   {/* Use idle workspace slots */}
-                  <div className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-3">
+                  <div className="flex items-start gap-3 rounded-md border border-border bg-input/30 px-3 py-3">
                     <Switch
                       checked={bursting}
                       onCheckedChange={(v) => setBursting(Boolean(v))}
@@ -1163,7 +1163,7 @@ export function RealtimeWizard({
                                     )}
                                     <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
                                       {a.versionName === "Live" && (
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                                       )}
                                       {a.versionName}
                                     </span>
@@ -1192,7 +1192,7 @@ export function RealtimeWizard({
                               className="inline-flex items-center gap-1.5"
                             >
                               {agentVersion === "Live" && (
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                               )}
                               <span className="font-mono">{agentVersion}</span>
                             </span>,
@@ -1358,7 +1358,7 @@ export function RealtimeWizard({
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between border-t border-white/[0.04] px-8 py-3">
+        <div className="flex items-center justify-between border-t border-border px-8 py-3">
           <button
             onClick={step === 1 ? onBack : () => setStep(step - 1)}
             className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -1449,7 +1449,7 @@ function CampaignSummary({
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/[0.04]">
+      <div className="px-4 py-3 border-b border-border">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
@@ -1600,7 +1600,7 @@ function VersionSelect({
           <SelectItem key={v.name} value={v.name}>
             <span className="flex items-center gap-2">
               {v.name === "Live" && (
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               )}
               <span className="font-medium">{v.name}</span>
               {v.tag && (
@@ -1616,8 +1616,8 @@ function VersionSelect({
 
 function FieldError({ msg }: { msg: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-xs text-red-400 mt-1">
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+    <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
       {msg}
     </div>
   );
@@ -1686,10 +1686,10 @@ function RtReviewSection({
             key={i}
             className={cn(
               "grid grid-cols-[180px_1fr] text-sm",
-              i < visible.length - 1 && "border-b border-white/[0.04]",
+              i < visible.length - 1 && "border-b border-border",
             )}
           >
-            <div className="border-r border-white/[0.04] bg-card px-3 py-2.5 text-muted-foreground">
+            <div className="border-r border-border bg-card px-3 py-2.5 text-muted-foreground">
               {label}
             </div>
             <div className="px-3 py-2.5 text-foreground">{value}</div>
@@ -1725,13 +1725,13 @@ function renderCurlLine(line: string): React.ReactNode {
       tokens.push(t);
     } else if (t === "curl") {
       tokens.push(
-        <span key={key++} className="text-blue-400">
+        <span key={key++} className="text-chart-2">
           {t}
         </span>,
       );
     } else if (/^(POST|GET|PUT|DELETE|PATCH)$/.test(t)) {
       tokens.push(
-        <span key={key++} className="text-emerald-400 font-medium">
+        <span key={key++} className="text-primary font-medium">
           {t}
         </span>,
       );
@@ -1743,19 +1743,19 @@ function renderCurlLine(line: string): React.ReactNode {
       );
     } else if (/^https?:\/\//.test(t)) {
       tokens.push(
-        <span key={key++} className="text-amber-400 underline decoration-text-muted/40 underline-offset-2">
+        <span key={key++} className="text-chart-1 underline decoration-text-muted/40 underline-offset-2">
           {t}
         </span>,
       );
     } else if (/^\$[A-Z_]+$/.test(t)) {
       tokens.push(
-        <span key={key++} className="text-blue-400">
+        <span key={key++} className="text-chart-2">
           {t}
         </span>,
       );
     } else if (t.startsWith('"') && t.endsWith('"')) {
       tokens.push(
-        <span key={key++} className="text-amber-400">
+        <span key={key++} className="text-chart-1">
           {t}
         </span>,
       );
@@ -1812,7 +1812,7 @@ function renderJsonInline(s: string): React.ReactNode {
       out.push(
         <span
           key={k++}
-          className={isKey ? "text-emerald-400" : "text-amber-400"}
+          className={isKey ? "text-primary" : "text-chart-1"}
         >
           {tok}
         </span>,
@@ -1822,7 +1822,7 @@ function renderJsonInline(s: string): React.ReactNode {
       let j = i;
       while (j < s.length && /[\d.\-]/.test(s[j])) j++;
       out.push(
-        <span key={k++} className="text-amber-400">
+        <span key={k++} className="text-chart-1">
           {s.slice(i, j)}
         </span>,
       );
@@ -1843,7 +1843,7 @@ function JsonKey({
   kind: "required" | "override";
 }) {
   return (
-    <span className={kind === "required" ? "text-emerald-400" : "text-blue-400"}>
+    <span className={kind === "required" ? "text-primary" : "text-chart-2"}>
       {value}
     </span>
   );
@@ -1856,11 +1856,11 @@ function JsonValue({ value }: { value: string }) {
 
   // string literal: "..."
   if (v.startsWith(`"`) && v.endsWith(`"`)) {
-    return <span className="text-amber-400">{value}</span>;
+    return <span className="text-chart-1">{value}</span>;
   }
   // number
   if (NUMBER_RE.test(v)) {
-    return <span className="text-amber-400">{value}</span>;
+    return <span className="text-chart-1">{value}</span>;
   }
   // array of numbers / strings: [a, b, c]
   if (v.startsWith("[") && v.endsWith("]")) {
@@ -1892,7 +1892,7 @@ function JsonValue({ value }: { value: string }) {
           const [, k, val] = m;
           return (
             <span key={i}>
-              <span className="text-blue-400">{k.trim()}</span>
+              <span className="text-chart-2">{k.trim()}</span>
               <span className="text-muted-foreground">: </span>
               <JsonValue value={val.trim()} />
               {i < parts.length - 1 && (

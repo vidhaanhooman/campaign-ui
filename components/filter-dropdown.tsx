@@ -17,8 +17,12 @@ interface BaseCategory {
 }
 export interface MultiSelectCategory extends BaseCategory {
   type: "multi-select";
-  options: { value: string; label: string; dot?: string; count?: number }[];
+  options: { value: string; label: string; sublabel?: string; dot?: string; tag?: string; count?: number }[];
   searchable?: boolean; placeholder?: string;
+  /** Wide flyout for richer option rows (agent-style). */
+  wide?: boolean;
+  /** Show Clear + Apply footer. */
+  footer?: boolean;
 }
 export interface RangeCategory extends BaseCategory {
   type: "range"; min: number; max: number; step?: number; unit?: string;
@@ -47,8 +51,8 @@ export interface FilterDropdownProps {
 }
 
 // -------- Style constants (campaign-b0 tokens) --------
-const CARD    = "rounded-xl border border-border bg-[#090909]";
-const CONTROL = "flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+const CARD    = "rounded-xl border border-border bg-card";
+const CONTROL = "flex h-8 items-center gap-2 rounded-lg border border-border bg-transparent dark:bg-input/30 px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function isActive(v: FilterValue | undefined): boolean {
   if (v == null) return false;
@@ -69,6 +73,39 @@ export function FilterDropdown({
   const [open, setOpen]     = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [q, setQ]           = useState("");
+  /** Vertical anchor mode + offset (px) relative to the menu container. */
+  const [anchor, setAnchor] = useState<{ mode: "top" | "bottom"; offset: number }>({ mode: "top", offset: 0 });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const activeRowRect = useRef<DOMRect | null>(null);
+
+  const openAt = (catId: string, el: HTMLElement | null) => {
+    if (!el) { setActive(null); return; }
+    const rootRect = rootRef.current?.getBoundingClientRect();
+    const rowRect = el.getBoundingClientRect();
+    activeRowRect.current = rowRect;
+    if (rootRect) setAnchor({ mode: "top", offset: rowRect.top - rootRect.top });
+    setActive(catId);
+  };
+
+  const recheckAnchor = (el: HTMLDivElement | null) => {
+    if (!el || !rootRef.current || !activeRowRect.current) return;
+    const rootRect = rootRef.current.getBoundingClientRect();
+    const rowRect = activeRowRect.current;
+    const h = el.offsetHeight;
+    const margin = 8;
+    const fitsBelow = rowRect.top + h + margin <= window.innerHeight;
+    if (fitsBelow) {
+      const offset = rowRect.top - rootRect.top;
+      if (anchor.mode !== "top" || Math.abs(anchor.offset - offset) > 1) {
+        setAnchor({ mode: "top", offset });
+      }
+    } else {
+      const offset = rootRect.bottom - rowRect.bottom;
+      if (anchor.mode !== "bottom" || Math.abs(anchor.offset - offset) > 1) {
+        setAnchor({ mode: "bottom", offset });
+      }
+    }
+  };
 
   const query = q.trim().toLowerCase();
   const visibleSections = useMemo(() => {
@@ -99,82 +136,102 @@ export function FilterDropdown({
       } />
 
       <PopoverContent align={align} side={side} style={{ width }}
-          className={cn(CARD, "flex max-h-[80vh] flex-col overflow-hidden p-0 shadow-xl")}>
-        {/* Search */}
-        <div className="border-b border-white/[0.04] p-2">
-          <div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
-            <Search size={13} className="shrink-0 text-muted-foreground" />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search filters…"
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
+          className={cn(CARD, "flex max-h-[80vh] flex-col p-0 shadow-xl")}>
+        <div ref={rootRef} className="relative flex min-h-0 flex-1 flex-col">
+          {/* Search */}
+          <div className="border-b border-border p-2">
+            <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-transparent px-2.5">
+              <Search size={13} className="shrink-0 text-muted-foreground" />
+              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search filters…"
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
+            </div>
           </div>
-        </div>
 
-        {/* Active count strip */}
-        {activeCount > 0 && (
-          <div className="flex items-center gap-1.5 border-b border-white/[0.04] px-3 py-2 text-xs text-muted-foreground">
-            <span><span className="font-medium text-foreground">{activeCount}</span> active</span>
-            <span className="text-muted-foreground/60">·</span>
-            <button type="button" onClick={() => onChange({})}
-              className="text-muted-foreground hover:text-foreground">Clear all</button>
-          </div>
-        )}
-
-        {/* Category list */}
-        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto py-1">
-          {quickFilters && quickFilters.length > 0 && !query && (
-            <>
-              <Row label="Quick filters" icon={<FunnelIcon size={15} />}
-                isActive={active === "__quick__"}
-                onClick={() => setActive(active === "__quick__" ? null : "__quick__")} />
-              {active === "__quick__" && (
-                <div className="mx-1 my-1 flex flex-col rounded-lg border border-white/[0.06] p-1">
-                  {quickFilters.map(qf => (
-                    <button key={qf.id} type="button"
-                      onClick={() => { onChange(qf.values); setOpen(false); }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-white/[0.04]">
-                      <span className="shrink-0 text-muted-foreground">{qf.icon}</span>
-                      <span className="flex-1 truncate">{qf.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="my-1 h-px bg-white/[0.04]" />
-            </>
+          {/* Active count strip */}
+          {activeCount > 0 && (
+            <div className="flex items-center gap-1.5 border-b border-border px-3 py-2 text-xs text-muted-foreground">
+              <span><span className="font-medium text-foreground">{activeCount}</span> active</span>
+              <span className="text-muted-foreground/60">·</span>
+              <button type="button" onClick={() => onChange({})}
+                className="text-muted-foreground hover:text-foreground">Clear all</button>
+            </div>
           )}
 
-          {visibleSections.length === 0 && (
-            <p className="px-3 py-3 text-center text-xs text-muted-foreground">No matching filters.</p>
-          )}
+          {/* Category list */}
+          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto py-1">
+            {quickFilters && quickFilters.length > 0 && !query && (
+              <>
+                <Row label="Quick filters" icon={<FunnelIcon size={15} />}
+                  isActive={active === "__quick__"}
+                  onClick={(el) => (active === "__quick__" ? setActive(null) : openAt("__quick__", el))} />
+                <div className="my-1 h-px bg-accent/60" />
+              </>
+            )}
 
-          {visibleSections.map((section, si) => (
-            <div key={si}>
-              {si > 0 && <div className="my-1 h-px bg-white/[0.04]" />}
-              {section.title && (
-                <div className="px-3 pt-2 pb-1 text-xs font-medium text-muted-foreground">{section.title}</div>
-              )}
-              {section.items.map(cat => {
-                const on             = isActive(value[cat.id]);
-                const disabledResult = cat.disabled?.(value);
-                const isDisabled     = !!disabledResult;
-                const isOpen         = active === cat.id;
-                return (
-                  <div key={cat.id}>
-                    <Row label={cat.label} icon={cat.icon} hasDot={on}
+            {visibleSections.length === 0 && (
+              <p className="px-3 py-3 text-center text-xs text-muted-foreground">No matching filters.</p>
+            )}
+
+            {visibleSections.map((section, si) => (
+              <div key={si}>
+                {si > 0 && <div className="my-1 h-px bg-accent/60" />}
+                {section.title && (
+                  <div className="px-3 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{section.title}</div>
+                )}
+                {section.items.map(cat => {
+                  const on             = isActive(value[cat.id]);
+                  const disabledResult = cat.disabled?.(value);
+                  const isDisabled     = !!disabledResult;
+                  const isOpen         = active === cat.id;
+                  return (
+                    <Row key={cat.id} label={cat.label} icon={cat.icon} hasDot={on}
                       disabled={isDisabled}
                       disabledReason={disabledResult ? disabledResult.reason : undefined}
                       isActive={isOpen}
-                      onClick={() => !isDisabled && setActive(isOpen ? null : cat.id)} />
-                    {isOpen && (
-                      <div className="mx-1 my-1 rounded-lg border border-white/[0.06] p-2">
-                        <EditorForCategory cat={cat} value={value[cat.id]}
-                          onChange={v => setOne(cat.id, v)} close={() => setActive(null)} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      onClick={(el) => !isDisabled && (isOpen ? setActive(null) : openAt(cat.id, el))} />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Side flyout — anchored to the active row, opens to the left of the menu. */}
+          {active === "__quick__" && quickFilters && (
+            <div
+              ref={recheckAnchor}
+              style={{
+                width: 260,
+                ...(anchor.mode === "top" ? { top: anchor.offset } : { bottom: anchor.offset }),
+              }}
+              className="absolute right-full mr-2 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-xl"
+            >
+              {quickFilters.map(qf => (
+                <button key={qf.id} type="button"
+                  onClick={() => { onChange(qf.values); setActive(null); setOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/60">
+                  <span className="shrink-0 text-muted-foreground">{qf.icon}</span>
+                  <span className="flex-1 truncate">{qf.label}</span>
+                </button>
+              ))}
             </div>
-          ))}
+          )}
+          {activeCat && (
+            <div
+              ref={recheckAnchor}
+              style={{
+                width: activeCat.type === "range" ? 360 : 300,
+                ...(anchor.mode === "top" ? { top: anchor.offset } : { bottom: anchor.offset }),
+              }}
+              className="absolute right-full mr-2 overflow-hidden rounded-lg border border-border bg-popover p-3 shadow-xl"
+            >
+              <div className="mb-2.5 flex items-center gap-2 text-sm font-medium text-foreground">
+                <span className="text-muted-foreground">{activeCat.icon}</span>
+                {activeCat.label}
+              </div>
+              <EditorForCategory cat={activeCat} value={value[activeCat.id]}
+                onChange={v => setOne(activeCat.id, v)} close={() => setActive(null)} />
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -185,15 +242,17 @@ export function FilterDropdown({
 function Row({ label, icon, hasDot, disabled, disabledReason, isActive, onClick }: {
   label: string; icon: ReactNode; hasDot?: boolean;
   disabled?: boolean; disabledReason?: string;
-  isActive?: boolean; onClick: () => void;
+  isActive?: boolean; onClick: (el: HTMLElement) => void;
 }) {
   return (
-    <button type="button" disabled={disabled} title={disabledReason} onClick={onClick}
+    <button type="button" disabled={disabled} title={disabledReason}
+      onClick={(e) => onClick(e.currentTarget as HTMLElement)}
+      onMouseEnter={(e) => !disabled && !isActive && onClick(e.currentTarget as HTMLElement)}
       className={cn(
         "mx-1 flex w-[calc(100%-8px)] items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
         disabled && "cursor-not-allowed text-muted-foreground/50",
-        !disabled && isActive  && "bg-white/[0.06] text-foreground",
-        !disabled && !isActive && "text-foreground hover:bg-white/[0.04]",
+        !disabled && isActive  && "bg-accent text-foreground",
+        !disabled && !isActive && "text-foreground hover:bg-accent/60",
       )}>
       <span className={cn("shrink-0", disabled ? "text-muted-foreground/50" : "text-muted-foreground")}>{icon}</span>
       <span className="flex-1 truncate">{label}</span>
@@ -243,7 +302,7 @@ function MultiSelectEditor({ cat, value, onChange }: {
   return (
     <div className="space-y-2">
       {(cat.searchable ?? cat.options.length > 6) && (
-        <div className="flex h-8 items-center gap-2 rounded-lg border border-white/[0.06] bg-transparent px-2.5">
+        <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-transparent px-2.5">
           <Search size={13} className="shrink-0 text-muted-foreground" />
           <input value={q} onChange={e => setQ(e.target.value)}
             placeholder={cat.placeholder ?? "Search…"}
@@ -257,7 +316,7 @@ function MultiSelectEditor({ cat, value, onChange }: {
             <li key={o.value}>
               <button type="button" onClick={() => toggle(o.value)}
                 className={cn("flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors",
-                  on ? "bg-white/[0.06]" : "hover:bg-white/[0.04]")}>
+                  on ? "bg-accent" : "hover:bg-accent/60")}>
                 <CheckBox checked={on} />
                 {o.dot && <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", o.dot)} />}
                 <span className={cn("flex-1 truncate text-sm", on ? "text-foreground" : "text-foreground/90")}>
@@ -329,7 +388,7 @@ function RangeEditor({ cat, value, onChange }: {
           if (which === "lo") emit(v, hi); else emit(lo, v);
           setDrag(which);
         }}>
-        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/10" />
+        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-muted" />
         <div className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-primary"
           style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }} />
         {(["lo", "hi"] as const).map(which => {
@@ -342,7 +401,7 @@ function RangeEditor({ cat, value, onChange }: {
                 (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
                 setDrag(which);
               }}
-              className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-background shadow-md shadow-black/40 hover:scale-110"
+              className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-background shadow-md hover:scale-110"
               style={{ left: `${pct(v)}%` }} />
           );
         })}
@@ -363,7 +422,7 @@ function NumBox({ value, placeholder, unit, onChange }: {
   onChange: (n: number | null) => void;
 }) {
   return (
-    <div className="flex h-8 min-w-0 flex-1 items-center gap-1 rounded-lg border border-border bg-card px-2.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+    <div className="flex h-8 min-w-0 flex-1 items-center gap-1 rounded-lg border border-border bg-transparent dark:bg-input/30 px-2.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
       <input type="number" inputMode="numeric" value={value ?? ""} placeholder={placeholder}
         onChange={e => onChange(e.target.value === "" ? null : Number(e.target.value))}
         className="min-w-0 flex-1 bg-transparent text-center font-mono text-sm tabular-nums text-foreground outline-none placeholder:text-muted-foreground" />
@@ -397,7 +456,7 @@ function PillEditor({ cat, value, onChange }: {
         <button key={p.key} type="button" onClick={() => pick(p.v)} aria-pressed={p.on}
           className={cn("inline-flex h-8 min-w-9 items-center justify-center rounded-lg px-3 text-xs font-medium transition-colors",
             p.on ? "bg-primary text-primary-foreground shadow-sm"
-                 : "border border-border bg-card text-foreground hover:bg-white/[0.04]")}>
+                 : "border border-border bg-card text-foreground hover:bg-accent/60")}>
           {p.label}
         </button>
       ))}
@@ -411,14 +470,14 @@ function TextEditor({ cat, value, onChange }: {
   return (
     <input autoFocus value={value} onChange={e => onChange(e.target.value || null)}
       placeholder={cat.placeholder ?? "contains…"}
-      className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50" />
+      className="h-8 w-full rounded-lg border border-border bg-transparent dark:bg-input/30 px-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50" />
   );
 }
 
 function CheckBox({ checked }: { checked: boolean }) {
   return (
     <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-        checked ? "border-foreground bg-foreground text-background" : "border-white/25")}>
+        checked ? "border-foreground bg-foreground text-background" : "border-border")}>
       {checked && <Check size={11} strokeWidth={3} />}
     </span>
   );

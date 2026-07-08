@@ -46,7 +46,7 @@ function DeepCard({
         className,
       )}
     >
-      <header className="flex items-center justify-between border-b border-white/[0.04] px-5 py-3">
+      <header className="flex items-center justify-between border-b border-border px-5 py-3">
         <span className="text-sm font-medium text-foreground">{title}</span>
       </header>
       <div className="p-4">{children}</div>
@@ -78,7 +78,7 @@ function DurationFunnel({ stages }: { stages: FunnelStage[] }) {
           );
         })}
       </div>
-      <div className="space-y-1 border-t border-white/[0.04] pt-3 text-xs text-muted-foreground">
+      <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
         {stages.map((s, i) => {
           const prev = i === 0 ? s.value : stages[i - 1].value;
           const cont = prev ? Math.round((s.value / prev) * 100) : 0;

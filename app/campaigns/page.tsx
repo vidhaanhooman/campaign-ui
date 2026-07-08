@@ -42,7 +42,25 @@ import {
   type FilterValues,
   type QuickFilter,
 } from "@/components/filter-dropdown";
-import { Bot, CheckCircle2, Hash, Tag, Timer } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Bot,
+  Braces,
+  ClipboardList,
+  Flag,
+  Gauge,
+  Hash,
+  ListChecks,
+  Megaphone,
+  MessageSquare,
+  Phone,
+  PhoneIncoming,
+  PhoneOff,
+  PhoneOutgoing,
+  Repeat2,
+  Timer,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -119,14 +137,25 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
   {
     items: [
       {
-        id: "status",
-        label: "Status",
-        icon: <CheckCircle2 size={15} />,
+        id: "type",
+        label: "Type",
+        icon: <Phone size={15} />,
         type: "multi-select",
         options: [
-          { value: "Running", label: "Running", dot: "bg-emerald-400" },
-          { value: "Paused", label: "Paused", dot: "bg-amber-400" },
-          { value: "Completed", label: "Completed", dot: "bg-white/60" },
+          { value: "call",      label: "Call" },
+          { value: "chat",      label: "Chat" },
+          { value: "web",       label: "Web" },
+          { value: "broadcast", label: "Broadcast" },
+        ],
+      },
+      {
+        id: "direction",
+        label: "Direction",
+        icon: <ArrowLeftRight size={15} />,
+        type: "multi-select",
+        options: [
+          { value: "inbound",  label: "Inbound" },
+          { value: "outbound", label: "Outbound" },
         ],
       },
       {
@@ -136,39 +165,132 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
         type: "multi-select",
         searchable: true,
         options: [
-          { value: "debt", label: "Debt Collection Pitch Agent" },
-          { value: "web_out", label: "Website Agent Outbound" },
-          { value: "sales", label: "Sales Follow-up Agent" },
-          { value: "support", label: "Support Escalation Agent" },
+          { value: "debt",     label: "Debt Collection Pitch Agent" },
+          { value: "web_out",  label: "Website Agent Outbound" },
+          { value: "sales",    label: "Sales Follow-up Agent" },
+          { value: "support",  label: "Support Escalation Agent" },
         ],
       },
       {
-        id: "campaignId",
-        label: "Campaign ID",
+        id: "caller",
+        label: "Caller",
+        icon: <PhoneOutgoing size={15} />,
+        type: "text",
+        placeholder: "e.g. +91 98…",
+      },
+      {
+        id: "callee",
+        label: "Callee",
+        icon: <PhoneIncoming size={15} />,
+        type: "text",
+        placeholder: "e.g. +91 98…",
+      },
+      {
+        id: "providerCallId",
+        label: "Provider call ID",
         icon: <Hash size={15} />,
+        type: "text",
+        placeholder: "contains…",
+      },
+      {
+        id: "campaign",
+        label: "Campaign",
+        icon: <Megaphone size={15} />,
+        type: "text",
+        placeholder: "contains…",
+      },
+      {
+        id: "task",
+        label: "Task",
+        icon: <ListChecks size={15} />,
         type: "text",
         placeholder: "contains…",
       },
     ],
   },
   {
-    title: "Volume",
+    title: "Outcome & status",
     items: [
       {
-        id: "tasks",
-        label: "Tasks",
-        icon: <Tag size={15} />,
-        type: "range",
-        min: 0,
-        max: 1000,
-        step: 10,
+        id: "outcome",
+        label: "Outcome",
+        icon: <Flag size={15} />,
+        type: "multi-select",
+        searchable: true,
+        options: [
+          { value: "connected",   label: "Connected" },
+          { value: "no_answer",   label: "No answer" },
+          { value: "busy",        label: "Busy" },
+          { value: "voicemail",   label: "Voicemail" },
+          { value: "failed",      label: "Failed" },
+          { value: "abandoned",   label: "Abandoned" },
+        ],
       },
       {
-        id: "slotsUsed",
-        label: "Slots used",
+        id: "endReason",
+        label: "End reason",
+        icon: <PhoneOff size={15} />,
+        type: "multi-select",
+        options: [
+          { value: "voicemail",     label: "Voicemail" },
+          { value: "no_answer",     label: "No answer" },
+          { value: "hangup_caller", label: "Hangup by caller" },
+          { value: "hangup_callee", label: "Hangup by callee" },
+          { value: "timeout",       label: "Timeout" },
+          { value: "error",         label: "Error" },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Metrics",
+    items: [
+      {
+        id: "duration",
+        label: "Call duration",
         icon: <Timer size={15} />,
+        type: "range",
+        min: 0, max: 600, step: 5, unit: "s",
+      },
+      {
+        id: "turns",
+        label: "Turns",
+        icon: <MessageSquare size={15} />,
+        type: "range",
+        min: 0, max: 50, step: 1,
+      },
+      {
+        id: "turnLatency",
+        label: "Turn latency",
+        icon: <Gauge size={15} />,
+        type: "range",
+        min: 0, max: 5000, step: 50, unit: "ms",
+      },
+      {
+        id: "attempt",
+        label: "Attempt",
+        icon: <Repeat2 size={15} />,
         type: "pill",
         maxExact: 4,
+      },
+    ],
+  },
+  {
+    title: "Dynamic fields",
+    items: [
+      {
+        id: "postCall",
+        label: "Post-call analysis",
+        icon: <ClipboardList size={15} />,
+        type: "text",
+        placeholder: "field:value…",
+      },
+      {
+        id: "context",
+        label: "Context variables",
+        icon: <Braces size={15} />,
+        type: "text",
+        placeholder: "key:value…",
       },
     ],
   },
@@ -176,22 +298,22 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
 
 const CAMPAIGN_QUICK_FILTERS: QuickFilter[] = [
   {
-    id: "qf:running",
-    label: "Running now",
-    icon: <CheckCircle2 size={15} />,
-    values: { status: ["Running"] },
+    id: "qf:connected",
+    label: "Connected outbound",
+    icon: <Zap size={15} />,
+    values: { direction: ["outbound"], outcome: ["connected"] },
   },
   {
-    id: "qf:paused",
-    label: "Paused",
-    icon: <CheckCircle2 size={15} />,
-    values: { status: ["Paused"] },
+    id: "qf:voicemail",
+    label: "Went to voicemail",
+    icon: <Zap size={15} />,
+    values: { endReason: ["voicemail"] },
   },
   {
-    id: "qf:high-volume",
-    label: "High volume (100+ tasks)",
-    icon: <Tag size={15} />,
-    values: { tasks: { kind: "range", min: 100, max: null } },
+    id: "qf:long-calls",
+    label: "Long calls (3m+)",
+    icon: <Zap size={15} />,
+    values: { duration: { kind: "range", min: 180, max: null } },
   },
 ];
 
@@ -293,7 +415,7 @@ export default function CampaignsPage() {
             </button>
 
             {statsOpen && (
-              <div className="grid grid-cols-1 gap-4 border-t border-white/[0.04] px-5 py-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 border-t border-border px-5 py-5 md:grid-cols-2">
                 {/* Backlog card */}
                 <div className="rounded-xl border border-border bg-card px-6 py-5">
                   <div className="text-sm text-muted-foreground">Backlog</div>
@@ -344,7 +466,7 @@ export default function CampaignsPage() {
           {/* tabs + search */}
           <div className="flex items-center gap-3">
             {/* Segmented control */}
-            <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card p-1">
+            <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-input/30 p-1">
               {(["batch", "realtime"] as const).map((t) => (
                 <button
                   key={t}
@@ -396,7 +518,7 @@ export default function CampaignsPage() {
                 <col className="w-[6%]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-white/[0.04]">
+                <tr className="border-b border-border">
                   <th className="py-2.5 pl-6 pr-3 text-left text-xs font-medium text-muted-foreground">Campaign</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Agent</th>
                   <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Created at</th>
@@ -410,7 +532,7 @@ export default function CampaignsPage() {
                 {ROWS.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40"
+                    className="border-b border-border transition-colors last:border-0 hover:bg-secondary/40"
                   >
                     <td className="py-3 pl-6 pr-3">
                       <div className="text-sm font-medium text-foreground">{r.name}</div>

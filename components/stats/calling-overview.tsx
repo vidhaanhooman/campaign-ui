@@ -38,7 +38,7 @@ function AttemptsTable() {
         {ATTEMPTS.map((r) => (
           <tr
             key={r.attempt}
-            className="border-b border-white/[0.04] transition-colors last:border-0 hover:bg-secondary/40"
+            className="border-b border-border transition-colors last:border-0 hover:bg-secondary/40"
           >
             <td className="py-3 pl-5 pr-3 text-muted-foreground">attempt {r.attempt}</td>
             <td className="px-3 py-3 text-right font-mono tabular-nums text-foreground">

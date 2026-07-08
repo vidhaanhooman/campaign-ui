@@ -75,7 +75,7 @@ export function AgentVersionPicker({
         render={
           <button
             type="button"
-            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-border bg-card px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex h-8 w-full items-center gap-2.5 rounded-lg border border-border bg-transparent dark:bg-input/30 px-3 text-left text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         }
       >
@@ -107,11 +107,11 @@ export function AgentVersionPicker({
       >
         <div className="grid h-[400px] grid-cols-[1fr_280px] grid-rows-[auto_1fr_auto]">
           {/* HEADERS */}
-          <div className="flex h-12 items-center gap-2 border-b border-r border-white/[0.04] px-4 text-sm font-medium text-foreground">
+          <div className="flex h-12 items-center gap-2 border-b border-r border-border px-4 text-sm font-medium text-foreground">
             <Bot size={13} className="text-muted-foreground" />
             Agent
           </div>
-          <div className="flex h-12 items-center border-b border-white/[0.04] px-4">
+          <div className="flex h-12 items-center border-b border-border px-4">
             <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Versions
             </span>
@@ -121,7 +121,7 @@ export function AgentVersionPicker({
           </div>
 
           {/* AGENT BODY */}
-          <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/[0.04]">
+          <div className="flex min-h-0 flex-col overflow-hidden border-r border-border">
             <div className="p-2">
               {/* Search input recipe */}
               <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-2.5">
@@ -225,7 +225,7 @@ export function AgentVersionPicker({
 
           {/* FOOTERS */}
           <div
-            className="flex items-center justify-end gap-2 border-t border-r border-white/[0.04] px-3"
+            className="flex items-center justify-end gap-2 border-t border-r border-border px-3"
             style={{ height: 52 }}
           >
             {/* Secondary button recipe */}
@@ -253,7 +253,7 @@ export function AgentVersionPicker({
             </button>
           </div>
           <div
-            className="flex items-center border-t border-white/[0.04] px-4 text-xs text-muted-foreground"
+            className="flex items-center border-t border-border px-4 text-xs text-muted-foreground"
             style={{ height: 52 }}
           >
             Pick Live to always use the version in production.

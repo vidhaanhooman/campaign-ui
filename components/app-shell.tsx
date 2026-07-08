@@ -170,7 +170,7 @@ export function AppShell({
       {/* sidebar */}
       <aside
         className={cn(
-          "flex shrink-0 flex-col overflow-hidden border-r border-white/[0.04] bg-background text-foreground transition-[width] duration-200",
+          "flex shrink-0 flex-col overflow-hidden border-r border-border bg-background text-foreground transition-[width] duration-200",
           collapsed ? "w-0 border-r-0" : "w-[248px]",
         )}
       >
@@ -200,7 +200,7 @@ export function AppShell({
               <div
                 key={sec.group}
                 className={cn(
-                  si === 0 ? "" : "mt-3 border-t border-white/[0.04] pt-3",
+                  si === 0 ? "" : "mt-3 border-t border-border pt-3",
                 )}
               >
                 <button
@@ -262,7 +262,7 @@ export function AppShell({
         </nav>
 
         {/* Pinned footer — settings */}
-        <div className="border-t border-white/[0.04] p-3">
+        <div className="border-t border-border p-3">
           <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
             <Settings size={16} strokeWidth={1.75} className="shrink-0" />
             <span className="flex-1 truncate text-left">Settings</span>
@@ -321,7 +321,7 @@ export function NotificationsButton() {
         }
       />
       <PopoverContent align="start" sideOffset={8} className="w-[360px] overflow-hidden p-0">
-        <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-sm font-medium text-foreground">What&rsquo;s new</span>
           <a
             href="#"
@@ -404,7 +404,7 @@ export function UsageChip() {
         sideOffset={8}
         className="w-[320px] overflow-hidden p-0"
       >
-        <div className="border-b border-white/[0.04] px-5 py-4">
+        <div className="border-b border-border px-5 py-4">
           <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
             <Wallet size={13} /> Balance
           </span>
@@ -440,7 +440,7 @@ export function UsageChip() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 border-t border-white/[0.04] p-3">
+        <div className="flex items-center gap-2 border-t border-border p-3">
           <button className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
             <Plus size={13} /> Add funds
           </button>
