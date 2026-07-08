@@ -811,10 +811,10 @@ export function RealtimeWizard({
                         className={cn(
                           "group flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
                           disabled
-                            ? "cursor-not-allowed border-border bg-card text-muted-foreground opacity-50"
+                            ? "cursor-not-allowed border-border bg-popover text-muted-foreground opacity-50"
                             : on
                               ? "border-foreground bg-primary font-medium text-primary-foreground"
-                              : "border-border bg-card text-muted-foreground hover:border-border hover:text-foreground",
+                              : "border-border bg-popover text-muted-foreground hover:border-border hover:text-foreground",
                         )}
                       >
                         <span

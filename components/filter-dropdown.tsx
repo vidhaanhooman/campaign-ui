@@ -51,7 +51,7 @@ export interface FilterDropdownProps {
 }
 
 // -------- Style constants (campaign-b0 tokens) --------
-const CARD    = "rounded-xl border border-border bg-card";
+const CARD    = "rounded-xl border border-border bg-popover";
 const CONTROL = "flex h-8 items-center gap-2 rounded-lg border border-border bg-transparent dark:bg-input/30 px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function isActive(v: FilterValue | undefined): boolean {
@@ -219,7 +219,11 @@ export function FilterDropdown({
             <div
               ref={recheckAnchor}
               style={{
-                width: activeCat.type === "range" ? 360 : 300,
+                width:
+                  (activeCat.type === "multi-select" && activeCat.wide) ? 400
+                  : activeCat.type === "custom" ? (activeCat.width ?? 400)
+                  : activeCat.type === "range" ? 360
+                  : 300,
                 ...(anchor.mode === "top" ? { top: anchor.offset } : { bottom: anchor.offset }),
               }}
               className="absolute right-full mr-2 overflow-hidden rounded-lg border border-border bg-popover p-3 shadow-xl"
@@ -275,7 +279,7 @@ function EditorForCategory({ cat, value, onChange, close }: {
 }) {
   switch (cat.type) {
     case "multi-select":
-      return <MultiSelectEditor cat={cat} value={(value as string[]) ?? []} onChange={onChange} />;
+      return <MultiSelectEditor cat={cat} value={(value as string[]) ?? []} onChange={onChange} close={close} />;
     case "range":
       return <RangeEditor cat={cat}
         value={(value as NumberRange) ?? { kind: "range", min: null, max: null }} onChange={onChange} />;
@@ -289,16 +293,19 @@ function EditorForCategory({ cat, value, onChange, close }: {
   }
 }
 
-function MultiSelectEditor({ cat, value, onChange }: {
-  cat: MultiSelectCategory; value: string[]; onChange: (v: string[] | null) => void;
+function MultiSelectEditor({ cat, value, onChange, close }: {
+  cat: MultiSelectCategory; value: string[]; onChange: (v: string[] | null) => void; close: () => void;
 }) {
   const [q, setQ] = useState("");
   const query = q.trim().toLowerCase();
-  const list  = useMemo(() => cat.options.filter(o => o.label.toLowerCase().includes(query)), [cat.options, query]);
+  const list  = useMemo(() => cat.options.filter(o =>
+    o.label.toLowerCase().includes(query) || o.sublabel?.toLowerCase().includes(query),
+  ), [cat.options, query]);
   const toggle = (v: string) => {
     const next = value.includes(v) ? value.filter(x => x !== v) : [...value, v];
     onChange(next.length ? next : null);
   };
+  const hasSub = cat.options.some(o => o.sublabel || o.tag);
   return (
     <div className="space-y-2">
       {(cat.searchable ?? cat.options.length > 6) && (
@@ -309,7 +316,7 @@ function MultiSelectEditor({ cat, value, onChange }: {
             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
         </div>
       )}
-      <ul className="scroll-thin max-h-56 overflow-y-auto pr-1">
+      <ul className="scroll-thin max-h-64 overflow-y-auto pr-1">
         {list.map(o => {
           const on = value.includes(o.value);
           return (
@@ -319,10 +326,22 @@ function MultiSelectEditor({ cat, value, onChange }: {
                   on ? "bg-accent" : "hover:bg-accent/60")}>
                 <CheckBox checked={on} />
                 {o.dot && <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", o.dot)} />}
-                <span className={cn("flex-1 truncate text-sm", on ? "text-foreground" : "text-foreground/90")}>
-                  {o.label}
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className={cn("truncate text-sm", on ? "text-foreground" : "text-foreground/90")}>
+                    {o.label}
+                  </span>
+                  {o.sublabel && (
+                    <span className="block truncate font-mono text-[10px] leading-tight text-muted-foreground">
+                      {o.sublabel}
+                    </span>
+                  )}
                 </span>
-                {o.count != null && (
+                {o.tag && (
+                  <span className="shrink-0 rounded-md border border-border bg-transparent px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    {o.tag}
+                  </span>
+                )}
+                {o.count != null && !o.tag && (
                   <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{o.count}</span>
                 )}
               </button>
@@ -333,6 +352,18 @@ function MultiSelectEditor({ cat, value, onChange }: {
           <li className="px-3 py-4 text-center text-xs text-muted-foreground">No matches.</li>
         )}
       </ul>
+      {cat.footer && (
+        <div className="-mx-1 -mb-1 flex items-center justify-between border-t border-border px-1 pt-2">
+          <button type="button" onClick={() => onChange(null)}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+            Clear
+          </button>
+          <button type="button" onClick={close}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90">
+            Apply
+          </button>
+        </div>
+      )}
     </div>
   );
 }
