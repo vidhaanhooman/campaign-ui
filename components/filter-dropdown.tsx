@@ -510,7 +510,7 @@ function TextEditor({ cat, value, onChange }: {
 function CheckBox({ checked }: { checked: boolean }) {
   return (
     <span className={cn("flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-        checked ? "border-foreground bg-foreground text-background" : "border-border")}>
+        checked ? "border-foreground bg-foreground text-background" : "border-muted-foreground/60")}>
       {checked && <Check size={11} strokeWidth={3} />}
     </span>
   );

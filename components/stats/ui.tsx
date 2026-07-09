@@ -1,7 +1,112 @@
 import * as React from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronDown, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { useSidebar } from "@/components/app-shell";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+/**
+ * RangeTabs — a segmented time-range control (24h / 7d / 30d / 90d) for
+ * dashboard headers. Controlled; scopes whatever data the page feeds off it.
+ */
+export function RangeTabs({
+  value,
+  onChange,
+  options = ["24h", "7d", "30d", "90d"],
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options?: string[];
+}) {
+  return (
+    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
+      {options.map((o) => {
+        const active = o === value;
+        return (
+          <button
+            key={o}
+            type="button"
+            onClick={() => onChange(o)}
+            className={cn(
+              "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
+              active
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {o}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export type NewMenuItem = {
+  label: string;
+  description?: string;
+  icon?: React.ReactNode;
+  href?: string;
+  onClick?: () => void;
+};
+
+/**
+ * NewMenu — the reusable primary "+ New ▾" header action. Opens a popover of
+ * create options. Pass one item to render a plain button instead of a menu.
+ */
+export function NewMenu({
+  items,
+  label = "New",
+}: {
+  items: NewMenuItem[];
+  label?: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <Plus size={13} /> {label}
+            <ChevronDown size={13} className="opacity-70" />
+          </button>
+        }
+      />
+      <PopoverContent align="end" sideOffset={8} className="w-[240px] p-1">
+        {items.map((it) => {
+          const inner = (
+            <>
+              {it.icon && (
+                <span className="mt-0.5 shrink-0 text-muted-foreground">{it.icon}</span>
+              )}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm text-foreground">{it.label}</span>
+                {it.description && (
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {it.description}
+                  </span>
+                )}
+              </span>
+            </>
+          );
+          const cls =
+            "flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-secondary";
+          return it.href ? (
+            <a key={it.label} href={it.href} className={cls}>
+              {inner}
+            </a>
+          ) : (
+            <button key={it.label} onClick={it.onClick} className={cls}>
+              {inner}
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 /** Section panel — the card surface used across the stats page. */
 export function Panel({

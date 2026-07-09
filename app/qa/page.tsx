@@ -8,11 +8,10 @@
 
 import * as React from "react";
 import {
-  ArrowUpRight,
   FileAudio,
   MoreVertical,
   Plus,
-  Upload,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -51,7 +50,16 @@ const STATUS: Record<BatchStatus, { label: string; cls: string; dot: string }> =
 export default function QAPage() {
   const [mode, setMode] = React.useState<"data" | "empty">("data");
   const [addMetric, setAddMetric] = React.useState(false);
-  const batches = mode === "data" ? BATCHES : [];
+  const [query, setQuery] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<"all" | BatchStatus>("all");
+
+  const all = mode === "data" ? BATCHES : [];
+  const q = query.trim().toLowerCase();
+  const batches = all.filter(
+    (b) =>
+      (statusFilter === "all" || b.status === statusFilter) &&
+      (q === "" || b.name.toLowerCase().includes(q) || b.source.toLowerCase().includes(q)),
+  );
 
   return (
     <AppShell activeNav="QA">
@@ -60,52 +68,63 @@ export default function QAPage() {
       <div className="mx-auto w-full max-w-5xl px-8 py-8">
         <PageHeading
           title="QA"
-          desc="Upload call batches, apply metrics, review the analysis."
+          desc="Apply metrics and review the analysis."
           className="mb-6"
         >
           <PreviewToggle mode={mode} onChange={setMode} />
           <button
             onClick={() => setAddMetric(true)}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Plus size={13} /> Add metric
           </button>
-          <a
-            href="#"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Metrics <ArrowUpRight size={13} />
-          </a>
-          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-          <button
-            onClick={() => toast("Opening upload — CSV + audio")}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Upload size={14} /> Upload batch
-          </button>
         </PageHeading>
         <section className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
             <span className="text-sm font-medium text-foreground">Batches</span>
             <span className="text-xs text-muted-foreground">
-              {batches.length} {batches.length === 1 ? "batch" : "batches"}
+              {batches.length} of {all.length}
             </span>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="flex h-8 w-52 items-center gap-2 rounded-lg border border-border bg-background px-2.5">
+                <Search size={13} className="shrink-0 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search batches…"
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+              <div className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-input/30 p-1">
+                {(["all", "uploaded", "analyzing", "analyzed"] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatusFilter(s)}
+                    className={cn(
+                      "inline-flex h-6 items-center rounded-md px-2 text-xs font-medium capitalize transition-colors",
+                      statusFilter === s
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {batches.length === 0 ? (
+          {all.length === 0 ? (
             <EmptyState
               icon={<FileAudio size={18} />}
               title="No QA batches yet"
-              description="Upload a CSV of call data with the matching audio to create your first batch, then apply metrics to score it."
-              action={
-                <button
-                  onClick={() => toast("Opening upload — CSV + audio")}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  <Upload size={14} /> Upload batch
-                </button>
-              }
+              description="Your call batches will appear here once they're added, ready to score with metrics."
             />
+          ) : batches.length === 0 ? (
+            <div className="px-5 py-12 text-center text-sm text-muted-foreground">
+              No batches match your search.
+            </div>
           ) : (
             <table className="w-full border-collapse text-sm">
               <thead>

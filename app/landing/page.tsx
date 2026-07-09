@@ -24,6 +24,7 @@ import {
   Radio,
   Rocket,
   ArrowRight,
+  Upload,
   UserPlus,
   Users,
   Wallet,
@@ -32,7 +33,7 @@ import {
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeading } from "@/components/stats/ui";
+import { NewMenu, PageHeading, RangeTabs } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -242,6 +243,8 @@ function useMounted() {
 export default function LandingPage() {
   // Preview toggle — real app derives this from "has the workspace done anything yet".
   const [mode, setMode] = React.useState<"data" | "new">("data");
+  // Dashboard time range — scopes activity, spend, and live-ops metrics.
+  const [range, setRange] = React.useState("7d");
   const lowBalance = BALANCE.amount < 500;
 
   // Alert feed — leads with balance risk, then operational issues.
@@ -266,7 +269,14 @@ export default function LandingPage() {
     <AppShell activeNav="Overview">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-8 py-8">
         <PageHeading title="Home">
-          <PreviewToggle mode={mode} onChange={setMode} />
+          <RangeTabs value={range} onChange={setRange} />
+          <NewMenu
+            items={[
+              { label: "New campaign", description: "Batch or realtime dialing", href: "/campaigns", icon: <Radio size={15} /> },
+              { label: "New agent", description: "Build a voice agent", icon: <Bot size={15} /> },
+              { label: "Upload QA batch", description: "Score calls against metrics", href: "/qa", icon: <Upload size={15} /> },
+            ]}
+          />
         </PageHeading>
         {mode === "new" ? (
           <EmptyHome />
@@ -290,6 +300,14 @@ export default function LandingPage() {
             </section>
           </>
         )}
+
+        {/* Prototype-only: preview the empty (new-user) state. Not shipped chrome. */}
+        <div className="flex items-center justify-end gap-2 pt-2 opacity-60">
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Preview
+          </span>
+          <PreviewToggle mode={mode} onChange={setMode} />
+        </div>
       </div>
     </AppShell>
   );

@@ -376,13 +376,26 @@ export default function CampaignsPage() {
     <AppShell activeNav="Campaigns">
       <div className="px-8 py-6 space-y-6">
           <PageHeading title="Campaigns">
-            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
-              <RefreshCw size={13} /> Refresh
-            </button>
-            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
-              <PauseCircle size={13} /> Pause all
-            </button>
-            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <button
+                    aria-label="More actions"
+                    className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <MoreHorizontal size={15} />
+                  </button>
+                }
+              />
+              <PopoverContent align="end" sideOffset={8} className="w-[180px] p-1">
+                <button className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-secondary">
+                  <RefreshCw size={14} className="text-muted-foreground" /> Refresh
+                </button>
+                <button className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-secondary">
+                  <PauseCircle size={14} className="text-muted-foreground" /> Pause all
+                </button>
+              </PopoverContent>
+            </Popover>
             <button
               onClick={() => setOpen(true)}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"

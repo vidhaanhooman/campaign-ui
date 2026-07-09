@@ -17,13 +17,14 @@ import {
   ChevronRight,
   ClipboardCheck,
   Clock,
-  Filter,
   Flag,
   Gauge,
   Hash,
   ListChecks,
   Loader2,
+  Maximize2,
   Megaphone,
+  Minimize2,
   MessageSquare,
   Phone,
   PhoneIncoming,
@@ -45,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { TimeField } from "@/components/time-picker";
+import { TimeSelect } from "@/components/time-picker";
 import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
 import {
   FilterDropdown,
@@ -204,7 +205,6 @@ function MetricWizard({ onClose }: { onClose: () => void }) {
 
 const PROVIDERS = ["OpenAI", "Anthropic", "Google"];
 const MODELS = ["gpt-4o-mini", "gpt-4o", "claude-haiku-4-5", "claude-sonnet-5"];
-const TEMPS = ["0", "0.2", "0.5", "0.7", "1.0"];
 
 type MetricTemplate = {
   id: string;
@@ -258,22 +258,23 @@ const TEMPLATES: MetricTemplate[] = [
 
 function DefineStep() {
   const [name, setName] = React.useState("");
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState<string[]>([]);
   const [outputDesc, setOutputDesc] = React.useState("");
-  const [success, setSuccess] = React.useState("");
+  const [success, setSuccess] = React.useState<string[]>([]);
   const [prompt, setPrompt] = React.useState("");
   const [userMsg, setUserMsg] = React.useState("");
   const [provider, setProvider] = React.useState("OpenAI");
   const [model, setModel] = React.useState("gpt-4o-mini");
   const [temp, setTemp] = React.useState("0");
   const [template, setTemplate] = React.useState<string | null>(null);
+  const [promptExpanded, setPromptExpanded] = React.useState(false);
 
   const applyTemplate = (t: MetricTemplate) => {
     setTemplate(t.id);
     setName(t.name);
-    setValue(t.value);
+    setValue(t.value.split(",").map((s) => s.trim()).filter(Boolean));
+    setSuccess(t.success.split(",").map((s) => s.trim()).filter(Boolean));
     setOutputDesc(t.output);
-    setSuccess(t.success);
     setPrompt(t.prompt);
   };
 
@@ -304,7 +305,7 @@ function DefineStep() {
               onClick={() => applyTemplate(t)}
               className={cn(
                 "flex flex-col gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors",
-                template === t.id ? "border-ring bg-accent" : "border-border bg-card hover:border-input",
+                template === t.id ? "border-ring bg-accent" : "border-border bg-popover hover:border-input",
               )}
             >
               <span className="truncate text-sm font-medium text-foreground">{t.name}</span>
@@ -313,7 +314,7 @@ function DefineStep() {
           ))}
           <button
             onClick={() => toast("Browse the metric template library")}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground"
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-popover px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground"
           >
             <Plus size={14} /> See more
           </button>
@@ -330,13 +331,8 @@ function DefineStep() {
           />
         </Field>
 
-        <Field label="Value" hint="Enter the possible values. They can be comma (,) separated.">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className={FIELD}
-            placeholder="e.g. true, false"
-          />
+        <Field label="Value" hint="Type a value and press comma or Enter to add it.">
+          <PillInput values={value} onChange={setValue} placeholder="e.g. positive, neutral, negative" />
         </Field>
 
         <Field label="Output Description">
@@ -348,22 +344,59 @@ function DefineStep() {
           />
         </Field>
 
-        <Field label="Success Criteria">
-          <input
-            value={success}
-            onChange={(e) => setSuccess(e.target.value)}
-            className={FIELD}
-            placeholder="Which value(s) count as a pass for this metric."
-          />
+        <Field label="Success Criteria" hint="Pick which value(s) count as a pass. Type to add a new one.">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {value.map((v) => {
+              const on = success.includes(v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setSuccess(on ? success.filter((s) => s !== v) : [...success, v])}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs transition-colors",
+                    on
+                      ? "border-ring bg-accent text-foreground"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {on && <Check size={11} strokeWidth={3} />}
+                  {v}
+                </button>
+              );
+            })}
+            <InlineAdd
+              placeholder={value.length ? "Add value…" : "e.g. positive"}
+              onAdd={(v) => {
+                if (!value.includes(v)) setValue((prev) => [...prev, v]);
+                setSuccess((prev) => (prev.includes(v) ? prev : [...prev, v]));
+              }}
+            />
+          </div>
         </Field>
 
         <Field label="Prompt">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className={cn(FIELD, "h-40 resize-none py-2.5 font-mono text-[12px] leading-relaxed")}
-            placeholder="Tell the judge what to evaluate and how to decide."
-          />
+          <div className="relative">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className={cn(
+                FIELD,
+                "resize-none py-2.5 pr-10 font-mono text-[12px] leading-relaxed transition-[height]",
+                promptExpanded ? "h-[62vh]" : "h-64",
+              )}
+              placeholder="Tell the judge what to evaluate and how to decide."
+            />
+            <button
+              type="button"
+              onClick={() => setPromptExpanded((v) => !v)}
+              aria-label={promptExpanded ? "Collapse" : "Expand"}
+              title={promptExpanded ? "Collapse" : "Expand"}
+              className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {promptExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+          </div>
         </Field>
 
         <Field
@@ -387,7 +420,13 @@ function DefineStep() {
               <Sel value={model} onChange={setModel} options={MODELS} />
             </Field>
             <Field label="Temperature">
-              <Sel value={temp} onChange={setTemp} options={TEMPS} />
+              <input
+                value={temp}
+                onChange={(e) => setTemp(e.target.value)}
+                className={FIELD}
+                inputMode="decimal"
+                placeholder="0"
+              />
             </Field>
           </div>
         </Collapsible>
@@ -544,7 +583,7 @@ function CohortStep() {
               </SchedField>
             )}
             <SchedField label="Time" hint={cadence === "Weekly" ? undefined : "The metric runs at this time."}>
-              <TimeField value={time} onChange={setTime} className="h-9" />
+              <TimeSelect value={time} onChange={setTime} className="h-9 w-full" />
             </SchedField>
             <SchedField label="Timezone">
               <Sel value={tz} onChange={setTz} options={TIMEZONES} />
@@ -573,12 +612,6 @@ function CohortStep() {
             align="center"
             sideOffset={136}
           />
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Filter size={13} />
-            {activeKeys.length
-              ? `${activeKeys.length} filter${activeKeys.length === 1 ? "" : "s"} applied`
-              : "All conversations — scores the whole cohort until you add one."}
-          </span>
           {activeKeys.length > 0 && (
             <button
               onClick={() => setFilters({})}
@@ -615,12 +648,13 @@ function CohortStep() {
           />
           <SliderField
             label="Alert"
-            hint="Notify when failures exceed this count per run."
+            hint="Notify when the failure rate exceeds this percent per run."
             value={alert}
             onChange={setAlert}
             min={0}
-            max={500}
-            step={5}
+            max={100}
+            step={1}
+            unit="%"
           />
         </div>
       </div>
@@ -636,6 +670,7 @@ function SliderField({
   min,
   max,
   step,
+  unit,
 }: {
   label: string;
   hint: string;
@@ -644,12 +679,25 @@ function SliderField({
   min: number;
   max: number;
   step: number;
+  unit?: string;
 }) {
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-center justify-between gap-2">
         <label className="text-sm font-medium text-foreground">{label}</label>
-        <span className="font-mono text-xs tabular-nums text-foreground">{value}</span>
+        <span className="inline-flex items-center gap-0.5">
+          <input
+            value={value}
+            onChange={(e) => {
+              const n = Number(e.target.value.replace(/[^0-9]/g, ""));
+              if (!Number.isNaN(n)) onChange(clamp(n));
+            }}
+            inputMode="numeric"
+            className="h-7 w-14 rounded-md border border-input bg-transparent px-2 text-center font-mono text-xs tabular-nums text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          />
+          {unit && <span className="font-mono text-xs text-muted-foreground">{unit}</span>}
+        </span>
       </div>
       <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>
       <Slider
@@ -869,6 +917,7 @@ function ActivateStep() {
             ["Name", <span key="n" className="font-medium">Phone_number_collection_check</span>],
             ["Checks for", "true means the phone number was collected correctly end to end. false means something in the collection flow failed."],
             ["Output", "boolean · pass when true"],
+            ["Success criteria", "Pass when true"],
           ]}
         />
 
@@ -948,6 +997,68 @@ function Collapsible({ title, summary, children }: { title: string; summary?: st
       </button>
       {open && <div className="mt-3 pl-[23px]">{children}</div>}
     </div>
+  );
+}
+
+// Comma/Enter-to-capsule input for the metric's possible values. Same field
+// recipe + pill style as the platform's multi-value inputs.
+function PillInput({ values, onChange, placeholder }: { values: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
+  const [draft, setDraft] = React.useState("");
+  const commit = () => {
+    const v = draft.trim().replace(/,$/, "").trim();
+    if (v && !values.includes(v)) onChange([...values, v]);
+    setDraft("");
+  };
+  return (
+    <div className="flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-lg border border-border bg-transparent px-2.5 py-1.5 text-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
+      {values.map((v, i) => (
+        <span key={i} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs text-foreground">
+          {v}
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={() => onChange(values.filter((_, j) => j !== i))}
+            className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <X size={11} />
+          </span>
+        </span>
+      ))}
+      <input
+        value={draft}
+        onChange={(e) => (e.target.value.includes(",") ? commit() : setDraft(e.target.value))}
+        onKeyDown={(e) => {
+          if (e.key === "," || e.key === "Enter") { e.preventDefault(); commit(); }
+          else if (e.key === "Backspace" && !draft && values.length) onChange(values.slice(0, -1));
+        }}
+        onBlur={commit}
+        placeholder={values.length ? "" : placeholder}
+        className="min-w-[80px] flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+      />
+    </div>
+  );
+}
+
+// Tiny inline add-input — commits on comma / Enter / blur. Used in Success
+// Criteria to add a value that also flows back into the Value capsules.
+function InlineAdd({ onAdd, placeholder }: { onAdd: (v: string) => void; placeholder?: string }) {
+  const [draft, setDraft] = React.useState("");
+  const commit = () => {
+    const v = draft.trim().replace(/,$/, "").trim();
+    if (v) onAdd(v);
+    setDraft("");
+  };
+  return (
+    <input
+      value={draft}
+      onChange={(e) => (e.target.value.includes(",") ? commit() : setDraft(e.target.value))}
+      onKeyDown={(e) => {
+        if (e.key === "," || e.key === "Enter") { e.preventDefault(); commit(); }
+      }}
+      onBlur={commit}
+      placeholder={placeholder}
+      className="h-9 min-w-[120px] flex-1 rounded-lg border border-border bg-transparent px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+    />
   );
 }
 
