@@ -238,6 +238,41 @@ export function PageHeader({
   );
 }
 
+/**
+ * Page heading — the page's own header, rendered at the top of the content
+ * (OpenAI-style; there is no global top bar). A prominent title on the left
+ * with an optional description below, and page-scoped actions on the right.
+ */
+export function PageHeading({
+  title,
+  desc,
+  children,
+  className,
+}: {
+  title: React.ReactNode;
+  /** Optional description shown under the title. */
+  desc?: React.ReactNode;
+  /** Page-scoped actions, right-aligned. */
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-start justify-between gap-4", className)}>
+      <div className="min-w-0">
+        <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
+          {title}
+        </h1>
+        {desc && <p className="mt-1 text-sm text-muted-foreground">{desc}</p>}
+      </div>
+      {children && (
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 pt-1">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Horizontal value bar over a muted track. */
 export function MiniBar({
   pct,

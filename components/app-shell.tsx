@@ -17,6 +17,7 @@ import {
   LineChart,
   ListChecks,
   MessageSquare,
+  PanelLeft,
   Phone,
   Plus,
   Radio,
@@ -167,6 +168,59 @@ export function AppShell({
       className="flex h-screen w-screen overflow-hidden"
       style={{ backgroundColor: "var(--background)" }}
     >
+      {/* collapsed rail — expand toggle + nav icons */}
+      {collapsed && (
+        <aside className="flex w-14 shrink-0 flex-col items-center border-r border-border bg-background py-2">
+          <button
+            type="button"
+            onClick={() => setCollapsed(false)}
+            aria-label="Expand sidebar"
+            className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <PanelLeft size={16} />
+          </button>
+          <div className="my-1.5 h-px w-6 bg-border" />
+          <nav className="scroll-hidden flex flex-1 flex-col items-center gap-1 overflow-y-auto">
+            {SIDEBAR.flatMap((s) => s.items).map((it) => {
+              const Icon = it.icon;
+              const active = it.label === activeNav;
+              const cls = cn(
+                "flex size-9 items-center justify-center rounded-lg transition-colors",
+                active
+                  ? "bg-sidebar-accent text-sidebar-foreground"
+                  : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+              );
+              return it.href ? (
+                <Link key={it.label} href={it.href} title={it.label} className={cls}>
+                  <Icon size={18} strokeWidth={1.75} />
+                </Link>
+              ) : (
+                <button key={it.label} title={it.label} className={cls}>
+                  <Icon size={18} strokeWidth={1.75} />
+                </button>
+              );
+            })}
+          </nav>
+          <div className="my-1.5 h-px w-6 bg-border" />
+          <div className="flex flex-col items-center gap-1">
+            <button
+              title="Settings"
+              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            >
+              <Settings size={18} strokeWidth={1.75} />
+            </button>
+            <button
+              title="Account"
+              className="flex size-9 items-center justify-center rounded-lg"
+            >
+              <span className="flex size-7 items-center justify-center rounded-md bg-chart-2/20 text-[10px] font-semibold text-chart-2">
+                HO
+              </span>
+            </button>
+          </div>
+        </aside>
+      )}
+
       {/* sidebar */}
       <aside
         className={cn(
@@ -174,9 +228,9 @@ export function AppShell({
           collapsed ? "w-0 border-r-0" : "w-[248px]",
         )}
       >
-        {/* Account / workspace switcher */}
-        <div className="p-3">
-          <button className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left transition-colors hover:bg-secondary/60">
+        {/* Workspace switcher + collapse toggle */}
+        <div className="flex items-center gap-2 p-3">
+          <button className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left transition-colors hover:bg-secondary/60">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-sidebar-foreground">
               <CircleArrowUp size={16} strokeWidth={1.75} />
             </span>
@@ -189,6 +243,14 @@ export function AppShell({
               </span>
             </span>
             <ChevronRight size={15} className="shrink-0 text-muted-foreground" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            aria-label="Collapse sidebar"
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <PanelLeft size={16} />
           </button>
         </div>
 
@@ -261,11 +323,27 @@ export function AppShell({
 
         </nav>
 
-        {/* Pinned footer — settings */}
-        <div className="border-t border-border p-3">
-          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
-            <Settings size={16} strokeWidth={1.75} className="shrink-0" />
-            <span className="flex-1 truncate text-left">Settings</span>
+        {/* Pinned footer — billing, notifications, account */}
+        <div className="space-y-1.5 border-t border-border p-3">
+          <BillingStatus sidebar />
+          <div className="flex items-center gap-1">
+            <button className="flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60">
+              <Settings size={16} strokeWidth={1.75} className="shrink-0" />
+              <span className="flex-1 truncate text-left">Settings</span>
+            </button>
+            <NotificationsButton />
+          </div>
+          <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-sidebar-accent/60">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-chart-2/20 text-[11px] font-semibold text-chart-2">
+              HO
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm text-sidebar-foreground">Vidhaan</span>
+              <span className="block truncate text-xs text-muted-foreground">
+                vidhandubey03@gmail.com
+              </span>
+            </span>
+            <ChevronRight size={15} className="shrink-0 text-muted-foreground" />
           </button>
         </div>
       </aside>
@@ -367,90 +445,173 @@ export function NotificationsButton() {
   );
 }
 
+/* Placeholder billing feed — real plan + usage data drops in here later. */
+type BillingPlan = "payg" | "enterprise";
+const BILLING: {
+  plan: BillingPlan;
+  balance: number; // PAYG wallet (₹)
+  lowBalance: number; // PAYG amber threshold (₹)
+  spentThisMonth: string;
+  usedMinutes: number; // Enterprise consumption this period
+  includedMinutes: number | null; // Enterprise commitment; null = uncapped/invoiced
+} = {
+  plan: "payg",
+  balance: 1248.5,
+  lowBalance: 200,
+  spentThisMonth: "₹612.40",
+  usedMinutes: 148_000,
+  includedMinutes: 240_000,
+};
+
+const fmtMin = (m: number) =>
+  m >= 1000 ? `${(m / 1000).toFixed(m % 1000 === 0 ? 0 : 1)}k` : `${m}`;
+
 /**
- * Ambient usage chip — Twilio pattern. Click opens a compact popover with
- * balance, runway, MTD spend, and quick actions. Amber when balance runway
- * is short.
+ * Plan-aware billing status. PAYG shows a live, drainable balance (amber when
+ * runway is short, with Add funds). Enterprise shows consumption against the
+ * committed volume (amber near the cap, with contract/invoices) — never a
+ * wallet, never "add funds". One slot, one component, branches on plan.
  */
-export function UsageChip() {
-  // Placeholder balance + usage data — real feed drops in here later.
-  const balance = 1248.5;
-  const low = balance < 200;
-  const usage = [
-    { label: "Spent this month", value: "₹612.40" },
-    { label: "Voice minutes", value: "24.8k" },
-    { label: "Calls placed", value: "12.4k" },
-  ];
+export function BillingStatus({ sidebar = false }: { sidebar?: boolean } = {}) {
+  const b = BILLING;
+  const isEnt = b.plan === "enterprise";
+  const capped = isEnt && b.includedMinutes != null;
+  const pct = capped
+    ? Math.min(100, Math.round((b.usedMinutes / (b.includedMinutes as number)) * 100))
+    : 0;
+  const alert = isEnt ? capped && pct >= 90 : b.balance < b.lowBalance;
+
+  const label = isEnt ? "Plan usage" : "Balance";
+  const value = isEnt
+    ? capped
+      ? `${pct}%`
+      : `${fmtMin(b.usedMinutes)} min`
+    : `₹${b.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+  const Icon = isEnt ? Gauge : Wallet;
+
+  const chipTone = alert
+    ? "border-amber-400/30 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.10]"
+    : "border-border bg-card text-foreground hover:bg-secondary/60";
+
+  const trigger = sidebar ? (
+    <button
+      aria-label="Billing & usage"
+      className={cn(
+        "flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors",
+        chipTone,
+      )}
+    >
+      <Icon size={15} className={cn("shrink-0", !alert && "text-muted-foreground")} />
+      <span className="flex-1 text-sm">{label}</span>
+      <span className="font-mono text-sm tabular-nums">{value}</span>
+    </button>
+  ) : (
+    <button
+      aria-label="Billing & usage"
+      className={cn(
+        "inline-flex h-8 items-center gap-2 rounded-lg border px-2.5 text-[13px] transition-colors",
+        chipTone,
+      )}
+    >
+      <Icon size={14} className={cn(!alert && "text-muted-foreground")} />
+      {isEnt && capped && (
+        <span className="h-1.5 w-10 overflow-hidden rounded-full bg-input/40">
+          <span
+            className={cn("block h-full rounded-full", alert ? "bg-amber-400" : "bg-foreground/70")}
+            style={{ width: `${pct}%` }}
+          />
+        </span>
+      )}
+      <span className="font-mono tabular-nums">{value}</span>
+    </button>
+  );
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <button
-            aria-label="Usage & balance"
-            className={cn(
-              "inline-flex size-8 items-center justify-center rounded-lg border transition-colors",
-              low
-                ? "border-amber-400/30 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.10]"
-                : "border-border bg-card text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Gauge size={15} />
-          </button>
-        }
-      />
+      <PopoverTrigger render={trigger} />
       <PopoverContent
-        align="end"
+        align={sidebar ? "start" : "end"}
+        side={sidebar ? "top" : "bottom"}
         sideOffset={8}
         className="w-[320px] overflow-hidden p-0"
       >
-        <div className="border-b border-border px-5 py-4">
-          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-            <Wallet size={13} /> Balance
-          </span>
-          <div
-            className={cn(
-              "mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums",
-              low ? "text-amber-400" : "text-foreground",
-            )}
-          >
-            ₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            Pay as you go · billed as you dial
-          </div>
-        </div>
-
-        <div className="px-5 py-4">
-          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-            <Gauge size={13} /> Usage this month
-          </span>
-          <div className="mt-3 flex flex-col gap-2.5">
-            {usage.map((u) => (
-              <div
-                key={u.label}
-                className="flex items-center justify-between text-xs"
-              >
-                <span className="text-muted-foreground">{u.label}</span>
-                <span className="font-mono tabular-nums text-foreground">
-                  {u.value}
+        {isEnt ? (
+          <>
+            <div className="border-b border-border px-5 py-4">
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <Gauge size={13} /> Plan usage
+              </span>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className={cn("text-2xl font-semibold leading-none tabular-nums", alert ? "text-amber-400" : "text-foreground")}>
+                  {fmtMin(b.usedMinutes)}
                 </span>
+                {capped && (
+                  <span className="text-sm text-muted-foreground tabular-nums">
+                    / {fmtMin(b.includedMinutes as number)} min
+                  </span>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 border-t border-border p-3">
-          <button className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            <Plus size={13} /> Add funds
-          </button>
-          <Link
-            href="/usage"
-            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Details <ArrowUpRight size={12} />
-          </Link>
-        </div>
+              {capped ? (
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-input/40">
+                  <div
+                    className={cn("h-full rounded-full", alert ? "bg-amber-400" : "bg-foreground/70")}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              ) : (
+                <div className="mt-1 text-xs text-muted-foreground">Enterprise · billed by contract</div>
+              )}
+            </div>
+            <div className="flex items-center gap-2 border-t border-border p-3">
+              <Link
+                href="/usage"
+                className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-foreground transition-colors hover:bg-secondary/60"
+              >
+                <ReportIcon size={13} /> Contract &amp; invoices
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="border-b border-border px-5 py-4">
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <Wallet size={13} /> Balance
+              </span>
+              <div className={cn("mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums", alert ? "text-amber-400" : "text-foreground")}>
+                ₹{b.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">Pay as you go · billed as you dial</div>
+            </div>
+            <div className="px-5 py-4">
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <Gauge size={13} /> Usage this month
+              </span>
+              <div className="mt-3 flex flex-col gap-2.5">
+                {[
+                  { label: "Spent this month", value: b.spentThisMonth },
+                  { label: "Voice minutes", value: `${fmtMin(b.usedMinutes)}` },
+                  { label: "Calls placed", value: "12.4k" },
+                ].map((u) => (
+                  <div key={u.label} className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{u.label}</span>
+                    <span className="font-mono tabular-nums text-foreground">{u.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 border-t border-border p-3">
+              <button className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                <Plus size={13} /> Add funds
+              </button>
+              <Link
+                href="/usage"
+                className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Details <ArrowUpRight size={12} />
+              </Link>
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );

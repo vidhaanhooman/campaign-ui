@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PanelLeft } from "lucide-react";
 
 import {
   RT_FUNNEL_RAW,
@@ -18,7 +17,7 @@ import { AgentCompare } from "@/components/stats/agent-compare";
 import { StatsTypeTabs } from "@/components/stats/type-tabs";
 import { AddWidgetButton } from "@/components/stats/add-widget";
 import { AppShell } from "@/components/app-shell";
-import { KpiCard, PageHeader } from "@/components/stats/ui";
+import { KpiCard, PageHeading } from "@/components/stats/ui";
 import {
   DateRangePicker,
   type StatsRange,
@@ -63,14 +62,8 @@ export default function RealtimeStatsPage() {
 
   return (
     <AppShell activeNav="Campaigns">
-      <PageHeader
-        icon={<PanelLeft size={16} />}
-        label={STAT_CAMPAIGN_RT.name}
-      />
-
       <div className="px-6 py-6">
-        {/* Toolbar */}
-        <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
+        <PageHeading title={STAT_CAMPAIGN_RT.name} className="mb-6">
           <StatsTypeTabs />
           <DateRangePicker
             value={range}
@@ -82,7 +75,7 @@ export default function RealtimeStatsPage() {
             defaultPreset="24h"
           />
           <AddWidgetButton />
-        </div>
+        </PageHeading>
 
         {/* KPI card row */}
         <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">

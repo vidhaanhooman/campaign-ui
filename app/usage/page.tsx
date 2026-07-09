@@ -7,14 +7,13 @@ import {
   Bot,
   Clock,
   Gauge,
-  PanelLeft,
   Phone,
   PhoneCall,
   Users,
 } from "lucide-react";
 
-import { AppShell, NotificationsButton } from "@/components/app-shell";
-import { PageHeader } from "@/components/stats/ui";
+import { AppShell } from "@/components/app-shell";
+import { PageHeading } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -55,26 +54,20 @@ export default function UsagePage() {
 
   return (
     <AppShell activeNav="Overview">
-      <PageHeader
-        icon={<PanelLeft size={16} />}
-        label="Usage"
-        sublabel={
-          <span className="inline-flex items-center gap-1.5">
-            Scale plan
-            <span className="text-muted-foreground/80">· resets Aug 1</span>
-          </span>
-        }
-        action={
-          <div className="flex items-center gap-2">
-            <NotificationsButton />
-            <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-              Manage plan <ArrowUpRight size={13} />
-            </button>
-          </div>
-        }
-      />
-
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-8 py-8">
+        <PageHeading
+          title="Usage"
+          desc={
+            <span className="inline-flex items-center gap-1.5">
+              Scale plan
+              <span className="text-muted-foreground/80">· resets Aug 1</span>
+            </span>
+          }
+        >
+          <button className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            Manage plan <ArrowUpRight size={13} />
+          </button>
+        </PageHeading>
         {/* Near-limit banner — only when something is actually near a cap. */}
         {near.length > 0 && (
           <div className="flex items-start gap-3 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3">

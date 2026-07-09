@@ -275,7 +275,7 @@ function FilterFieldRow({
               return (
                 <label
                   key={val}
-                  className="flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-foreground transition-colors hover:bg-secondary"
+                  className="flex cursor-pointer items-center gap-2.5 border-b border-border/60 px-2.5 py-2 text-sm text-foreground transition-colors last:border-b-0 hover:bg-secondary"
                 >
                   <Checkbox
                     checked={checked}

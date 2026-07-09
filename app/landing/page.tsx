@@ -31,8 +31,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppShell, NotificationsButton, UsageChip } from "@/components/app-shell";
-import { PageHeader } from "@/components/stats/ui";
+import { AppShell } from "@/components/app-shell";
+import { PageHeading } from "@/components/stats/ui";
 import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -264,27 +264,10 @@ export default function LandingPage() {
 
   return (
     <AppShell activeNav="Overview">
-      <PageHeader
-        icon={<Radio size={16} />}
-        label="Home"
-        sublabel={
-          <span className="inline-flex items-center gap-1.5">
-            {ACCOUNT.workspace}
-            <span className="font-mono text-muted-foreground/80">
-              · {ACCOUNT.workspaceId}
-            </span>
-          </span>
-        }
-        action={
-          <div className="flex items-center gap-2">
-            <PreviewToggle mode={mode} onChange={setMode} />
-            <UsageChip />
-            <NotificationsButton />
-          </div>
-        }
-      />
-
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-8 py-8">
+        <PageHeading title="Home">
+          <PreviewToggle mode={mode} onChange={setMode} />
+        </PageHeading>
         {mode === "new" ? (
           <EmptyHome />
         ) : (

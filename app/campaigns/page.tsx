@@ -10,7 +10,6 @@ import {
   Eye,
   Filter,
   MoreHorizontal,
-  PanelLeft,
   PauseCircle,
   Pencil,
   Play,
@@ -19,8 +18,8 @@ import {
   Search,
 } from "lucide-react";
 
-import { AppShell, NotificationsButton, UsageChip } from "@/components/app-shell";
-import { PageHeader } from "@/components/stats/ui";
+import { AppShell } from "@/components/app-shell";
+import { PageHeading } from "@/components/stats/ui";
 import { CreateCampaignDialog } from "@/components/create-campaign-dialog";
 import { UpdateCampaignDrawer } from "@/components/campaigns/update-campaign-drawer";
 import {
@@ -375,30 +374,23 @@ export default function CampaignsPage() {
 
   return (
     <AppShell activeNav="Campaigns">
-      <PageHeader
-        icon={<PanelLeft size={16} />}
-        label="Campaigns"
-        action={
-          <div className="flex items-center gap-2">
+      <div className="px-8 py-6 space-y-6">
+          <PageHeading title="Campaigns">
             <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
               <RefreshCw size={13} /> Refresh
             </button>
             <button className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent">
               <PauseCircle size={13} /> Pause all
             </button>
-            <UsageChip />
-            <NotificationsButton />
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
             <button
               onClick={() => setOpen(true)}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Plus size={13} /> Create campaign
             </button>
-          </div>
-        }
-      />
+          </PageHeading>
 
-      <div className="px-8 py-6 space-y-6">
           {/* Compact status line + expandable KPI cards */}
           <div className="rounded-xl border border-border bg-card">
             <button

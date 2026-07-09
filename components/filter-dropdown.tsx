@@ -46,6 +46,8 @@ export interface FilterDropdownProps {
   triggerLabel?: string;
   align?: "start" | "center" | "end";
   side?: "top" | "bottom" | "left" | "right";
+  /** Distance (px) from the trigger. Defaults to the Popover default. */
+  sideOffset?: number;
   width?: number;
   className?: string;
 }
@@ -68,7 +70,7 @@ function isActive(v: FilterValue | undefined): boolean {
 // -------- Main --------
 export function FilterDropdown({
   schema, value, onChange, quickFilters,
-  triggerLabel = "Filter", align = "end", side = "bottom", width = 320, className,
+  triggerLabel = "Filter", align = "end", side = "bottom", sideOffset, width = 320, className,
 }: FilterDropdownProps) {
   const [open, setOpen]     = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -135,7 +137,7 @@ export function FilterDropdown({
         </button>
       } />
 
-      <PopoverContent align={align} side={side} style={{ width }}
+      <PopoverContent align={align} side={side} sideOffset={sideOffset} style={{ width }}
           className={cn(CARD, "flex max-h-[80vh] flex-col p-0 shadow-xl")}>
         <div ref={rootRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Search */}

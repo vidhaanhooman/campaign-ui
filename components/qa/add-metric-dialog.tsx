@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Add Metric — a 4-step flow (Define · Cohort and Schedule · Dry Run · Activate)
- * hosted in the same right-drawer shell as Create Campaign. Define is built;
- * the later steps are scaffolded.
+ * Add metric — 4-step flow (Define · Cohort and Schedule · Dry Run · Activate)
+ * hosted in the Create-Campaign right-drawer shell. Built to the Platform
+ * Updates "Create Metric" Figma frames, mapped onto campaign-b0 tokens and
+ * shared primitives (Segmented, Select, Slider, FilterDropdown).
  */
 
 import * as React from "react";
@@ -12,21 +13,23 @@ import {
   Bot,
   Braces,
   Check,
-  ChevronDown,
   ChevronLeft,
+  ChevronRight,
   ClipboardCheck,
   Clock,
+  Filter,
   Flag,
   Gauge,
   Hash,
   ListChecks,
-  Maximize2,
+  Loader2,
   Megaphone,
   MessageSquare,
   Phone,
   PhoneIncoming,
   PhoneOff,
   PhoneOutgoing,
+  Play,
   Plus,
   RotateCw,
   X,
@@ -41,9 +44,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { NumberStepper } from "@/components/number-stepper";
-import { DatePickerTime } from "@/components/date-picker-time";
+import { Slider } from "@/components/ui/slider";
+import { TimeField } from "@/components/time-picker";
+import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
 import {
   FilterDropdown,
   type FilterSection,
@@ -57,33 +60,12 @@ const STEPS = [
   { id: 1, title: "Define" },
   { id: 2, title: "Cohort & Schedule" },
   { id: 3, title: "Dry Run" },
-  { id: 4, title: "Activate" },
+  { id: 4, title: "Review" },
 ] as const;
 
-// Same input recipe as Create Campaign (batch wizard).
+// Exact input recipe from Create Campaign (batch wizard).
 const FIELD =
-  "h-9 w-full rounded-md border border-border bg-transparent dark:bg-input/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-foreground";
-
-type MetricType = "Boolean" | "Enum" | "Number" | "Categorical";
-
-type MetricTemplate = { type: string; name: string; desc: string };
-const TEMPLATES: MetricTemplate[] = [
-  {
-    type: "ENUM",
-    name: "Appropriate_call_end",
-    desc: "CORRECT — The agent ended the call at the right time, with a relevant message, no farewell chains, and a clean close.",
-  },
-  {
-    type: "BOOLEAN",
-    name: "detail_collection_exp",
-    desc: "true — either no detail collection happened in this call, or every detail collection exchange was smooth — no repeats, no confusion.",
-  },
-  {
-    type: "BOOLEAN",
-    name: "Phone_number_collection_check",
-    desc: "true means the phone number was collected correctly end to end. false means something in the collection went wrong.",
-  },
-];
+  "h-9 w-full rounded-lg border border-border bg-transparent dark:bg-input/30 px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function AddMetricDialog({
   open,
@@ -99,7 +81,7 @@ export function AddMetricDialog({
         variant="drawer"
         showCloseButton={false}
         style={{ backgroundColor: "var(--card)" }}
-        className="!max-w-[1040px] flex flex-col overflow-hidden border-l border-border p-0 shadow-2xl shadow-black/60"
+        className="!max-w-[960px] flex flex-col overflow-hidden border-l border-border p-0 shadow-2xl"
       >
         <DialogTitle className="sr-only">Add metric</DialogTitle>
         <MetricWizard onClose={close} />
@@ -110,6 +92,21 @@ export function AddMetricDialog({
 
 function MetricWizard({ onClose }: { onClose: () => void }) {
   const [step, setStep] = React.useState(1);
+  const [maxStep, setMaxStep] = React.useState(1);
+
+  const goto = (id: number) => {
+    if (id <= maxStep) setStep(id);
+  };
+  const advance = () => {
+    if (step < STEPS.length) {
+      const next = step + 1;
+      setStep(next);
+      setMaxStep((m) => Math.max(m, next));
+    } else {
+      toast.success("Metric created");
+      onClose();
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -128,19 +125,27 @@ function MetricWizard({ onClose }: { onClose: () => void }) {
           {STEPS.map((s, i) => {
             const active = s.id === step;
             const done = s.id < step;
+            const reachable = s.id <= maxStep;
             return (
               <div key={s.id} className="flex items-center gap-1">
                 <button
-                  onClick={() => setStep(s.id)}
+                  onClick={() => goto(s.id)}
+                  disabled={!reachable}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors",
-                    active ? "bg-card text-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                    active
+                      ? "bg-card text-foreground"
+                      : reachable
+                        ? "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                        : "cursor-default text-muted-foreground/50",
                   )}
                 >
                   <span
                     className={cn(
                       "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
-                      active ? "bg-primary font-medium text-primary-foreground" : "bg-card text-muted-foreground",
+                      active
+                        ? "bg-primary font-medium text-primary-foreground"
+                        : "bg-card text-muted-foreground",
                     )}
                   >
                     {done ? <Check size={10} strokeWidth={3} /> : s.id}
@@ -156,7 +161,15 @@ function MetricWizard({ onClose }: { onClose: () => void }) {
 
       {/* content */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {step === 1 ? <DefineStep /> : step === 2 ? <CohortStep /> : <ScaffoldStep title={STEPS[step - 1].title} />}
+        {step === 1 ? (
+          <DefineStep />
+        ) : step === 2 ? (
+          <CohortStep />
+        ) : step === 3 ? (
+          <DryRunStep />
+        ) : (
+          <ActivateStep />
+        )}
       </div>
 
       {/* footer */}
@@ -176,16 +189,10 @@ function MetricWizard({ onClose }: { onClose: () => void }) {
             Cancel
           </button>
           <button
-            onClick={() => {
-              if (step < STEPS.length) setStep(step + 1);
-              else {
-                toast.success("Metric added");
-                onClose();
-              }
-            }}
+            onClick={advance}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            {step === STEPS.length ? "Add metric" : "Continue"}
+            {step === STEPS.length ? "Create metric" : "Continue"}
           </button>
         </div>
       </div>
@@ -195,236 +202,213 @@ function MetricWizard({ onClose }: { onClose: () => void }) {
 
 /* ── Step 1 · Define ─────────────────────────────────────────────────────── */
 
-const STARTER: Record<MetricType, string> = {
-  Boolean:
-    "Decide whether the criterion holds in the conversation.\nReturn true if it clearly holds, otherwise false.\n\nTranscript:\n${fullTranscript}",
-  Enum:
-    "Read the conversation and classify it into exactly one of the labels below.\n\nTranscript:\n${fullTranscript}",
-  Number:
-    "Score the conversation on the criterion using the range below.\nReturn only the number.\n\nTranscript:\n${fullTranscript}",
-  Categorical:
-    "Tag the conversation with the most fitting category and a one-line reason.\n\nTranscript:\n${fullTranscript}",
+const PROVIDERS = ["OpenAI", "Anthropic", "Google"];
+const MODELS = ["gpt-4o-mini", "gpt-4o", "claude-haiku-4-5", "claude-sonnet-5"];
+const TEMPS = ["0", "0.2", "0.5", "0.7", "1.0"];
+
+type MetricTemplate = {
+  id: string;
+  type: string;
+  name: string;
+  blurb: string;
+  value: string;
+  output: string;
+  success: string;
+  prompt: string;
 };
 
-const TRANSCRIPT_VARS = ["${fullTranscript}", "${conversationTranscript}", "${agentTranscript}"];
-const CONTEXT_VARS = ["${context.currentTime}", "${analysis.results.summary}"];
+const TEMPLATES: MetricTemplate[] = [
+  {
+    id: "phone",
+    type: "Boolean",
+    name: "phone_number_collection",
+    blurb: "Was the caller's phone number collected correctly, end to end?",
+    value: "true, false",
+    output:
+      "true — the phone number was collected correctly end to end. false — something in the collection flow failed.",
+    success: "true",
+    prompt:
+      "Decide whether the caller's phone number was collected correctly.\nReturn true only if it was asked for, captured, and confirmed. Otherwise false.\n\nTranscript:\n${fullTranscript}",
+  },
+  {
+    id: "call_end",
+    type: "Enum",
+    name: "appropriate_call_end",
+    blurb: "Did the agent end the call at the right time with a clean close?",
+    value: "correct, incorrect",
+    output:
+      "correct — ended at the right time with a relevant message and clean close. incorrect — abrupt, premature, or farewell chains.",
+    success: "correct",
+    prompt:
+      "Classify whether the agent ended the call appropriately using the labels below.\n\nTranscript:\n${fullTranscript}",
+  },
+  {
+    id: "detail",
+    type: "Boolean",
+    name: "detail_collection_exp",
+    blurb: "Was every detail-collection exchange smooth — no repeats or confusion?",
+    value: "true, false",
+    output:
+      "true — no detail collection happened, or every exchange was smooth. false — repeats or confusion occurred.",
+    success: "true",
+    prompt:
+      "Judge whether detail collection in this call was smooth.\nReturn true if smooth or not applicable, otherwise false.\n\nTranscript:\n${fullTranscript}",
+  },
+];
 
 function DefineStep() {
   const [name, setName] = React.useState("");
-  const [type, setType] = React.useState<MetricType>("Boolean");
-  const [enumValues, setEnumValues] = React.useState<string[]>([]);
-  const [prompt, setPrompt] = React.useState(STARTER.Boolean);
-  const [promptEdited, setPromptEdited] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const [outputDesc, setOutputDesc] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+  const [prompt, setPrompt] = React.useState("");
   const [userMsg, setUserMsg] = React.useState("");
-  const [active, setActive] = React.useState<string>("name");
-  const [fromTemplate, setFromTemplate] = React.useState<string | null>(null);
-  const promptRef = React.useRef<HTMLTextAreaElement>(null);
-
-  const changeType = (t: MetricType) => {
-    setType(t);
-    if (!promptEdited) setPrompt(STARTER[t]);
-  };
+  const [provider, setProvider] = React.useState("OpenAI");
+  const [model, setModel] = React.useState("gpt-4o-mini");
+  const [temp, setTemp] = React.useState("0");
+  const [template, setTemplate] = React.useState<string | null>(null);
 
   const applyTemplate = (t: MetricTemplate) => {
-    const tt: MetricType = t.type === "ENUM" ? "Enum" : "Boolean";
+    setTemplate(t.id);
     setName(t.name);
-    setType(tt);
-    if (!promptEdited) setPrompt(STARTER[tt]);
-    setFromTemplate(t.name);
-  };
-
-  const insertVar = (token: string) => {
-    const ta = promptRef.current;
-    if (!ta) { setPrompt((p) => `${p}${token}`); setPromptEdited(true); return; }
-    const s = ta.selectionStart ?? prompt.length;
-    const e = ta.selectionEnd ?? prompt.length;
-    const next = prompt.slice(0, s) + token + prompt.slice(e);
-    setPrompt(next);
-    setPromptEdited(true);
-    requestAnimationFrame(() => {
-      ta.focus();
-      const pos = s + token.length;
-      ta.setSelectionRange(pos, pos);
-    });
+    setValue(t.value);
+    setOutputDesc(t.output);
+    setSuccess(t.success);
+    setPrompt(t.prompt);
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-6">
-      {/* start from an existing metric */}
-      <div className="mb-6">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Start from an existing metric</span>
-          {fromTemplate && (
-            <button onClick={() => setFromTemplate(null)} className="text-[11px] text-muted-foreground transition-colors hover:text-foreground">
+    <div className="mx-auto w-full max-w-3xl px-8 py-6">
+      <StepHeader
+        title="Define metric"
+        subtitle="Configure your metric name, criteria, prompt, and model settings."
+      />
+
+      {/* Start from a template */}
+      <div className="mt-6">
+        <div className="mb-2.5 flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">Start from a template</span>
+          {template && (
+            <button
+              onClick={() => setTemplate(null)}
+              className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
               Clear
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {TEMPLATES.slice(0, 2).map((t) => (
             <button
-              key={t.name}
+              key={t.id}
               onClick={() => applyTemplate(t)}
               className={cn(
-                "flex flex-col gap-1.5 rounded-xl border p-3.5 text-left transition-colors",
-                fromTemplate === t.name ? "border-ring bg-accent" : "border-border bg-card hover:border-border",
+                "flex flex-col gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors",
+                template === t.id ? "border-ring bg-accent" : "border-border bg-card hover:border-input",
               )}
             >
-              <span className="w-fit rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{t.type}</span>
-              <span className="text-sm font-medium text-foreground">{t.name}</span>
-              <span className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">{t.desc}</span>
+              <span className="truncate text-sm font-medium text-foreground">{t.name}</span>
+              <span className="truncate text-[11px] leading-relaxed text-muted-foreground">{t.blurb}</span>
             </button>
           ))}
           <button
-            onClick={() => toast("Browse all metric templates")}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-card/40 p-3.5 text-center transition-colors hover:border-border hover:bg-card"
+            onClick={() => toast("Browse the metric template library")}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground"
           >
-            <span className="flex size-8 items-center justify-center rounded-full border border-border text-muted-foreground">
-              <Plus size={15} />
-            </span>
-            <span className="text-sm font-medium text-foreground">More templates</span>
-            <span className="text-[11px] text-muted-foreground">Browse the library</span>
+            <Plus size={14} /> See more
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
-          {/* Identity */}
-          <Section title="Identity">
-            <Field label="Name" onActive={() => setActive("name")}>
-              <input value={name} onChange={(e) => setName(e.target.value)} className={FIELD} placeholder="e.g. issue_resolved (letters, numbers, _ and -)" />
-            </Field>
-            <Field label="Type" onActive={() => setActive("type")}>
-              <Segmented value={type} onChange={(v) => changeType(v as MetricType)} options={["Boolean", "Enum", "Number", "Categorical"]} />
-            </Field>
-            {type === "Enum" && (
-              <Field label="Values" hint="Type a value and press comma to add it." onActive={() => setActive("type")}>
-                <PillInput values={enumValues} onChange={setEnumValues} placeholder="e.g. positive, neutral, negative" />
-              </Field>
-            )}
-          </Section>
+      <div className="mt-6 flex flex-col gap-5">
+        <Field label="Name">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={FIELD}
+            placeholder="e.g. phone_number_collection (letters, numbers, _ and -)"
+          />
+        </Field>
 
-          {/* Judge prompt with variable chips */}
-          <Section title="Judge prompt">
-            <Field label="Prompt" onActive={() => setActive("prompt")}>
-              <div className="relative">
-                <textarea
-                  ref={promptRef}
-                  value={prompt}
-                  onChange={(e) => { setPrompt(e.target.value); setPromptEdited(true); }}
-                  className={cn(FIELD, "h-44 resize-none py-2.5 font-mono text-[12px] leading-relaxed")}
-                  placeholder="Tell the judge what to evaluate and how to decide."
-                />
-                <button onClick={() => toast("Expand editor")} aria-label="Expand" className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground">
-                  <Maximize2 size={13} />
-                </button>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Insert</span>
-                {[...TRANSCRIPT_VARS, ...CONTEXT_VARS].map((v) => (
-                  <button key={v} onClick={() => insertVar(v)} className="rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground">
-                    {v.replace(/\$\{|\}/g, "")}
-                  </button>
-                ))}
-              </div>
+        <Field label="Value" hint="Enter the possible values. They can be comma (,) separated.">
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className={FIELD}
+            placeholder="e.g. true, false"
+          />
+        </Field>
+
+        <Field label="Output Description">
+          <input
+            value={outputDesc}
+            onChange={(e) => setOutputDesc(e.target.value)}
+            className={FIELD}
+            placeholder="What each value means, so the judge picks correctly."
+          />
+        </Field>
+
+        <Field label="Success Criteria">
+          <input
+            value={success}
+            onChange={(e) => setSuccess(e.target.value)}
+            className={FIELD}
+            placeholder="Which value(s) count as a pass for this metric."
+          />
+        </Field>
+
+        <Field label="Prompt">
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className={cn(FIELD, "h-40 resize-none py-2.5 font-mono text-[12px] leading-relaxed")}
+            placeholder="Tell the judge what to evaluate and how to decide."
+          />
+        </Field>
+
+        <Field
+          label="User Message"
+          hint="Optional. The user message to use for the evaluation. If not specified, the full transcript will be used."
+        >
+          <textarea
+            value={userMsg}
+            onChange={(e) => setUserMsg(e.target.value)}
+            className={cn(FIELD, "h-20 resize-none py-2.5")}
+            placeholder="Leave empty to use the full transcript."
+          />
+        </Field>
+
+        <Collapsible title="LLM Settings" summary={`${provider} · ${model} · temp ${temp}`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field label="Provider">
+              <Sel value={provider} onChange={setProvider} options={PROVIDERS} />
             </Field>
-            <Field label="User Message" hint="Optional. Defaults to the full transcript." onActive={() => setActive("prompt")}>
-              <textarea value={userMsg} onChange={(e) => setUserMsg(e.target.value)} className={cn(FIELD, "h-20 resize-none py-2.5")} />
+            <Field label="Model">
+              <Sel value={model} onChange={setModel} options={MODELS} />
             </Field>
-            <Collapsible title="LLM Settings" />
-          </Section>
+            <Field label="Temperature">
+              <Sel value={temp} onChange={setTemp} options={TEMPS} />
+            </Field>
+          </div>
+        </Collapsible>
       </div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="mb-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{title}</div>
-      <div className="flex flex-col gap-4">{children}</div>
-    </div>
-  );
-}
+/* ── Step 2 · Cohort and Schedule ────────────────────────────────────────── */
 
-// Comma-to-pill input for Enum values — same pill style as Calling numbers,
-// without the dropdown. Type a value + comma (or Enter) → pill.
-function PillInput({ values, onChange, placeholder }: { values: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
-  const [draft, setDraft] = React.useState("");
-  const commit = () => {
-    const v = draft.trim().replace(/,$/, "").trim();
-    if (v && !values.includes(v)) onChange([...values, v]);
-    setDraft("");
-  };
-  return (
-    <div className="flex min-h-8 w-full flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm transition-colors focus-within:border-foreground">
-      {values.length > 0 && (
-        <span className="text-xs font-medium text-muted-foreground">{values.length} selected</span>
-      )}
-      {values.map((v, i) => (
-        <span
-          key={i}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-2 py-0.5 font-mono text-xs text-foreground"
-        >
-          {v}
-          <span
-            role="button"
-            tabIndex={0}
-            onClick={() => onChange(values.filter((_, j) => j !== i))}
-            className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <X size={11} />
-          </span>
-        </span>
-      ))}
-      <input
-        value={draft}
-        onChange={(e) => (e.target.value.includes(",") ? commit() : setDraft(e.target.value))}
-        onKeyDown={(e) => {
-          if (e.key === "," || e.key === "Enter") { e.preventDefault(); commit(); }
-          else if (e.key === "Backspace" && !draft && values.length) onChange(values.slice(0, -1));
-        }}
-        onBlur={commit}
-        placeholder={values.length ? "" : placeholder}
-        className="min-w-[80px] flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-      />
-    </div>
-  );
-}
-
-// Segmented tabs — same recipe as PriorityField in Create Campaign.
-function Segmented({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
-      {options.map((o) => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => onChange(o)}
-          className={cn(
-            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
-            value === o ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {o}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ── Step 2 · Cohort — which uploaded conversations to score (one-off) ─────── */
-
-const BATCH_TOTAL = 6; // conversations in this uploaded batch (mock)
-const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+type Cadence = "Daily" | "Weekly" | "Periodic";
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const INTERVALS = ["15m", "30m", "1hr", "6hr", "12hr"];
 
 const AGENTS = ["Debt Collection Pitch Agent", "Debt Collection Outbound Agent", "Careers_360", "premium", "standard", "palmonas hoomanlabs"];
 const OUTCOMES = ["Resolved", "Transferred", "Dropped", "Voicemail", "No answer"];
 const END_REASONS = ["Completed", "Caller hung up", "Agent ended", "No answer", "Failed"];
 const CAMPAIGNS = ["Q3 Win-back", "Real Estate inbound", "Debt collection"];
 
-// Full conversation filter taxonomy — every field active (multi-select · text ·
-// range · pill · custom), grouped like the insights conversations filter.
+// Full conversation filter taxonomy — every field active, grouped like the
+// insights conversations filter.
 const COHORT_SCHEMA: FilterSection[] = [
   {
     items: [
@@ -524,126 +508,509 @@ function ContextVarEditor({ value, onChange, onDone }: { value: string; onChange
 }
 
 function CohortStep() {
-  const [scope, setScope] = React.useState("all"); // all | filtered
-  const [filters, setFilters] = React.useState<FilterValues>({});
-  const [cap, setCap] = React.useState(false);
-  const [limit, setLimit] = React.useState(BATCH_TOTAL);
-  const [runMode, setRunMode] = React.useState("Run now"); // Run now | Schedule
-  const [when, setWhen] = React.useState(""); // YYYY-MM-DDTHH:mm
+  const [cadence, setCadence] = React.useState<Cadence>("Weekly");
+  const [day, setDay] = React.useState("Monday");
+  const [time, setTime] = React.useState("09:00");
   const [tz, setTz] = React.useState("Asia/Kolkata");
+  const [interval, setInterval] = React.useState("1hr");
+  const [filters, setFilters] = React.useState<FilterValues>({});
+  const [limit, setLimit] = React.useState(200);
+  const [alert, setAlert] = React.useState(50);
 
   const activeKeys = Object.keys(filters).filter((k) => isSet(filters[k]));
-  const matched = scope === "all" ? BATCH_TOTAL : Math.max(1, BATCH_TOTAL - activeKeys.length);
-  const evaluated = cap ? Math.min(matched, limit) : matched;
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-6">
-      {/* live preview — the answer to "who will this run on?" */}
-      <div className="mb-6 flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3.5">
-        <div>
-          <div className="text-2xl font-semibold tabular-nums text-foreground">
-            {evaluated} <span className="text-sm font-normal text-muted-foreground">of {BATCH_TOTAL}</span>
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">conversations from this batch will be scored, once.</div>
-        </div>
-        <span className="rounded-md border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground">q3_winback.csv</span>
-      </div>
+    <div className="mx-auto w-full max-w-3xl px-8 py-6">
+      {/* Schedule */}
+      <Section title="Schedule" subtitle="When to run">
+        <Segmented value={cadence} onChange={(v) => setCadence(v as Cadence)} options={["Daily", "Weekly", "Periodic"]} />
 
-      <div className="flex flex-col gap-6">
-        <Section title="Which conversations">
-          <Segmented value={scope} onChange={setScope} options={["all", "filtered"]} />
-          {scope === "filtered" && (
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {activeKeys.length ? `${activeKeys.length} filter${activeKeys.length === 1 ? "" : "s"} applied` : "No filters — all conversations"}
-                </span>
-                <FilterDropdown schema={COHORT_SCHEMA} value={filters} onChange={setFilters} quickFilters={QUICK_FILTERS} triggerLabel="Add filter" align="end" />
-              </div>
-              {activeKeys.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {activeKeys.map((k) => (
-                    <span key={k} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-2 py-0.5 text-xs text-foreground">
-                      <span className="text-muted-foreground">{LABELS[k]}:</span>
-                      {summarize(filters[k])}
-                      <span role="button" onClick={() => setFilters((f) => ({ ...f, [k]: null }))} className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
-                        <X size={11} />
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </Section>
-
-        <Section title="Limit">
-          <label className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-3.5 py-3">
-            <span className="min-w-0">
-              <span className="block text-sm text-foreground">Cap the number scored</span>
-              <span className="mt-0.5 block text-[11px] text-muted-foreground">Score a sample instead of the whole match set.</span>
-            </span>
-            <Switch checked={cap} onCheckedChange={(v) => setCap(Boolean(v))} />
-          </label>
-          {cap && (
-            <Field label="Evaluate at most">
-              <NumberStepper value={limit} onChange={setLimit} min={1} max={BATCH_TOTAL} step={1} suffix="calls" />
+        {cadence === "Periodic" ? (
+          <div className="mt-4">
+            <Field label="Runs every" hint="Select interval">
+              <Segmented value={interval} onChange={setInterval} options={INTERVALS} />
             </Field>
-          )}
-        </Section>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "mt-4 grid grid-cols-1 gap-4",
+              cadence === "Weekly" ? "sm:grid-cols-3" : "sm:grid-cols-2",
+            )}
+          >
+            {cadence === "Weekly" && (
+              <SchedField label="Day" hint="The metric runs at this time.">
+                <Sel value={day} onChange={setDay} options={DAYS} />
+              </SchedField>
+            )}
+            <SchedField label="Time" hint={cadence === "Weekly" ? undefined : "The metric runs at this time."}>
+              <TimeField value={time} onChange={setTime} className="h-9" />
+            </SchedField>
+            <SchedField label="Timezone">
+              <Sel value={tz} onChange={setTz} options={TIMEZONES} />
+            </SchedField>
+          </div>
+        )}
+      </Section>
 
-        <Section title="Schedule">
-          <Segmented value={runMode} onChange={setRunMode} options={["Run now", "Schedule"]} />
-          {runMode === "Schedule" && (
-            <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
-              <Field label="Date & time">
-                <DatePickerTime
-                  idPrefix="metric-run"
-                  date={when ? new Date(when) : undefined}
-                  time={when.split("T")[1] || "09:00"}
-                  onDateChange={(d) => d && setWhen(`${ymd(d)}T${when.split("T")[1] || "09:00"}`)}
-                  onTimeChange={(t) => setWhen(`${when.split("T")[0] || ymd(new Date())}T${t}`)}
-                />
-              </Field>
-              <Field label="Timezone">
-                <Sel value={tz} onChange={setTz} options={TIMEZONES} />
-              </Field>
-            </div>
+      {/* Cohort */}
+      <div className="mt-8">
+        <div className="mb-3">
+          <div className="text-sm font-medium text-foreground">Cohort</div>
+          <p className="mt-0.5 text-xs text-muted-foreground">Filter which conversations this metric scores.</p>
+        </div>
+
+        {/* Add filter — standalone, out of any box. Opens side="left" so its menu
+            runs parallel to the drawer. */}
+        <div className="mb-3 flex items-center gap-3">
+          <FilterDropdown
+            schema={COHORT_SCHEMA}
+            value={filters}
+            onChange={setFilters}
+            quickFilters={QUICK_FILTERS}
+            triggerLabel="Add filter"
+            side="left"
+            align="center"
+            sideOffset={136}
+          />
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Filter size={13} />
+            {activeKeys.length
+              ? `${activeKeys.length} filter${activeKeys.length === 1 ? "" : "s"} applied`
+              : "All conversations — scores the whole cohort until you add one."}
+          </span>
+          {activeKeys.length > 0 && (
+            <button
+              onClick={() => setFilters({})}
+              className="ml-auto text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Clear all
+            </button>
           )}
-          <p className="text-[11px] text-muted-foreground">
-            {runMode === "Run now"
-              ? "The run starts as soon as you add the metric."
-              : when
-                ? `Runs once on ${when.split("T")[0]} at ${when.split("T")[1]} · ${tz}.`
-                : "Pick a date and time for the one-off run."}
-          </p>
-        </Section>
+        </div>
+
+        {activeKeys.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-1.5 rounded-xl border border-border bg-card px-4 py-3">
+            {activeKeys.map((k) => (
+              <span key={k} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-2 py-0.5 text-xs text-foreground">
+                <span className="text-muted-foreground">{LABELS[k]}:</span>
+                {summarize(filters[k])}
+                <span role="button" onClick={() => setFilters((f) => ({ ...f, [k]: null }))} className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground">
+                  <X size={11} />
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className={cn("grid grid-cols-1 gap-6 sm:grid-cols-2", activeKeys.length === 0 && "mt-6")}>
+          <SliderField
+            label="Conversation Limit"
+            hint="Max conversations evaluated per run."
+            value={limit}
+            onChange={setLimit}
+            min={0}
+            max={1000}
+            step={10}
+          />
+          <SliderField
+            label="Alert"
+            hint="Notify when failures exceed this count per run."
+            value={alert}
+            onChange={setAlert}
+            min={0}
+            max={500}
+            step={5}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-/* ── Later steps (scaffold) ──────────────────────────────────────────────── */
-
-function ScaffoldStep({ title }: { title: string }) {
+function SliderField({
+  label,
+  hint,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+}) {
   return (
-    <div className="flex h-full min-h-[360px] flex-col items-center justify-center px-8 text-center">
-      <h2 className="text-sm font-medium text-foreground">{title}</h2>
-      <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-        This step is coming next. We built <span className="text-foreground">Define</span> first.
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between">
+        <label className="text-sm font-medium text-foreground">{label}</label>
+        <span className="font-mono text-xs tabular-nums text-foreground">{value}</span>
+      </div>
+      <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>
+      <Slider
+        value={value}
+        onValueChange={(v) => onChange(Array.isArray(v) ? v[0] : v)}
+        min={min}
+        max={max}
+        step={step}
+        className="mt-1"
+      />
+    </div>
+  );
+}
+
+/* ── Step 3 · Dry Run ────────────────────────────────────────────────────── */
+
+type DryTab = "Failure" | "All Runs" | "Reviewed";
+type Outcome = "pass" | "fail" | "na";
+type DryRow = { id: string; result: string; runs: number; outcome: Outcome; reviewed: boolean };
+
+// Outcome pill styling. PASS is green — the only non-token hue in the flow,
+// per the QA "Create Metric" design (success elsewhere uses chart-2 blue).
+const OUTCOME: Record<Outcome, { label: string; cls: string }> = {
+  pass: { label: "PASS", cls: "bg-emerald-500/15 text-emerald-400" },
+  fail: { label: "FAIL", cls: "bg-destructive/15 text-destructive" },
+  na: { label: "NA", cls: "bg-secondary text-muted-foreground" },
+};
+
+const DRY_ROWS: DryRow[] = [
+  { id: "LC8xFnkZE7HCEvfDqmk", result: "The phone number collection was never attempted in this call. No phone number was asked for or provided at any point.", runs: 1, outcome: "na", reviewed: true },
+  { id: "LC8xFnkZE7HCEvfDqmn", result: "Phone number collected correctly end to end, read back and confirmed with the caller.", runs: 1, outcome: "pass", reviewed: false },
+  { id: "LC8xFnkZE7HCEvfDqmp", result: "The agent asked for the number but never confirmed the digits before ending the call.", runs: 1, outcome: "na", reviewed: false },
+  { id: "LC8xFnkZE7HCEvfDqmq", result: "Number captured on the first attempt with a clean confirmation. No repeats needed.", runs: 1, outcome: "pass", reviewed: true },
+  { id: "LC8xFnkZE7HCEvfDqmr", result: "The caller declined to share a phone number; agent handled the refusal correctly.", runs: 1, outcome: "na", reviewed: false },
+  { id: "LC8xFnkZE7HCEvfDqms", result: "Collection attempted twice due to background noise; final digits were never verified.", runs: 1, outcome: "na", reviewed: false },
+];
+
+const DRY_TOTAL = 20; // sample size for the dry run
+
+function DryRunStep() {
+  const [tab, setTab] = React.useState<DryTab>("All Runs");
+  const [status, setStatus] = React.useState<"running" | "done">("running");
+  const [scored, setScored] = React.useState(0);
+
+  // Simulate the synchronous judge scoring the sample. Runs on first arrival
+  // and on every Re-run (status flipped back to "running").
+  React.useEffect(() => {
+    if (status !== "running") return;
+    let n = 0;
+    const id = setInterval(() => {
+      n += 1;
+      setScored(n);
+      if (n >= DRY_TOTAL) {
+        clearInterval(id);
+        setTimeout(() => setStatus("done"), 400);
+      }
+    }, 130);
+    return () => clearInterval(id);
+  }, [status]);
+
+  const rerun = () => {
+    setScored(0);
+    setStatus("running");
+  };
+
+  const rows = DRY_ROWS.filter((r) =>
+    tab === "All Runs" ? true : tab === "Failure" ? r.outcome === "fail" : r.reviewed,
+  );
+
+  return (
+    <div className="mx-auto w-full max-w-3xl px-8 py-6">
+      <StepHeader
+        title="Dry run"
+        subtitle="Sample up to 20 conversations from your cohort window and run the judge synchronously. Results appear below; this does not create a batch evaluation job."
+      />
+
+      {status === "running" ? (
+        <DryRunLoading scored={scored} total={DRY_TOTAL} />
+      ) : (
+        <>
+          <div className="mt-5 flex items-center justify-between">
+            <Segmented value={tab} onChange={(v) => setTab(v as DryTab)} options={["Failure", "All Runs", "Reviewed"]} />
+            <button
+              onClick={rerun}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              <Play size={13} /> Re-run
+            </button>
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-xl border border-border">
+            <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5 text-xs font-medium text-muted-foreground">
+              <span>Result and ID</span>
+              <span>Outcome</span>
+            </div>
+            {rows.length === 0 ? (
+              <DryRunEmpty tab={tab} onViewAll={() => setTab("All Runs")} />
+            ) : (
+              <ul>
+                {rows.map((r) => {
+                  const o = OUTCOME[r.outcome];
+                  return (
+                    <li
+                      key={r.id}
+                      onClick={() => toast(`Open conversation ${r.id}`)}
+                      className="flex cursor-pointer items-center justify-between gap-4 border-b border-border px-4 py-3 transition-colors last:border-0 hover:bg-secondary/40"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-[13px] leading-relaxed text-foreground">{r.result}</p>
+                        <p className="mt-1 font-mono text-[11px] text-muted-foreground">{r.id}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-3">
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          {r.runs} {r.runs === 1 ? "run" : "runs"}
+                        </span>
+                        <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide", o.cls)}>
+                          {o.label}
+                        </span>
+                        <ChevronRight size={15} className="text-muted-foreground" />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DryRunLoading({ scored, total }: { scored: number; total: number }) {
+  const pct = Math.round((scored / total) * 100);
+  return (
+    <div className="mt-4 flex flex-col items-center justify-center gap-5 rounded-xl border border-border bg-card px-6 py-16 text-center">
+      <Loader2 size={22} className="animate-spin text-muted-foreground" />
+      <div>
+        <p className="text-sm font-medium text-foreground">Running the judge…</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Scoring <span className="font-mono tabular-nums text-foreground">{scored}</span> of{" "}
+          <span className="font-mono tabular-nums">{total}</span> sample conversations
+        </p>
+      </div>
+      <div className="h-1 w-56 overflow-hidden rounded-full bg-secondary">
+        <div className="h-full rounded-full bg-primary transition-[width] duration-200 ease-out" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function DryRunEmpty({ tab, onViewAll }: { tab: DryTab; onViewAll: () => void }) {
+  const copy: Record<DryTab, { icon: React.ReactNode; title: string; description: string }> = {
+    Failure: {
+      icon: <Check size={18} />,
+      title: "No failures",
+      description: "Every scored conversation passed the judge in this sample.",
+    },
+    Reviewed: {
+      icon: <ClipboardCheck size={18} />,
+      title: "Nothing reviewed yet",
+      description: "Conversations you mark as reviewed will collect here.",
+    },
+    "All Runs": {
+      icon: <ListChecks size={18} />,
+      title: "No sample runs",
+      description: "The dry run didn't score any conversations from this cohort.",
+    },
+  };
+  const c = copy[tab];
+  return (
+    <EmptyState
+      icon={c.icon}
+      title={c.title}
+      description={c.description}
+      action={tab !== "All Runs" ? <EmptyAction onClick={onViewAll}>View all runs</EmptyAction> : undefined}
+    />
+  );
+}
+
+/* ── Step 4 · Activate ───────────────────────────────────────────────────── */
+
+type ReviewRow = [string, React.ReactNode] | null;
+
+// Same review-table format as the Create Campaign wizard (RtReviewSection):
+// a titled group with a bordered table, [180px | 1fr] rows.
+function ReviewSection({ title, rows }: { title: string; rows: ReviewRow[] }) {
+  const visible = rows.filter(Boolean) as Exclude<ReviewRow, null>[];
+  return (
+    <div>
+      <div className="mb-2 text-xs font-medium text-muted-foreground">{title}</div>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {visible.map(([label, value], i) => (
+          <div
+            key={i}
+            className={cn(
+              "grid grid-cols-[180px_1fr] text-sm",
+              i < visible.length - 1 && "border-b border-border",
+            )}
+          >
+            <div className="border-r border-border bg-card px-3 py-2.5 text-muted-foreground">{label}</div>
+            <div className="px-3 py-2.5 text-foreground">{value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ActivateStep() {
+  return (
+    <div className="mx-auto w-full max-w-3xl px-8 py-6">
+      <div className="flex flex-col gap-6">
+        <ReviewSection
+          title="Metric"
+          rows={[
+            ["Name", <span key="n" className="font-medium">Phone_number_collection_check</span>],
+            ["Checks for", "true means the phone number was collected correctly end to end. false means something in the collection flow failed."],
+            ["Output", "boolean · pass when true"],
+          ]}
+        />
+
+        <ReviewSection
+          title="Judge"
+          rows={[
+            ["Provider", "google"],
+            ["Model", "gemini-2.5-flash"],
+            ["Temperature", "0.1"],
+          ]}
+        />
+
+        <ReviewSection
+          title="Cohort"
+          rows={[
+            [
+              "Filters",
+              <div key="f" className="flex flex-wrap gap-1.5">
+                {["outcome: Resolved", "duration: 180+"].map((f) => (
+                  <span key={f} className="rounded-md border border-border bg-card px-2 py-0.5 text-[10px] text-muted-foreground">
+                    {f}
+                  </span>
+                ))}
+              </div>,
+            ],
+            ["Limit", "cap 50 calls/run"],
+          ]}
+        />
+
+        <ReviewSection
+          title="Schedule"
+          rows={[
+            ["Cadence", "Every day at 09:00"],
+            ["Alert", "Email you when pass rate < 75%"],
+          ]}
+        />
+
+        <ReviewSection
+          title="Dry run"
+          rows={[
+            [
+              "Result",
+              <span key="r" className="text-emerald-400">
+                <Check size={13} className="mr-1 inline align-[-1px]" strokeWidth={3} />
+                Validated · 100% pass rate on 20 sample calls
+              </span>,
+            ],
+          ]}
+        />
+      </div>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        You can pause, edit, or delete this metric anytime from its detail page.
       </p>
     </div>
   );
 }
 
-/* ── Field primitives ────────────────────────────────────────────────────── */
+/* ── Primitives ──────────────────────────────────────────────────────────── */
 
-function Field({ label, hint, onActive, children }: { label: string; hint?: string; onActive?: () => void; children: React.ReactNode }) {
+// Collapsible section — a header row that toggles its body. Collapsed by
+// default; shows a one-line summary of the current values when closed.
+function Collapsible({ title, summary, children }: { title: string; summary?: string; children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
   return (
-    <div className="flex flex-col gap-1.5" onFocusCapture={onActive} onMouseDown={onActive}>
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      {hint && <p className="-mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 text-left"
+      >
+        <ChevronRight size={15} className={cn("shrink-0 text-muted-foreground transition-transform", open && "rotate-90")} />
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        {!open && summary && (
+          <span className="ml-auto truncate text-xs text-muted-foreground">{summary}</span>
+        )}
+      </button>
+      {open && <div className="mt-3 pl-[23px]">{children}</div>}
+    </div>
+  );
+}
+
+function StepHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div>
+      <h2 className="text-base font-medium text-foreground">{title}</h2>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{subtitle}</p>
+    </div>
+  );
+}
+
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="mb-3">
+        <div className="text-sm font-medium text-foreground">{title}</div>
+        {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
+      </div>
       {children}
+    </div>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-foreground">{label}</label>
+      {hint && <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
+      {children}
+    </div>
+  );
+}
+
+// Field variant for the schedule row: always reserves the hint line (renders a
+// blank placeholder when no hint) so every column's control aligns on one row.
+function SchedField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-foreground">{label}</label>
+      <p className="-mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{hint ?? " "}</p>
+      {children}
+    </div>
+  );
+}
+
+// Segmented tabs — same recipe as PriorityField in Create Campaign.
+function Segmented({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <div className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-input/30 p-1">
+      {options.map((o) => (
+        <button
+          key={o}
+          type="button"
+          onClick={() => onChange(o)}
+          className={cn(
+            "inline-flex h-6 items-center rounded-lg px-2.5 text-xs font-medium transition-colors",
+            value === o ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {o}
+        </button>
+      ))}
     </div>
   );
 }
@@ -663,30 +1030,5 @@ function Sel({ value, onChange, options, className }: { value: string; onChange:
         ))}
       </SelectContent>
     </Select>
-  );
-}
-
-function Collapsible({ title }: { title: string }) {
-  const [open, setOpen] = React.useState(false);
-  return (
-    <div className="rounded-lg border border-border bg-card">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-3.5 py-2.5 text-sm font-medium text-foreground"
-      >
-        {title}
-        <ChevronDown size={15} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
-      </button>
-      {open && (
-        <div className="flex flex-col gap-4 border-t border-border p-3.5">
-          <Field label="Model">
-            <Sel value="gpt-4o-mini" onChange={() => {}} options={["gpt-4o-mini", "gpt-4o", "claude-haiku-4-5"]} />
-          </Field>
-          <Field label="Temperature" hint="Lower is more deterministic. 0 recommended for scoring.">
-            <input className={FIELD} defaultValue="0" inputMode="decimal" />
-          </Field>
-        </div>
-      )}
-    </div>
   );
 }

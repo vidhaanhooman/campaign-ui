@@ -9,7 +9,6 @@
 import * as React from "react";
 import {
   ArrowUpRight,
-  ClipboardCheck,
   FileAudio,
   MoreVertical,
   Plus,
@@ -17,8 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppShell, NotificationsButton } from "@/components/app-shell";
-import { PageHeader } from "@/components/stats/ui";
+import { AppShell } from "@/components/app-shell";
+import { PageHeading } from "@/components/stats/ui";
 import { AddMetricDialog } from "@/components/qa/add-metric-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
@@ -57,37 +56,34 @@ export default function QAPage() {
   return (
     <AppShell activeNav="QA">
       <AddMetricDialog open={addMetric} onOpenChange={setAddMetric} />
-      <PageHeader
-        icon={<ClipboardCheck size={16} />}
-        label="QA"
-        sublabel="Upload call batches, apply metrics, review the analysis."
-        action={
-          <div className="flex items-center gap-2">
-            <PreviewToggle mode={mode} onChange={setMode} />
-            <button
-              onClick={() => setAddMetric(true)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Plus size={13} /> Add metric
-            </button>
-            <a
-              href="#"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Metrics <ArrowUpRight size={13} />
-            </a>
-            <NotificationsButton />
-            <button
-              onClick={() => toast("Opening upload — CSV + audio")}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <Upload size={14} /> Upload batch
-            </button>
-          </div>
-        }
-      />
 
       <div className="mx-auto w-full max-w-5xl px-8 py-8">
+        <PageHeading
+          title="QA"
+          desc="Upload call batches, apply metrics, review the analysis."
+          className="mb-6"
+        >
+          <PreviewToggle mode={mode} onChange={setMode} />
+          <button
+            onClick={() => setAddMetric(true)}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Plus size={13} /> Add metric
+          </button>
+          <a
+            href="#"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Metrics <ArrowUpRight size={13} />
+          </a>
+          <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+          <button
+            onClick={() => toast("Opening upload — CSV + audio")}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Upload size={14} /> Upload batch
+          </button>
+        </PageHeading>
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-5 py-3">
             <span className="text-sm font-medium text-foreground">Batches</span>
