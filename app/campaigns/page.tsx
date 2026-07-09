@@ -51,6 +51,7 @@ import {
   Gauge,
   Hash,
   ListChecks,
+  Lock,
   Megaphone,
   MessageSquare,
   Phone,
@@ -133,6 +134,15 @@ const ROWS: Row[] = [
   },
 ];
 
+function GatedFlyout({ message }: { message: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
+      <Lock size={13} className="shrink-0" />
+      <span>{message}</span>
+    </div>
+  );
+}
+
 const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
   {
     items: [
@@ -164,11 +174,17 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
         icon: <Bot size={15} />,
         type: "multi-select",
         searchable: true,
+        wide: true,
+        footer: true,
+        placeholder: "Search agents…",
         options: [
-          { value: "debt",     label: "Debt Collection Pitch Agent" },
-          { value: "web_out",  label: "Website Agent Outbound" },
-          { value: "sales",    label: "Sales Follow-up Agent" },
-          { value: "support",  label: "Support Escalation Agent" },
+          { value: "agt_debt_pitch",    label: "Debt Collection Pitch Agent",     sublabel: "agt_debt_pitch",    tag: "Conversation" },
+          { value: "agt_debt_outbound", label: "Debt Collection Outbound Agent",  sublabel: "agt_debt_outbound", tag: "Broadcast" },
+          { value: "agt_careers360",    label: "Careers_360 - Tech college predictor", sublabel: "agt_careers360", tag: "Conversation" },
+          { value: "agt_premium",       label: "premium",                         sublabel: "agt_premium",       tag: "Conversation" },
+          { value: "agt_standard",      label: "standard",                        sublabel: "agt_standard",      tag: "Broadcast" },
+          { value: "agt_palmonas",      label: "palmonas hoomanlabs",             sublabel: "agt_palmonas",      tag: "Broadcast" },
+          { value: "agt_vidhan_test",   label: "Vidhan Test",                     sublabel: "agt_vidhan_test",   tag: "Conversation" },
         ],
       },
       {
@@ -217,13 +233,15 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
         icon: <Flag size={15} />,
         type: "multi-select",
         searchable: true,
+        placeholder: "Search outcomes…",
         options: [
-          { value: "connected",   label: "Connected" },
-          { value: "no_answer",   label: "No answer" },
-          { value: "busy",        label: "Busy" },
-          { value: "voicemail",   label: "Voicemail" },
-          { value: "failed",      label: "Failed" },
-          { value: "abandoned",   label: "Abandoned" },
+          { value: "connected",         label: "connected",         dot: "bg-primary",     count: 13 },
+          { value: "resolved",          label: "resolved",          dot: "bg-primary",     count:  1 },
+          { value: "not_interested",    label: "not_interested",    dot: "bg-destructive", count:  2 },
+          { value: "meeting_booked",    label: "meeting_booked",    dot: "bg-chart-2",     count:  3 },
+          { value: "no_response",       label: "no_response",       dot: "bg-chart-1",     count:  4 },
+          { value: "unknown",           label: "unknown",           dot: "bg-muted-foreground", count: 4 },
+          { value: "callback_requested",label: "callback_requested",dot: "bg-chart-2" },
         ],
       },
       {
@@ -282,15 +300,17 @@ const CAMPAIGN_FILTER_SCHEMA: FilterSection[] = [
         id: "postCall",
         label: "Post-call analysis",
         icon: <ClipboardList size={15} />,
-        type: "text",
-        placeholder: "field:value…",
+        type: "custom",
+        width: 400,
+        render: () => <GatedFlyout message="Select an agent to load these fields." />,
       },
       {
         id: "context",
         label: "Context variables",
         icon: <Braces size={15} />,
-        type: "text",
-        placeholder: "key:value…",
+        type: "custom",
+        width: 400,
+        render: () => <GatedFlyout message="Select an agent to load context variables." />,
       },
     ],
   },
