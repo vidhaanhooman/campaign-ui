@@ -43,6 +43,18 @@
       ]
     },
     {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Composable card (Card + Header/Title/Description/Action/Content/Footer). Self-scoped to .shadcn; uses card/muted/foreground tokens and consumer-supplied --font-heading.",
+      "files": [
+        {
+          "path": "registry/ui/card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "empty-state",
       "type": "registry:ui",
       "title": "Empty State",
