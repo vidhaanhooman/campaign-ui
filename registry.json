@@ -46,7 +46,8 @@
           "--color-sidebar-accent-foreground": "oklch(0 0 0)",
           "--color-sidebar-border": "oklch(0.9401 0 0)",
           "--color-sidebar-ring": "oklch(0 0 0)",
-          "--radius": "0.5rem"
+          "--radius": "0.5rem",
+          "font-family": "var(--font-sans)"
         },
         ".shadcn.dark, .dark .shadcn": {
           "--color-background": "oklch(0 0 0)",
@@ -97,6 +98,18 @@
       "files": [
         {
           "path": "registry/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty-state",
+      "type": "registry:ui",
+      "title": "Empty State",
+      "description": "Empty state for tables, lists, and panels. Uses .shadcn tokens (border/card/muted).",
+      "files": [
+        {
+          "path": "registry/ui/empty-state.tsx",
           "type": "registry:ui"
         }
       ]
