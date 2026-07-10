@@ -8,7 +8,8 @@ Base UI primitives in `components/ui/`. Ordered smallest-blast-radius first.
 | G1 · Radius scale | `app/styleguide/page.tsx` | `rounded-2xl` → `rounded-xl` (2×) — off-scale radius snapped to token | ✅ | `27ecd2d` |
 | — · CLAUDE.md | `CLAUDE.md` | Design System Rules added | — | `18c7c8a` |
 | G2 · Tokens | `app/globals.css` | Add `--success/--warning/--info` (+fg) and `--text-2xs`(11px)/`--text-3xs`(10px) — approved | ✅ | `0490930` |
-| G3 · Sub-xs type | 23 clean files (app + non-ui components) | `text-[11px]→text-2xs`, `text-[10px]→text-3xs`, `text-[12px]→text-xs` (101 exact swaps) | ✅ typecheck+build | _this commit_ |
+| G3 · Sub-xs type | 23 clean files (app + non-ui components) | `text-[11px]→text-2xs`, `text-[10px]→text-3xs`, `text-[12px]→text-xs` (101 exact swaps) | ✅ | `caf55f1` |
+| G4 · Status colors | `error-summary`, `usage`, `campaigns` | `red→destructive`, `amber→warning`, `emerald→success`; arbitrary tint opacity `/[0.0x]→/x` | ✅ typecheck+build | `dc700c1` |
 
 ## Deferred (see report at bottom of session)
 Not executed — each requires a decision that the hard rules reserve for the user:
