@@ -235,7 +235,7 @@ function makeNode(kind: NodeKind) {
         <div
           aria-hidden
           className={cn(
-            "pointer-events-none absolute -inset-3 rounded-2xl opacity-0 blur-xl transition-opacity duration-300",
+            "pointer-events-none absolute -inset-3 rounded-xl opacity-0 blur-xl transition-opacity duration-300",
             selected && "opacity-100",
           )}
           style={{
@@ -254,7 +254,7 @@ function makeNode(kind: NodeKind) {
 
         <div
           className={cn(
-            "rf-node-in relative w-[288px] rounded-2xl border bg-card transition-colors duration-200",
+            "rf-node-in relative w-[288px] rounded-xl border bg-card transition-colors duration-200",
             nodeIssue.level === "error"
               ? "border-rose-500/45"
               : selected
@@ -1685,7 +1685,7 @@ function StartOverlay({
   const [goal, setGoal] = React.useState("");
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/70 p-6 backdrop-blur-sm">
-      <div className="rf-node-in w-[600px] max-w-full rounded-2xl border border-border bg-popover p-6 shadow-2xl">
+      <div className="rf-node-in w-[600px] max-w-full rounded-xl border border-border bg-popover p-6 shadow-2xl">
         <h2 className="text-lg font-semibold tracking-tight text-foreground">What should this agent do?</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Start from a template you can edit, or build from scratch.
@@ -1739,7 +1739,7 @@ function NodeToolbar({
   onPick: (kind: NodeKind, data: NodeData) => void;
 }) {
   return (
-    <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur">
+    <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur">
       <span className="pl-1.5 pr-0.5 text-muted-foreground/70">
         <Plus size={15} />
       </span>
