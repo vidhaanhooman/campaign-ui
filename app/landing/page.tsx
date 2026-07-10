@@ -303,7 +303,7 @@ export default function LandingPage() {
 
         {/* Prototype-only: preview the empty (new-user) state. Not shipped chrome. */}
         <div className="flex items-center justify-end gap-2 pt-2 opacity-60">
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
             Preview
           </span>
           <PreviewToggle mode={mode} onChange={setMode} />
@@ -430,7 +430,7 @@ function LiveOps() {
                   <span className="truncate text-sm text-foreground">
                     {c.name}
                   </span>
-                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-3xs font-medium text-muted-foreground">
+                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {c.type}
                   </span>
                 </div>
@@ -451,7 +451,7 @@ function LiveOps() {
                 <span className="font-mono text-sm tabular-nums text-foreground">
                   {c.calls}
                 </span>
-                <span className="ml-1 text-3xs text-muted-foreground">
+                <span className="ml-1 text-xs text-muted-foreground">
                   now
                 </span>
               </div>
@@ -508,7 +508,7 @@ function RecentCampaigns() {
                   <span className="truncate text-sm text-foreground">
                     {c.name}
                   </span>
-                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-3xs font-medium text-muted-foreground">
+                  <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {c.type}
                   </span>
                 </div>
@@ -685,12 +685,12 @@ function ApiKeySection() {
           </span>
           <button
             onClick={generate}
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-primary px-3 text-2xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Plus size={12} /> Generate key
           </button>
         </div>
-        <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Keys are shown once at creation. Store it somewhere safe.
         </p>
       </div>
@@ -702,7 +702,7 @@ function ApiKeySection() {
       <div className="flex flex-col">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-xs text-foreground">New API key</span>
-          <span className="inline-flex items-center gap-1 text-2xs font-medium text-amber-400">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
             <AlertTriangle size={11} /> Shown once
           </span>
         </div>
@@ -723,13 +723,13 @@ function ApiKeySection() {
             )}
           </button>
         </div>
-        <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Copy this key now — you won't be able to see it again after leaving
           this view.
         </p>
         <button
           onClick={() => setState("exists")}
-          className="mt-3 self-start text-2xs font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+          className="mt-3 self-start text-xs font-medium text-foreground underline-offset-4 transition-colors hover:underline"
         >
           I've saved it
         </button>
@@ -746,7 +746,7 @@ function ApiKeySection() {
         <span className="text-xs text-muted-foreground">Secret API key</span>
         <button
           onClick={generate}
-          className="text-2xs text-muted-foreground transition-colors hover:text-foreground"
+          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           Rotate
         </button>
@@ -757,11 +757,11 @@ function ApiKeySection() {
           {"•".repeat(12)}
           {suffix}
         </code>
-        <span className="shrink-0 text-2xs text-muted-foreground">
+        <span className="shrink-0 text-xs text-muted-foreground">
           Created {createdAt}
         </span>
       </div>
-      <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
         For security, keys can't be viewed again. Rotate to generate a new one.
       </p>
     </div>
@@ -829,7 +829,7 @@ function CopyChip({ value, label }: { value: string; label: string }) {
 
 function BandLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-3 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
       {children}
     </div>
   );
@@ -897,7 +897,7 @@ function ActivityToday() {
             {placedTotal.toLocaleString()} placed · {rate}% connected
           </div>
         </div>
-        <div className="flex items-center gap-3 text-2xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-foreground/35" /> Placed
           </span>
@@ -967,7 +967,7 @@ function ActivityToday() {
         )}
         {hover != null && w > 0 && (
           <div
-            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black/85 px-2 py-1 text-3xs shadow-md"
+            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black/85 px-2 py-1 text-xs shadow-md"
             style={{ left: Math.max(30, Math.min(w - 30, x(hover))) }}
           >
             <div className="font-mono text-foreground">{ACTIVITY[hover].h}</div>
@@ -977,7 +977,7 @@ function ActivityToday() {
           </div>
         )}
       </div>
-      <div className="mt-2 flex justify-between text-3xs text-muted-foreground">
+      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
         <span>{ACTIVITY[0].h}</span>
         <span>{ACTIVITY[Math.floor(ACTIVITY.length / 2)].h}</span>
         <span>{ACTIVITY[ACTIVITY.length - 1].h}</span>
@@ -1121,7 +1121,7 @@ function EmptyHome() {
               <span className="font-mono text-2xl font-bold leading-none tracking-tight tabular-nums text-foreground">
                 ₹1,000
               </span>
-              <span className="text-2xs font-semibold uppercase tracking-wider text-emerald-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
                 Free credit
               </span>
             </div>
@@ -1145,7 +1145,7 @@ function EmptyHome() {
 
         {/* Divider + feature row */}
         <div className="relative mt-6 border-t border-border pt-5">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-1.5 text-2xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-1.5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <CreditCard size={12} /> No credit card
             </span>
@@ -1189,7 +1189,7 @@ function UsagePanel() {
             <span className="text-muted-foreground"> · resets Aug 1</span>
           </span>
           {nearCount > 0 && (
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-amber-400/25 bg-amber-400/[0.06] px-2 py-0.5 text-2xs font-medium text-amber-400">
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-amber-400/25 bg-amber-400/[0.06] px-2 py-0.5 text-xs font-medium text-amber-400">
               <AlertTriangle size={11} />
               {nearCount} near limit
             </span>
@@ -1244,7 +1244,7 @@ function MiniMeter({ icon, label, used, limit, unit }: UsageItem) {
       </span>
       <span
         className={cn(
-          "font-mono text-3xs tabular-nums",
+          "font-mono text-xs tabular-nums",
           near ? "text-amber-400" : "text-muted-foreground",
         )}
       >
@@ -1257,7 +1257,7 @@ function MiniMeter({ icon, label, used, limit, unit }: UsageItem) {
 function UsageGroup({ title, rows }: { title: string; rows: UsageItem[] }) {
   return (
     <div>
-      <div className="mb-3.5 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="mb-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </div>
       <div className="flex flex-col gap-4">
@@ -1305,7 +1305,7 @@ function UsageRow({ icon, label, used, limit, unit }: UsageItem) {
         </div>
         <span
           className={cn(
-            "w-8 shrink-0 text-right text-2xs tabular-nums",
+            "w-8 shrink-0 text-right text-xs tabular-nums",
             near ? "text-amber-400" : "text-muted-foreground",
           )}
         >
@@ -1313,7 +1313,7 @@ function UsageRow({ icon, label, used, limit, unit }: UsageItem) {
         </span>
       </div>
       {near && (
-        <div className="mt-1.5 flex items-center justify-between text-2xs">
+        <div className="mt-1.5 flex items-center justify-between text-xs">
           <span className="text-amber-400">
             {compact(left)}
             {suffix} left
@@ -1518,7 +1518,7 @@ function RecentActivity() {
           )}
           {hover != null && w > 0 && (
             <div
-              className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black/85 px-2 py-1 text-3xs shadow-md"
+              className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-black/85 px-2 py-1 text-xs shadow-md"
               style={{ left: Math.max(40, Math.min(w - 40, x(hover))) }}
             >
               <div className="font-mono text-foreground">
@@ -1534,7 +1534,7 @@ function RecentActivity() {
             </div>
           )}
         </div>
-        <div className="mt-1 flex justify-between text-3xs text-muted-foreground">
+        <div className="mt-1 flex justify-between text-xs text-muted-foreground">
           <span>{fmt(startDate)}</span>
           <span>{fmt(now)}</span>
         </div>

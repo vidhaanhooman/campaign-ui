@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { TimeSelect } from "@/components/time-picker";
+import { ConversationReview, type ReviewItem } from "@/components/conversation-review";
 import { EmptyState, EmptyAction } from "@/components/ui/empty-state";
 import {
   FilterDropdown,
@@ -699,7 +700,7 @@ function SliderField({
           {unit && <span className="font-mono text-xs text-muted-foreground">{unit}</span>}
         </span>
       </div>
-      <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>
+      <p className="-mt-1 text-xs leading-relaxed text-muted-foreground">{hint}</p>
       <Slider
         value={value}
         onValueChange={(v) => onChange(Array.isArray(v) ? v[0] : v)}
@@ -737,10 +738,35 @@ const DRY_ROWS: DryRow[] = [
 
 const DRY_TOTAL = 20; // sample size for the dry run
 
+// Shared mock transcript + analysis for the conversation review overlay.
+const MOCK_TRANSCRIPT = [
+  { role: "AGENT", text: "Hello, this is Rohan, an AI assistant from Hooman Labs. You requested a call from our website, right? Just wanted to check, would you prefer we chat in English or Hindi?" },
+  { role: "USER", text: "English." },
+  { role: "AGENT", text: "Great, English it is. So, tell me a bit about your business — what do you guys do?" },
+  { role: "USER", text: "But the same woman that was connected, is it? We are continuing." },
+];
+const MOCK_SUMMARY =
+  "The customer engaged with Rohan, an AI assistant from Hooman Labs, confirming their preferred language as English. The customer inquired about the call's purpose and indicated a desire to continue the conversation.";
+
+function toReviewItem(r: DryRow): ReviewItem {
+  return {
+    id: r.id,
+    durationSec: 34,
+    transcript: MOCK_TRANSCRIPT,
+    verdict: {
+      outcome: r.outcome,
+      reasoning: r.result,
+      output: r.outcome === "na" ? "NA" : r.outcome === "pass" ? "true" : "false",
+    },
+    analysis: { outcome: "dropped_early", summary: MOCK_SUMMARY },
+  };
+}
+
 function DryRunStep() {
   const [tab, setTab] = React.useState<DryTab>("All Runs");
   const [status, setStatus] = React.useState<"running" | "done">("running");
   const [scored, setScored] = React.useState(0);
+  const [reviewIdx, setReviewIdx] = React.useState<number | null>(null);
 
   // Simulate the synchronous judge scoring the sample. Runs on first arrival
   // and on every Re-run (status flipped back to "running").
@@ -797,12 +823,12 @@ function DryRunStep() {
               <DryRunEmpty tab={tab} onViewAll={() => setTab("All Runs")} />
             ) : (
               <ul>
-                {rows.map((r) => {
+                {rows.map((r, i) => {
                   const o = OUTCOME[r.outcome];
                   return (
                     <li
                       key={r.id}
-                      onClick={() => toast(`Open conversation ${r.id}`)}
+                      onClick={() => setReviewIdx(i)}
                       className="flex cursor-pointer items-center justify-between gap-4 border-b border-border px-4 py-3 transition-colors last:border-0 hover:bg-secondary/40"
                     >
                       <div className="min-w-0">
@@ -826,6 +852,15 @@ function DryRunStep() {
           </div>
         </>
       )}
+
+      <ConversationReview
+        open={reviewIdx !== null}
+        onOpenChange={(v) => !v && setReviewIdx(null)}
+        items={rows.map(toReviewItem)}
+        index={reviewIdx ?? 0}
+        onIndexChange={setReviewIdx}
+        metric="phone_number_collection"
+      />
     </div>
   );
 }
@@ -1087,8 +1122,8 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-foreground">{label}</label>
-      {hint && <p className="-mt-1 text-[11px] leading-relaxed text-muted-foreground">{hint}</p>}
       {children}
+      {hint && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
     </div>
   );
 }

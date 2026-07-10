@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronRight, Filter as FunnelIcon, Search, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 // -------- Public types --------
@@ -50,6 +51,8 @@ export interface FilterDropdownProps {
   sideOffset?: number;
   width?: number;
   className?: string;
+  /** Notified when the popover opens/closes (e.g. to shift a host modal). */
+  onOpenChange?: (open: boolean) => void;
 }
 
 // -------- Style constants (campaign-b0 tokens) --------
@@ -70,9 +73,10 @@ function isActive(v: FilterValue | undefined): boolean {
 // -------- Main --------
 export function FilterDropdown({
   schema, value, onChange, quickFilters,
-  triggerLabel = "Filter", align = "end", side = "bottom", sideOffset, width = 320, className,
+  triggerLabel = "Filter", align = "end", side = "bottom", sideOffset, width = 320, className, onOpenChange,
 }: FilterDropdownProps) {
-  const [open, setOpen]     = useState(false);
+  const [open, setOpenState] = useState(false);
+  const setOpen = (v: boolean) => { setOpenState(v); onOpenChange?.(v); };
   const [active, setActive] = useState<string | null>(null);
   const [q, setQ]           = useState("");
   /** Vertical anchor mode + offset (px) relative to the menu container. */
@@ -373,13 +377,9 @@ function MultiSelectEditor({ cat, value, onChange, close }: {
 function RangeEditor({ cat, value, onChange }: {
   cat: RangeCategory; value: NumberRange; onChange: (v: NumberRange | null) => void;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<"lo" | "hi" | null>(null);
   const step = cat.step ?? 1;
   const lo   = value.min ?? cat.min;
   const hi   = value.max ?? cat.max;
-  const span = cat.max - cat.min || 1;
-  const pct  = (v: number) => ((v - cat.min) / span) * 100;
 
   const emit = (nextLo: number, nextHi: number) => {
     const a = Math.min(Math.max(nextLo, cat.min), nextHi);
@@ -390,55 +390,19 @@ function RangeEditor({ cat, value, onChange }: {
     else onChange({ kind: "range", min, max });
   };
 
-  const valFromX = (clientX: number) => {
-    const r = trackRef.current?.getBoundingClientRect();
-    if (!r) return cat.min;
-    const ratio = Math.min(Math.max((clientX - r.left) / r.width, 0), 1);
-    return Math.round((cat.min + ratio * span) / step) * step;
-  };
-
-  useEffect(() => {
-    if (!drag) return;
-    const move = (e: PointerEvent) => {
-      const v = valFromX(e.clientX);
-      if (drag === "lo") emit(v, hi); else emit(lo, v);
-    };
-    const up = () => setDrag(null);
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup",   up);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup",   up);
-    };
-  }, [drag, lo, hi]);
-
   return (
     <div className="space-y-3 p-1">
-      <div ref={trackRef} className="relative mx-2 h-5 cursor-pointer select-none"
-        onPointerDown={e => {
-          const v = valFromX(e.clientX);
-          const which = Math.abs(v - lo) <= Math.abs(v - hi) ? "lo" : "hi";
-          if (which === "lo") emit(v, hi); else emit(lo, v);
-          setDrag(which);
-        }}>
-        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-muted" />
-        <div className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-primary"
-          style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }} />
-        {(["lo", "hi"] as const).map(which => {
-          const v = which === "lo" ? lo : hi;
-          return (
-            <button key={which} type="button"
-              aria-label={which === "lo" ? "Minimum" : "Maximum"}
-              onPointerDown={e => {
-                e.stopPropagation();
-                (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-                setDrag(which);
-              }}
-              className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-background shadow-md hover:scale-110"
-              style={{ left: `${pct(v)}%` }} />
-          );
-        })}
-      </div>
+      <Slider
+        min={cat.min}
+        max={cat.max}
+        step={step}
+        value={[lo, hi]}
+        onValueChange={(v) => {
+          const arr = Array.isArray(v) ? v : [v];
+          emit(arr[0] ?? cat.min, arr[1] ?? cat.max);
+        }}
+        className="mx-2"
+      />
       <div className="flex w-full items-center gap-2">
         <NumBox value={value.min} placeholder={String(cat.min)} unit={cat.unit}
           onChange={n => emit(n ?? cat.min, hi)} />

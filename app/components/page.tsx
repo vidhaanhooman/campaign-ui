@@ -86,6 +86,7 @@ const SECTIONS = [
   { id: "rules", label: "Rules of making" },
   { id: "anatomy", label: "Anatomy" },
   { id: "drift", label: "Where anatomy drifts" },
+
   { id: "actions", label: "Actions" },
   { id: "badges", label: "Badges" },
   { id: "inputs", label: "Inputs" },
@@ -186,7 +187,7 @@ function Demo({
         wide && "sm:col-span-2",
       )}
     >
-      <span className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </span>
       <div className="flex flex-wrap items-start gap-3">{children}</div>
@@ -226,7 +227,7 @@ const LAYERS: Layer[] = [
     examples: [
       "--background, --card, --popover, --border, --input, --ring",
       "--success/--warning/--info (+ -foreground)",
-      "--text-2xs, --text-3xs · --radius · --spacing",
+      "--text-xs, --text-xs · --radius · --spacing",
     ],
   },
   {
@@ -337,34 +338,34 @@ function RulesSection() {
           </h3>
           <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">1.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">1.</span>{" "}
               Is it a color / radius / spacing value?{" "}
               <span className="text-foreground">→ L1 (ask first).</span>
             </li>
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">2.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">2.</span>{" "}
               Does an interactive primitive already exist?{" "}
               <span className="text-foreground">→ use L2 as-is.</span>
             </li>
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">3.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">3.</span>{" "}
               Missing a primitive?{" "}
               <span className="text-foreground">
                 → install via shadcn, do not hand-roll.
               </span>
             </li>
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">4.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">4.</span>{" "}
               Same primitive combo used ≥3× across features?{" "}
               <span className="text-foreground">→ promote to L3.</span>
             </li>
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">5.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">5.</span>{" "}
               Domain-aware, solves one product problem?{" "}
               <span className="text-foreground">→ L4 feature.</span>
             </li>
             <li>
-              <span className="mr-1 font-mono text-2xs text-foreground">6.</span>{" "}
+              <span className="mr-1 font-mono text-xs text-foreground">6.</span>{" "}
               A route wiring the above together?{" "}
               <span className="text-foreground">→ L5 page.</span>
             </li>
@@ -415,16 +416,16 @@ function LayerCard({ L }: { L: Layer }) {
       )}
     >
       <div className="flex flex-wrap items-baseline gap-2">
-        <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary font-mono text-2xs font-semibold text-primary-foreground">
+        <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary font-mono text-xs font-semibold text-primary-foreground">
           L{L.n}
         </span>
         <h3 className="text-base font-semibold text-foreground">{L.name}</h3>
-        <code className="text-2xs text-muted-foreground">{L.where}</code>
+        <code className="text-xs text-muted-foreground">{L.where}</code>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{L.purpose}</p>
 
       <div className="mt-4 rounded-lg border border-border bg-background p-3">
-        <span className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Rule
         </span>
         <p className="mt-1 text-sm text-foreground">{L.buildRule}</p>
@@ -432,19 +433,19 @@ function LayerCard({ L }: { L: Layer }) {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <span className="text-2xs font-medium uppercase tracking-wider text-success">
+          <span className="text-xs font-medium uppercase tracking-wider text-foreground">
             May use
           </span>
           <ul className="mt-1.5 space-y-1 text-sm text-foreground">
             {L.mayUse.map((m) => (
               <li key={m} className="flex gap-1.5">
-                <span className="text-success">✓</span> {m}
+                <span className="text-foreground">✓</span> {m}
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <span className="text-2xs font-medium uppercase tracking-wider text-destructive">
+          <span className="text-xs font-medium uppercase tracking-wider text-destructive">
             Must not
           </span>
           <ul className="mt-1.5 space-y-1 text-sm text-foreground">
@@ -458,7 +459,7 @@ function LayerCard({ L }: { L: Layer }) {
       </div>
 
       <div className="mt-4">
-        <span className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           In this codebase
         </span>
         <ul className="mt-1.5 space-y-0.5 text-sm text-muted-foreground">
@@ -529,11 +530,11 @@ function Anatomy({
         wide && "sm:col-span-2",
       )}
     >
-      <span className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </span>
       <div>{children}</div>
-      <p className="mt-1 font-mono text-2xs leading-relaxed text-muted-foreground">
+      <p className="mt-1 font-mono text-xs leading-relaxed text-muted-foreground">
         {tokens}
       </p>
     </div>
@@ -562,11 +563,11 @@ function MetaRowPattern() {
   return (
     <Anatomy
       title="Meta row"
-      tokens="dot: bg-info · label: text-foreground · rest: text-muted-foreground · gap-3"
+      tokens="dot: · label: text-foreground · rest: text-muted-foreground · gap-3"
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span className="inline-flex items-center gap-1.5 text-foreground">
-          <span className="size-2 rounded-full bg-info" /> TypeScript
+          <span className="size-2 rounded-full " /> TypeScript
         </span>
         <span className="inline-flex items-center gap-1 text-muted-foreground">
           <Star size={12} /> 20k
@@ -781,7 +782,7 @@ function TabsToolbarPattern() {
                 {t.count != null && (
                   <span
                     className={cn(
-                      "inline-flex size-4 items-center justify-center rounded-full text-2xs font-medium tabular-nums",
+                      "inline-flex size-4 items-center justify-center rounded-full text-xs font-medium tabular-nums",
                       on
                         ? "bg-primary-foreground/20 text-primary-foreground"
                         : "bg-muted text-muted-foreground",
@@ -817,7 +818,7 @@ function TabWithCountPattern() {
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
           Past Performance
-          <span className="inline-flex size-4 items-center justify-center rounded-full bg-muted text-2xs font-medium tabular-nums text-muted-foreground">
+          <span className="inline-flex size-4 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums text-muted-foreground">
             3
           </span>
         </span>
@@ -861,9 +862,9 @@ function CardWithActionPattern() {
             <Star /> Star
           </Button>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="inline-flex items-center gap-1.5 text-foreground">
-            <span className="size-2 rounded-full bg-info" /> TypeScript
+            <span className="size-2 rounded-full " /> TypeScript
           </span>
           <span className="inline-flex items-center gap-1 text-muted-foreground">
             <Star size={12} /> 20k
@@ -935,7 +936,7 @@ function DriftSection() {
           <li>
             Descriptions live under, actions live right. Numbers are{" "}
             <code>tabular-nums</code>. Uppercase eyebrows are{" "}
-            <code>text-2xs tracking-wider</code>.
+            <code>text-xs tracking-wider</code>.
           </li>
           <li>
             The empty, loading, and error states all use the same primitives
@@ -967,7 +968,7 @@ function DriftCard({
         <p className="mt-0.5 text-xs text-muted-foreground">{slip}</p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">{children}</div>
-      <p className="text-2xs leading-relaxed text-muted-foreground">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         <span className="font-medium text-foreground">Rule · </span>
         {rule}
       </p>
@@ -978,7 +979,7 @@ function DriftCard({
 function Bad({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-16 flex-col justify-center rounded-lg border border-destructive/30 bg-destructive/6 p-3">
-      <div className="mb-2 inline-flex items-center gap-1 text-2xs font-medium uppercase tracking-wider text-destructive">
+      <div className="mb-2 inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-destructive">
         ✗ Drift
       </div>
       {children}
@@ -988,8 +989,8 @@ function Bad({ children }: { children: React.ReactNode }) {
 
 function Good({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-16 flex-col justify-center rounded-lg border border-success/30 bg-success/6 p-3">
-      <div className="mb-2 inline-flex items-center gap-1 text-2xs font-medium uppercase tracking-wider text-success">
+    <div className="flex min-h-16 flex-col justify-center rounded-lg border border-border p-3">
+      <div className="mb-2 inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-foreground">
         ✓ Consistent
       </div>
       {children}
@@ -1009,14 +1010,14 @@ function DescPlacementDrift() {
       <Bad>
         <div className="flex items-center gap-2">
           <Label className="shrink-0">Name</Label>
-          <span className="text-2xs text-muted-foreground">Displayed on invoices.</span>
+          <span className="text-xs text-muted-foreground">Displayed on invoices.</span>
         </div>
         <Input placeholder="Acme" className="mt-1.5 h-8" />
       </Bad>
       <Good>
         <Label>Name</Label>
         <Input placeholder="Acme" className="mt-1.5 h-8" />
-        <p className="mt-1 text-2xs text-muted-foreground">Displayed on invoices.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Displayed on invoices.</p>
       </Good>
     </DriftCard>
   );
@@ -1125,13 +1126,13 @@ function StatusColorDrift() {
       rule="All success / warning / info / error colors come from the semantic token, never the palette."
     >
       <Bad>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-400/15 px-2 py-0.5 text-2xs font-medium text-amber-400">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-400/15 px-2 py-0.5 text-xs font-medium text-amber-400">
           <span className="size-1.5 rounded-full bg-amber-400" /> Warning
         </span>
       </Bad>
       <Good>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-warning/15 px-2 py-0.5 text-2xs font-medium text-warning">
-          <span className="size-1.5 rounded-full bg-warning" /> Warning
+        <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium text-foreground">
+          <span className="size-1.5 rounded-full " /> Warning
         </span>
       </Good>
     </DriftCard>
@@ -1198,7 +1199,7 @@ const OTHER_DRIFTS: {
     category: "Type",
     mode: "Eyebrow casing",
     symptom: "Some eyebrows uppercase, some sentence case — the eye reads them as different features.",
-    rule: "Uppercase eyebrow = text-2xs font-medium uppercase tracking-wider text-muted-foreground.",
+    rule: "Uppercase eyebrow = text-xs font-medium uppercase tracking-wider text-muted-foreground.",
   },
   {
     category: "Color",
@@ -1331,7 +1332,7 @@ function DriftTable() {
       </div>
       {categories.map((cat) => (
         <div key={cat} className="border-b border-border last:border-b-0">
-          <div className="border-b border-border bg-background px-5 py-2 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="border-b border-border bg-background px-5 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {cat}
           </div>
           <ul className="divide-y divide-border">
@@ -1343,7 +1344,7 @@ function DriftTable() {
                   {d.symptom}
                 </div>
                 <div className="text-xs leading-relaxed text-muted-foreground">
-                  <span className="mr-1 font-medium text-success">Rule:</span>
+                  <span className="mr-1 font-medium text-foreground">Rule:</span>
                   {d.rule}
                 </div>
               </li>
@@ -1407,17 +1408,17 @@ function BadgesSection() {
         <Badge variant="outline">Outline</Badge>
       </Demo>
       <Demo title="Status pills — token colors">
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-success/15 px-2 py-0.5 text-2xs font-medium text-success">
-          <span className="size-1.5 rounded-full bg-success" /> Running
+        <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium text-foreground">
+          <span className="size-1.5 rounded-full " /> Running
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-warning/15 px-2 py-0.5 text-2xs font-medium text-warning">
-          <span className="size-1.5 rounded-full bg-warning" /> Backlogged
+        <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium text-foreground">
+          <span className="size-1.5 rounded-full " /> Backlogged
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/15 px-2 py-0.5 text-2xs font-medium text-destructive">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
           <span className="size-1.5 rounded-full bg-destructive" /> Failed
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-info/15 px-2 py-0.5 text-2xs font-medium text-info">
-          <span className="size-1.5 rounded-full bg-info" /> Info
+        <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium text-foreground">
+          <span className="size-1.5 rounded-full " /> Info
         </span>
       </Demo>
     </Section>
@@ -1487,7 +1488,7 @@ function SelectionSection() {
       <Demo title="Slider">
         <div className="w-full">
           <Slider value={slider} onValueChange={(v) => setSlider(Array.isArray(v) ? v : [v])} min={0} max={100} />
-          <div className="mt-2 text-2xs text-muted-foreground">value: {slider[0]}</div>
+          <div className="mt-2 text-xs text-muted-foreground">value: {slider[0]}</div>
         </div>
       </Demo>
     </Section>
@@ -1617,7 +1618,7 @@ function OverlaysSection() {
               <Avatar className="size-8"><AvatarFallback>S</AvatarFallback></Avatar>
               <div>
                 <div className="text-sm font-medium">Support Bot</div>
-                <div className="text-2xs text-muted-foreground">Voice · en_us</div>
+                <div className="text-xs text-muted-foreground">Voice · en_us</div>
               </div>
             </div>
           </HoverCardContent>
@@ -1793,7 +1794,7 @@ function DataSection() {
         <div className="w-full space-y-2">
           <MiniBar pct={0.72} />
           <MiniBar pct={0.24} />
-          <MiniBar pct={0.95} barClassName="bg-warning" />
+          <MiniBar pct={0.95} barClassName="" />
         </div>
       </Demo>
     </Section>
@@ -1828,7 +1829,7 @@ function FeedbackSection() {
               <ProgressIndicator />
             </ProgressTrack>
           </Progress>
-          <div className="text-2xs text-muted-foreground">62%</div>
+          <div className="text-xs text-muted-foreground">62%</div>
         </div>
       </Demo>
       <Demo title="Spinner">

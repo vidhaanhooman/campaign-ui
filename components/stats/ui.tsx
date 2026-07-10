@@ -212,7 +212,7 @@ export function KpiCard({
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm text-muted-foreground">{label}</span>
         {delta && (
-          <span className="inline-flex items-center gap-1 rounded-md border border-border bg-transparent px-2 py-0.5 text-2xs font-medium tabular-nums text-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md border border-border bg-transparent px-2 py-0.5 text-xs font-medium tabular-nums text-foreground">
             <TrendIcon size={11} />
             {delta.value}
           </span>

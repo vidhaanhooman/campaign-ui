@@ -19,7 +19,7 @@ import {
 /** Quiet uppercase band label — turns a wall of cards into scannable tiers. */
 function BandLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-3 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
       {children}
     </div>
   );

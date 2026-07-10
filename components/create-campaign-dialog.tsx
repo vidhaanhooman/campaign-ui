@@ -168,7 +168,7 @@ function TypePicker({
               <span className="flex size-7 items-center justify-center rounded-md bg-card">
                 <Megaphone size={13} className="text-muted-foreground" />
               </span>
-              <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
                 New campaign
               </span>
             </div>
@@ -207,7 +207,7 @@ function TypePicker({
 
                   <div className="mt-auto space-y-3 pt-3 border-t border-border">
                     <div>
-                      <div className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-1.5">
                         Good for
                       </div>
                       <div className="flex flex-wrap gap-1.5">
@@ -534,7 +534,7 @@ export function RealtimeWizard({
                 >
                   <span
                     className={cn(
-                      "flex size-4 items-center justify-center rounded-full text-3xs tabular-nums",
+                      "flex size-4 items-center justify-center rounded-full text-xs tabular-nums",
                       active && "bg-primary text-primary-foreground font-medium",
                       done && !active && "bg-card text-muted-foreground",
                       !active && !done && "bg-card text-muted-foreground",
@@ -1033,7 +1033,7 @@ export function RealtimeWizard({
                   >
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mr-1">
+                        <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium mr-1">
                           Default
                         </span>
                         {["not_connected", "busy_callback"].map((d) => (
@@ -1063,7 +1063,7 @@ export function RealtimeWizard({
                 )}
 
                 <div className="border-t border-border pt-5 space-y-5">
-                  <div className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
                   <PriorityField
@@ -1149,7 +1149,7 @@ export function RealtimeWizard({
                                     key={i}
                                     className="flex items-center gap-2"
                                   >
-                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-3xs text-muted-foreground">
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-xs text-muted-foreground">
                                       {String.fromCharCode(65 + i)}
                                     </span>
                                     {ag ? (
@@ -1288,7 +1288,7 @@ export function RealtimeWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-3xs text-muted-foreground"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-xs text-muted-foreground"
                             >
                               {o}
                             </span>
@@ -1450,7 +1450,7 @@ function CampaignSummary({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <div className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
         <div className="text-sm font-medium text-foreground truncate">
@@ -1513,7 +1513,7 @@ function CampaignSummary({
               {outcomes.map((o) => (
                 <span
                   key={o}
-                  className="rounded-md border border-border bg-card px-2 py-0.5 text-3xs font-mono text-muted-foreground"
+                  className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-mono text-muted-foreground"
                 >
                   {o}
                 </span>
@@ -1543,7 +1543,7 @@ function SummaryRow({
 }) {
   return (
     <div>
-      <div className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1">
+      <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-1">
         {label}
       </div>
       <div className="text-xs text-foreground leading-snug">{children}</div>
@@ -1568,7 +1568,7 @@ function AgentSelect({
           <SelectItem key={a.id} value={a.id}>
             <span className="flex items-center gap-2">
               <span className="font-medium">{a.name}</span>
-              <span className="text-muted-foreground text-2xs uppercase tracking-wider">
+              <span className="text-muted-foreground text-xs uppercase tracking-wider">
                 · {a.mode}
               </span>
             </span>
@@ -1957,7 +1957,7 @@ function PayloadCard({
       </pre>
       {locked.length > 0 && (
         <div>
-          <div className="text-2xs uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">
             Locked · ignored if sent
           </div>
           <div className="flex flex-wrap gap-1.5">

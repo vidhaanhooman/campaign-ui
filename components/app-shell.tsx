@@ -24,6 +24,7 @@ import {
   Settings,
   ShieldAlert,
   SpellCheck,
+  UserCheck,
   Wallet,
   Wrench,
   type LucideIcon,
@@ -79,6 +80,7 @@ const SIDEBAR: { group: string; items: NavItem[] }[] = [
       { label: "Test Agents", icon: Headphones },
       { label: "Simulation", icon: FlaskConical },
       { label: "QA", icon: ShieldAlert, href: "/qa" },
+      { label: "Human QA", icon: UserCheck, href: "/human-qa" },
     ],
   },
   {

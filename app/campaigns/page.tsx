@@ -367,9 +367,9 @@ export default function CampaignsPage() {
 
   const status =
     running > 0
-      ? { label: "Running", dot: "bg-success" }
+      ? { label: "Running", dot: "" }
       : backlog > 0
-        ? { label: "Backlogged", dot: "bg-warning" }
+        ? { label: "Backlogged", dot: "" }
         : { label: "Idle", dot: "bg-muted-foreground/60" };
 
   return (
@@ -578,7 +578,7 @@ export default function CampaignsPage() {
                     </td>
                     <td className="px-3 py-3">
                       <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success" />
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full " />
                         {r.status}
                       </span>
                     </td>

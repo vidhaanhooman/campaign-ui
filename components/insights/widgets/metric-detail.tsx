@@ -86,7 +86,7 @@ export function MetricDetail({
             <div className="scroll-thin max-h-[300px] overflow-y-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="text-3xs text-muted-foreground">
+                  <tr className="text-xs text-muted-foreground">
                     <th className="py-2 pr-3 text-left font-medium">callInfo.from</th>
                     <th className="px-3 py-2 text-right font-medium">Pickup Rate (%)</th>
                     <th className="py-2 pl-3 text-right font-medium">Calls</th>

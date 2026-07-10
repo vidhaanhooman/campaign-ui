@@ -164,14 +164,14 @@ function BatchRow({ batch: b }: { batch: Batch }) {
     >
       <td className="px-5 py-3.5">
         <div className="font-medium text-foreground">{b.name}</div>
-        <div className="mt-0.5 font-mono text-2xs text-muted-foreground">
+        <div className="mt-0.5 font-mono text-xs text-muted-foreground">
           {b.source} · {b.updated}
         </div>
       </td>
       <td className="px-5 py-3.5 text-right">
         <span className="font-mono tabular-nums text-foreground">{b.calls}</span>
         {b.audioMatched < b.calls && (
-          <span className="ml-1.5 text-2xs text-chart-1">
+          <span className="ml-1.5 text-xs text-chart-1">
             {b.calls - b.audioMatched} no audio
           </span>
         )}

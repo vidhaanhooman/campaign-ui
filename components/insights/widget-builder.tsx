@@ -643,7 +643,7 @@ function MetricRow({
                       </span>
                     </span>
                     {m.sql && (
-                      <span className="ml-2 mt-0.5 rounded-md bg-secondary px-1.5 py-0.5 font-mono text-3xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <span className="ml-2 mt-0.5 rounded-md bg-secondary px-1.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         SQL
                       </span>
                     )}

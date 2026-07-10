@@ -156,7 +156,7 @@ export function FilterPanel({
         {groups.map((g, gi) => (
           <div key={g.label ?? `_g${gi}`} className={gi > 0 ? "mt-2" : ""}>
             {g.label && (
-              <div className="px-2.5 pt-1.5 pb-1 text-3xs font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 {g.label}
               </div>
             )}
@@ -227,7 +227,7 @@ function FilterFieldRow({
       {enabled ? (
         <ChevronRight size={14} className="text-muted-foreground" />
       ) : (
-        <span className="text-3xs text-muted-foreground/50">no data</span>
+        <span className="text-xs text-muted-foreground/50">no data</span>
       )}
     </button>
   );

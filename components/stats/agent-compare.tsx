@@ -123,7 +123,7 @@ export function AgentCompare() {
                     {v.live && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
                     <span>{v.version}</span>
                   </div>
-                  <span className="block truncate text-3xs font-normal text-muted-foreground/70">
+                  <span className="block truncate text-xs font-normal text-muted-foreground/70">
                     {v.tag}
                   </span>
                 </th>
