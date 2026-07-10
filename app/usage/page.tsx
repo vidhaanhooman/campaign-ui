@@ -70,8 +70,8 @@ export default function UsagePage() {
         </PageHeading>
         {/* Near-limit banner — only when something is actually near a cap. */}
         {near.length > 0 && (
-          <div className="flex items-start gap-3 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3">
-            <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-400" />
+          <div className="flex items-start gap-3 rounded-lg border border-warning/25 bg-warning/6 px-4 py-3">
+            <AlertTriangle size={15} className="mt-0.5 shrink-0 text-warning" />
             <div className="min-w-0 flex-1">
               <div className="text-sm text-foreground">
                 {near.length === 1
@@ -87,7 +87,7 @@ export default function UsagePage() {
                   .join(" · ")}
               </div>
             </div>
-            <button className="shrink-0 text-xs font-medium text-amber-400 transition-opacity hover:opacity-80">
+            <button className="shrink-0 text-xs font-medium text-warning transition-opacity hover:opacity-80">
               Upgrade
             </button>
           </div>
@@ -155,7 +155,7 @@ function FullRow({ icon, label, used, limit, unit }: UsageItem) {
           <span className="truncate font-medium">{label}</span>
         </span>
         <span className="shrink-0 font-mono text-sm tabular-nums">
-          <span className={nearLimit ? "text-amber-400" : "text-foreground"}>
+          <span className={nearLimit ? "text-warning" : "text-foreground"}>
             {compact(used)}
             {suffix}
           </span>
@@ -171,7 +171,7 @@ function FullRow({ icon, label, used, limit, unit }: UsageItem) {
           <div
             className={cn(
               "h-full rounded-full transition-[width] duration-700 ease-out",
-              nearLimit ? "bg-amber-400" : "bg-foreground/70",
+              nearLimit ? "bg-warning" : "bg-foreground/70",
             )}
             style={{ width: `${pct}%` }}
           />
@@ -179,7 +179,7 @@ function FullRow({ icon, label, used, limit, unit }: UsageItem) {
         <span
           className={cn(
             "w-10 shrink-0 text-right text-xs tabular-nums",
-            nearLimit ? "text-amber-400" : "text-muted-foreground",
+            nearLimit ? "text-warning" : "text-muted-foreground",
           )}
         >
           {pct}%
@@ -187,14 +187,14 @@ function FullRow({ icon, label, used, limit, unit }: UsageItem) {
       </div>
       <div className="mt-2 flex items-center justify-between text-xs">
         <span className="text-muted-foreground">
-          <span className={nearLimit ? "text-amber-400" : "text-foreground"}>
+          <span className={nearLimit ? "text-warning" : "text-foreground"}>
             {compact(left)}
             {suffix}
           </span>{" "}
           left this cycle
         </span>
         {nearLimit && (
-          <button className="inline-flex items-center gap-0.5 font-medium text-amber-400 transition-opacity hover:opacity-80">
+          <button className="inline-flex items-center gap-0.5 font-medium text-warning transition-opacity hover:opacity-80">
             Upgrade <ArrowUpRight size={11} />
           </button>
         )}

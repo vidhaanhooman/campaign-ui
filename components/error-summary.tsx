@@ -13,13 +13,13 @@ export function ErrorSummary({
   return (
     <div
       role="alert"
-      className="flex items-start gap-3 rounded-md border border-red-400/40 bg-red-400/[0.08] px-4 py-3"
+      className="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/8 px-4 py-3"
     >
-      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md text-red-400">
+      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md text-destructive">
         <AlertTriangle size={14} strokeWidth={2.5} />
       </div>
       <div className="flex-1 space-y-1">
-        <div className="text-sm font-medium text-red-400">
+        <div className="text-sm font-medium text-destructive">
           {title ?? `Fix ${errors.length} ${errors.length === 1 ? "issue" : "issues"} to continue`}
         </div>
         <ul className="space-y-0.5">
@@ -28,7 +28,7 @@ export function ErrorSummary({
               key={i}
               className="text-xs text-muted-foreground leading-relaxed flex items-start gap-1.5"
             >
-              <span className="text-red-400 mt-0.5">·</span>
+              <span className="text-destructive mt-0.5">·</span>
               {e}
             </li>
           ))}
