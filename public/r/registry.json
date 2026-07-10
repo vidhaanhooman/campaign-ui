@@ -113,6 +113,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Canonical base-ui text input. Uses .shadcn tokens (border/input/ring/foreground).",
+      "dependencies": ["@base-ui/react"],
+      "files": [
+        {
+          "path": "registry/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
