@@ -126,6 +126,19 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Canonical base-ui badge with cva variants (default/secondary/destructive/outline/ghost/link). Polymorphic via render. Uses .shadcn tokens.",
+      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "files": [
+        {
+          "path": "registry/ui/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
