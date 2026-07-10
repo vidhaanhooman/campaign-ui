@@ -318,7 +318,7 @@ export default function StyleGuidePage() {
         </Section>
 
         <Section title="Add-node chip toolbar">
-          <div className="inline-flex items-center gap-1 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl">
+          <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-card/95 p-1.5 shadow-2xl">
             <span className="pl-1.5 pr-0.5 text-muted-foreground/70"><Plus size={15} /></span>
             {[
               { icon: Sparkles, accent: "text-sky-400", label: "LLM" },
@@ -395,7 +395,7 @@ function FlowNodeCard({
   invalid?: boolean;
 }) {
   return (
-    <div className="relative w-[288px] rounded-2xl border border-border bg-card">
+    <div className="relative w-[288px] rounded-xl border border-border bg-card">
       <span className={cn(PORT, "absolute left-[-6px] top-8")} />
       <span className={cn(PORT, "absolute right-[-6px] top-8")} />
       <div className="flex items-start gap-2.5 px-4 pt-3.5">
