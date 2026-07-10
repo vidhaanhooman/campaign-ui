@@ -43,7 +43,7 @@ export default function DevPage() {
           <ArrowLeft size={14} />
         </Link>
         <span className="text-sm font-medium text-foreground">Dev playground</span>
-        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
+        <span className="text-3xs uppercase tracking-wider font-medium text-muted-foreground">
           bypass — every screen
         </span>
 
@@ -74,7 +74,7 @@ export default function DevPage() {
       {/* step jumper */}
       {view !== "components" && (
         <div className="flex items-center gap-2 border-b border-border px-6 py-2.5" style={{ backgroundColor: "var(--card)" }}>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <span className="text-3xs uppercase tracking-wider text-muted-foreground font-medium">
             Jump to step
           </span>
           {(view === "realtime" ? RT_STEPS : BATCH_STEPS).map((s) => {
@@ -246,7 +246,7 @@ function Section({
 }) {
   return (
     <section>
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-3">
+      <div className="text-3xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
         {title}
       </div>
       <div className="rounded-xl border border-border bg-card p-5">

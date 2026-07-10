@@ -72,7 +72,7 @@ export function MetricMenu({
               if (!items.length) return null;
               return (
                 <div key={cat} className="mb-1 last:mb-0">
-                  <div className="px-2.5 pt-1.5 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="px-2.5 pt-1.5 pb-1 text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                     {cat}
                   </div>
                   {items.map((m) => {

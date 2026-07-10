@@ -149,7 +149,7 @@ export function DateRangePicker({
         <div className="flex">
           {/* ── Quick range column ─────────────────────────────────── */}
           <div className="flex w-40 flex-col gap-0.5 border-r border-border p-3">
-            <div className="mb-2 px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="mb-2 px-2 text-3xs font-medium uppercase tracking-wider text-muted-foreground">
               Quick range
             </div>
             <PresetRow label="None" active={!draft.preset} onClick={pickNone} />
@@ -388,7 +388,7 @@ function RangeCalendar({
         {DOW.map((d) => (
           <div
             key={d}
-            className="py-1 text-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+            className="py-1 text-center text-3xs font-medium uppercase tracking-wider text-muted-foreground"
           >
             {d}
           </div>
@@ -489,7 +489,7 @@ function TimeBlock({
             className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-accent/50"
           >
             <div className="flex flex-col">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              <span className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                 {label}
               </span>
               <span className="mt-0.5 font-mono text-sm leading-tight tabular-nums text-foreground">

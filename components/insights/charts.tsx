@@ -171,23 +171,23 @@ export function Donut({
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           {active ? (
             <>
-              <div className="max-w-[110px] truncate text-[10px] text-muted-foreground">
+              <div className="max-w-[110px] truncate text-3xs text-muted-foreground">
                 {active.name}
               </div>
               <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
                 {Math.round((active.value / total) * 100)}%
               </div>
-              <div className="font-mono text-[10px] tabular-nums text-muted-foreground">
+              <div className="font-mono text-3xs tabular-nums text-muted-foreground">
                 {active.value.toLocaleString()} {unit}
               </div>
             </>
           ) : (
             <>
-              <div className="text-[10px] text-muted-foreground">total {unit}</div>
+              <div className="text-3xs text-muted-foreground">total {unit}</div>
               <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
                 {total.toLocaleString()}
               </div>
-              <div className="text-[10px] text-muted-foreground">hover a slice</div>
+              <div className="text-3xs text-muted-foreground">hover a slice</div>
             </>
           )}
         </div>

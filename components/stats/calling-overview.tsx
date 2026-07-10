@@ -27,7 +27,7 @@ function AttemptsTable() {
         <col />
       </colgroup>
       <thead>
-        <tr className="text-[10px] text-muted-foreground">
+        <tr className="text-3xs text-muted-foreground">
           <th className="pb-2.5 pl-5 pr-3 text-left font-medium">Attempt</th>
           <th className="px-3 pb-2.5 text-right font-medium">Dials</th>
           <th className="px-3 pb-2.5 text-right font-medium">Connected</th>
@@ -153,23 +153,23 @@ function Donut({
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           {active ? (
             <>
-              <div className="max-w-[110px] truncate text-[10px] text-muted-foreground">
+              <div className="max-w-[110px] truncate text-3xs text-muted-foreground">
                 {active.label}
               </div>
               <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
                 {fmtPct(active.pct, 0)}
               </div>
-              <div className="font-mono text-[10px] tabular-nums text-muted-foreground">
+              <div className="font-mono text-3xs tabular-nums text-muted-foreground">
                 {fmtInt(active.count)} {centerCountSuffix}
               </div>
             </>
           ) : (
             <>
-              <div className="text-[10px] text-muted-foreground">{centerLabel}</div>
+              <div className="text-3xs text-muted-foreground">{centerLabel}</div>
               <div className="font-mono text-lg leading-tight tabular-nums text-foreground">
                 {fmtInt(total)}
               </div>
-              <div className="text-[10px] text-muted-foreground">hover a slice</div>
+              <div className="text-3xs text-muted-foreground">hover a slice</div>
             </>
           )}
         </div>

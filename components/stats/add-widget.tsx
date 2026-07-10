@@ -384,7 +384,7 @@ function FiltersSheet({
             filtered.map((g, gi) => (
               <div key={g.label ?? `_g${gi}`} className={gi > 0 ? "mt-3" : ""}>
                 {g.label && (
-                  <div className="px-3 pb-1 text-[10px] font-medium text-muted-foreground">
+                  <div className="px-3 pb-1 text-3xs font-medium text-muted-foreground">
                     {g.label}
                   </div>
                 )}

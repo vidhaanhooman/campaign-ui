@@ -253,7 +253,7 @@ export function BatchWizard({
                 >
                   <span
                     className={cn(
-                      "flex size-4 items-center justify-center rounded-full text-[10px] tabular-nums",
+                      "flex size-4 items-center justify-center rounded-full text-3xs tabular-nums",
                       hasError && "bg-destructive text-primary-foreground font-medium",
                       !hasError && active && "bg-primary text-primary-foreground font-medium",
                       !hasError && done && !active && "bg-card text-muted-foreground",
@@ -541,7 +541,7 @@ export function BatchWizard({
                         <span className="text-sm text-foreground font-medium">
                           sample-audience.csv
                         </span>
-                        <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                        <span className="ml-2 text-2xs uppercase tracking-wider text-muted-foreground font-medium">
                           · expected format
                         </span>
                         <button
@@ -665,7 +665,7 @@ export function BatchWizard({
                           <span className="truncate text-sm font-medium text-foreground">
                             {csvName}
                           </span>
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-3xs font-medium text-primary-foreground">
                             <Check size={10} strokeWidth={3} /> Uploaded
                           </span>
                         </div>
@@ -912,7 +912,7 @@ export function BatchWizard({
                   >
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mr-1">
+                        <span className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mr-1">
                           Default
                         </span>
                         {["not_connected", "busy_callback"].map((d) => (
@@ -942,7 +942,7 @@ export function BatchWizard({
                 )}
 
                 <div className="border-t border-border pt-5 space-y-5">
-                  <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
                     Advanced
                   </div>
                   {/* Priority — presets, with numbers under Advanced */}
@@ -1030,7 +1030,7 @@ export function BatchWizard({
                                     key={i}
                                     className="flex items-center gap-2"
                                   >
-                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-[10px] text-muted-foreground">
+                                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-card font-mono text-3xs text-muted-foreground">
                                       {String.fromCharCode(65 + i)}
                                     </span>
                                     {ag ? (
@@ -1190,7 +1190,7 @@ export function BatchWizard({
                           allOutcomes.map((o) => (
                             <span
                               key={o}
-                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                              className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-3xs text-muted-foreground"
                             >
                               {o}
                             </span>
@@ -1391,7 +1391,7 @@ function BatchSummary({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
+        <div className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
           Live summary
         </div>
         <div className="text-sm font-medium text-foreground truncate">
@@ -1475,7 +1475,7 @@ function BatchSummary({
               {outcomes.map((o) => (
                 <span
                   key={o}
-                  className="rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-mono text-muted-foreground"
+                  className="rounded-md border border-border bg-card px-2 py-0.5 text-3xs font-mono text-muted-foreground"
                 >
                   {o}
                 </span>
@@ -1497,7 +1497,7 @@ function Row({
 }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
+      <div className="text-2xs uppercase tracking-wider text-muted-foreground font-medium mb-1">
         {label}
       </div>
       <div className="text-xs text-foreground leading-snug">{children}</div>
@@ -1522,7 +1522,7 @@ function AgentSelect({
           <SelectItem key={a.id} value={a.id}>
             <span className="flex items-center gap-2">
               <span className="font-medium">{a.name}</span>
-              <span className="text-muted-foreground text-[11px] uppercase tracking-wider">
+              <span className="text-muted-foreground text-2xs uppercase tracking-wider">
                 · {a.mode}
               </span>
             </span>
@@ -1600,7 +1600,7 @@ function CsvLogo() {
           CSV
         </text>
       </svg>
-      <span className="text-[10px] font-medium text-muted-foreground">CSV</span>
+      <span className="text-3xs font-medium text-muted-foreground">CSV</span>
     </span>
   );
 }

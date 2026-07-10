@@ -707,7 +707,7 @@ function ChangesSummary({
 }) {
   return (
     <div className="border-t border-border bg-card px-6 py-3">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
         Changes · {changes.length}
       </span>
       <ul className="scroll-thin mt-2 flex max-h-[120px] flex-col gap-1.5 overflow-y-auto text-xs">

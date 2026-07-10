@@ -50,7 +50,7 @@ export function LineDetailView({
       <div className="grid grid-cols-2 divide-x divide-sidebar-border/30 rounded-xl border border-border bg-card sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="px-5 py-4">
-            <p className="truncate text-[10px] font-medium text-muted-foreground">
+            <p className="truncate text-3xs font-medium text-muted-foreground">
               {t.label}
             </p>
             <p className="mt-1 flex items-baseline gap-1.5">

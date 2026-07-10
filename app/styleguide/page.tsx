@@ -246,7 +246,7 @@ export default function StyleGuidePage() {
 
         <Section title="Typography & radii">
           <div className="flex flex-col gap-2">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Band label</div>
+            <div className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">Band label</div>
             <div className="text-sm font-medium text-foreground">Section heading</div>
             <div className="text-xs font-normal text-muted-foreground">Field sub-label</div>
             <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">1,234</div>
@@ -283,7 +283,7 @@ export default function StyleGuidePage() {
         <Section title="Ports — neutral dark knob (input left · output right)">
           <div className="flex items-center gap-6">
             <span className={PORT} />
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="font-mono text-3xs text-muted-foreground">
               h-[11px] w-[11px] rounded-full bg-[#0b0b0b] border border-white/25
             </span>
           </div>
@@ -291,11 +291,11 @@ export default function StyleGuidePage() {
 
         <Section title="Transition label — forward chip vs backward jump chip">
           <div className="flex flex-wrap items-center gap-6">
-            <button className="inline-flex max-w-[160px] items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-[10px] text-foreground shadow-sm">
+            <button className="inline-flex max-w-[160px] items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-3xs text-foreground shadow-sm">
               <span className="truncate">If true</span>
               <Pencil size={9} className="shrink-0 text-muted-foreground" />
             </button>
-            <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-[10px] font-medium text-violet-200">
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/50 bg-violet-500/[0.14] px-2 py-0.5 text-3xs font-medium text-violet-200">
               <CornerDownRight size={10} className="rotate-180" /> to Greeting
             </span>
             <span className="flex h-5 w-4 items-center justify-center rounded-sm border border-violet-500/50 bg-violet-500/[0.14] text-violet-200">
@@ -307,11 +307,11 @@ export default function StyleGuidePage() {
         <Section title="Transition detail — hover popover">
           <div className="w-max min-w-[160px] max-w-[260px] rounded-lg border border-border bg-popover px-3 py-2 shadow-xl">
             <div className="mb-1 text-[9px] font-medium uppercase tracking-[0.1em] text-muted-foreground/60">Transition</div>
-            <div className="text-[11px] leading-relaxed text-foreground">caller intent is booking</div>
-            <div className="mt-1.5 inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            <div className="text-2xs leading-relaxed text-foreground">caller intent is booking</div>
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-3xs text-muted-foreground">
               <Zap size={9} className="text-amber-400" /> check_calendar
             </div>
-            <div className="mt-1.5 border-t border-border pt-1.5 text-[10px] text-muted-foreground/70">
+            <div className="mt-1.5 border-t border-border pt-1.5 text-3xs text-muted-foreground/70">
               Detect intent <span className="text-muted-foreground/40">→</span> Booking
             </div>
           </div>
@@ -326,7 +326,7 @@ export default function StyleGuidePage() {
               { icon: Network, accent: "text-amber-400", label: "Condition" },
               { icon: PlugZap, accent: "text-emerald-400", label: "Endpoint" },
             ].map(({ icon: Icon, accent, label }) => (
-              <button key={label} className="flex items-center gap-1.5 rounded-xl border border-transparent px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground">
+              <button key={label} className="flex items-center gap-1.5 rounded-xl border border-transparent px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground">
                 <Icon size={14} className={accent} /> {label}
               </button>
             ))}
@@ -344,8 +344,8 @@ export default function StyleGuidePage() {
                   <Icon size={13} className={accent} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[12px] font-medium text-foreground">{label}</span>
-                  <span className="block truncate text-[10px] text-muted-foreground/70">{desc}</span>
+                  <span className="block truncate text-xs font-medium text-foreground">{label}</span>
+                  <span className="block truncate text-3xs text-muted-foreground/70">{desc}</span>
                 </span>
               </button>
             ))}
@@ -354,18 +354,18 @@ export default function StyleGuidePage() {
 
         <Section title="Canvas controls — tidy up · loop toggle · add branch">
           <div className="flex flex-wrap items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
+            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-2xs font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
               <Network size={13} /> Tidy up
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
+            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/90 px-2.5 py-1.5 text-2xs font-medium text-muted-foreground shadow-lg transition-colors hover:text-foreground">
               <CornerDownRight size={13} className="rotate-180" /> Show loops
-              <span className="rounded bg-white/[0.06] px-1 text-[10px]">3</span>
+              <span className="rounded bg-white/[0.06] px-1 text-3xs">3</span>
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 bg-violet-500/[0.14] px-2.5 py-1.5 text-[11px] font-medium text-violet-200 shadow-lg">
+            <button className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 bg-violet-500/[0.14] px-2.5 py-1.5 text-2xs font-medium text-violet-200 shadow-lg">
               <CornerDownRight size={13} className="rotate-180" /> Hide loops
-              <span className="rounded bg-violet-500/25 px-1 text-[10px]">3</span>
+              <span className="rounded bg-violet-500/25 px-1 text-3xs">3</span>
             </button>
-            <button className="inline-flex h-6 items-center gap-1 rounded-full border border-border bg-card px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground">
+            <button className="inline-flex h-6 items-center gap-1 rounded-full border border-border bg-card px-2 text-3xs font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground">
               <Plus size={11} /> Branch
             </button>
           </div>
@@ -415,7 +415,7 @@ function FlowNodeCard({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <div className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="mb-3 text-2xs font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </div>
       {children}
@@ -432,7 +432,7 @@ function Tok({ name, v }: { name: string; v: string }) {
       />
       <div className="min-w-0">
         <div className="truncate text-xs font-medium text-foreground">{name}</div>
-        <div className="truncate font-mono text-[10px] text-muted-foreground">{v}</div>
+        <div className="truncate font-mono text-3xs text-muted-foreground">{v}</div>
       </div>
     </div>
   );
@@ -444,7 +444,7 @@ function Swatch({ name, cls, note }: { name: string; cls: string; note: string }
       <div className={cn("h-16 w-full rounded-lg", cls)} />
       <div>
         <div className="text-xs font-medium text-foreground">{name}</div>
-        <div className="font-mono text-[10px] text-muted-foreground">{note}</div>
+        <div className="font-mono text-3xs text-muted-foreground">{note}</div>
       </div>
     </div>
   );
