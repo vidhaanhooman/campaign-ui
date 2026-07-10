@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "empty-state",
+  "title": "Empty State",
+  "description": "Empty state for tables, lists, and panels. Self-scoped to .shadcn (border/card/muted/ring tokens).",
+  "files": [
+    {
+      "path": "registry/ui/empty-state.tsx",
+      "content": "import * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\n/**\n * Reusable empty state for tables, lists, and panels.\n *\n * Two common shapes:\n *  - **No data yet** (onboarding): teach the surface, offer the first action.\n *  - **No results** (a filter / date range excludes everything): say what was\n *    filtered and offer to clear it or widen the range.\n *\n * Sizing: `inset` for inside a card/table body, `block` for a standalone panel.\n */\nexport function EmptyState({\n    icon,\n    title,\n    description,\n    action,\n    size = \"inset\",\n    className,\n}: {\n    icon?: React.ReactNode;\n    title: string;\n    description?: string;\n    /** One or two buttons/links. */\n    action?: React.ReactNode;\n    size?: \"inset\" | \"block\";\n    className?: string;\n}) {\n    return (\n        <div\n            className={cn(\n                \"shadcn dark flex flex-col items-center justify-center text-center\",\n                size === \"inset\" ? \"px-6 py-14\" : \"px-6 py-20\",\n                className\n            )}\n        >\n            {icon && (\n                <div className=\"mb-4 flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground\">\n                    {icon}\n                </div>\n            )}\n            <p className=\"text-sm font-medium text-foreground\">{title}</p>\n            {description && <p className=\"mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground\">{description}</p>}\n            {action && <div className=\"mt-4 flex flex-wrap items-center justify-center gap-2\">{action}</div>}\n        </div>\n    );\n}\n\n/** Secondary (element-style) button for empty-state actions. */\nexport function EmptyAction({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {\n    return (\n        <button\n            type=\"button\"\n            onClick={onClick}\n            className=\"shadcn dark inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-ring hover:text-foreground\"\n        >\n            {children}\n        </button>\n    );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

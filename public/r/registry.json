@@ -1,0 +1,58 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "hooman-ui",
+  "homepage": "https://github.com/vidhaanhooman/campaign-ui",
+  "items": [
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Canonical base-ui/base-nova button. forwardRef + useRender so Base UI triggers forward their anchor ref on React 18. Single source of truth for hooman-ui.",
+      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "files": [
+        {
+          "path": "registry/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Canonical base-ui text input. forwardRef for react-hook-form on React 18. Uses .shadcn tokens (border/input/ring/foreground).",
+      "dependencies": ["@base-ui/react"],
+      "files": [
+        {
+          "path": "registry/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Canonical base-ui badge with cva variants (default/secondary/destructive/success/warning/outline/ghost/link). Polymorphic via render. Uses .shadcn tokens.",
+      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "files": [
+        {
+          "path": "registry/ui/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty-state",
+      "type": "registry:ui",
+      "title": "Empty State",
+      "description": "Empty state for tables, lists, and panels. Self-scoped to .shadcn (border/card/muted/ring tokens).",
+      "files": [
+        {
+          "path": "registry/ui/empty-state.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}
